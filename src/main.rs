@@ -7,15 +7,15 @@ fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, font: &sdl2::t
     canvas.set_draw_color(sdl2::pixels::Color::RGB(0, 0, 0));
     canvas.clear();
 
-    let font_render = font.render("a");
-    let font_surface = font_render.solid(sdl2::pixels::Color::RGB(255, 255, 255)).unwrap();
-    let canvas_texture = canvas.texture_creator();
-    let texture = canvas_texture.create_texture_from_surface(font_surface).expect("");
+    let font_render = font.render("a"); //create a render of the given string
+    let font_surface = font_render.solid(sdl2::pixels::Color::RGB(255, 255, 255)).unwrap(); //create a surface out of that render
+    let canvas_texture = canvas.texture_creator(); //generate a blank canvas from the canvas 
+    let texture = canvas_texture.create_texture_from_surface(font_surface).unwrap(); //copy the font surface onto that texture
     canvas.copy(
         &texture,
         None,
         sdl2::rect::Rect::new(0, 0, 50, 50),
-    );
+    ); //display that texture to the canvas
 
     canvas.present();
 }
