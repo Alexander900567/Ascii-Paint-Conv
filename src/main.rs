@@ -10,7 +10,7 @@ fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>){
 }
 
 fn get_mouse_gpos(cpos: i32, rpos: i32, clen: i32, rlen: i32) -> [i32; 2]{
-    return [cpos / clen, rpos / rlen]
+    return [cpos / clen, rpos / rlen];
 }
 
 
@@ -34,6 +34,7 @@ fn main() {
         .expect("failed to build window");
 
     let mut canvas = window.into_canvas()
+        .present_vsync()
         .build()
         .expect("failed to build canvas");
 
