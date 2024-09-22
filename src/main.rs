@@ -2,10 +2,21 @@ extern crate sdl2;
 
 use sdl2::event::Event;
 
-fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>){
+fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, font: &sdl2::ttf::Font){
 
     canvas.set_draw_color(sdl2::pixels::Color::RGB(0, 0, 0));
     canvas.clear();
+
+    let font_render = font.render("a");
+    let font_surface = font_render.solid(sdl2::pixels::Color::RGB(255, 255, 255)).unwrap();
+    let canvas_texture = canvas.texture_creator();
+    let texture = canvas_texture.create_texture_from_surface(font_surface).expect("");
+    canvas.copy(
+        &texture,
+        None,
+        sdl2::rect::Rect::new(0, 0, 50, 50),
+    );
+
     canvas.present();
 }
 
@@ -38,10 +49,12 @@ fn main() {
         .build()
         .expect("failed to build canvas");
 
-    let mut event_queue = sdl_context.event_pump().expect("failed to init event queue");
+    let ttf_context = sdl2::ttf::init().unwrap();
+    let font = ttf_context.load_font("/usr/share/fonts/truetype/noto/NotoSansMono-Regular.ttf", 16).unwrap();
+        
 
-    
-    
+
+    let mut event_queue = sdl_context.event_pump().expect("failed to init event queue");
     let mut running = true;
     while running {
         for event in event_queue.poll_iter(){
@@ -66,7 +79,7 @@ fn main() {
                 _ => {},
             }
         }
-        render(&mut canvas);
+        render(&mut canvas, &font);
     }
 }
 
