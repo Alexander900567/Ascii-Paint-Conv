@@ -21,7 +21,7 @@ fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, font: &sdl2::t
 }
 
 fn get_mouse_gpos(cpos: i32, rpos: i32, clen: i32, rlen: i32) -> [i32; 2]{
-    return [cpos / clen, rpos / rlen];
+    return [rpos / rlen, cpos / clen];
 }
 
 
@@ -35,6 +35,22 @@ fn main() {
     let row_length: i32 = (window_height / num_of_rows) as i32;
     println!("col_length: {}", col_length);
     println!("row_length: {}", row_length);
+
+    let mut window_array = Vec::new();
+    for _ in 0..num_of_rows{
+        let mut a_row = Vec::new(); 
+        for _ in 0..num_of_cols{
+            a_row.push(" ");
+
+        }
+        window_array.push(a_row);
+    }
+
+
+    for x in &window_array{
+        println!("{:?}", x);
+    }
+
 
     let sdl_context = sdl2::init().expect("failed to init sdl");
     let video_subsystem = sdl_context.video().expect("failed to init video subsytem");
@@ -66,14 +82,24 @@ fn main() {
                 Event::MouseButtonDown {mouse_btn, x, y, ..} => {
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
-                            println!("{:?}", get_mouse_gpos(x, y, col_length, row_length)); 
+                            let gpos = get_mouse_gpos(x, y, col_length, row_length);
+                            //println!("{:?}", gpos);
+                            window_array[gpos[0] as usize][gpos[1] as usize] = "a";
+
                         },
                         _ => {},
                     }
                 },
                 Event::MouseMotion {mousestate, x, y, ..} => {
                     if mousestate.left(){
-                        println!("{:?}", get_mouse_gpos(x, y, col_length, row_length));
+                        let gpos = get_mouse_gpos(x, y, col_length, row_length);
+                        //println!("{:?}", gpos);
+                        window_array[gpos[0] as usize][gpos[1] as usize] = "a";
+
+                        for x in &window_array{
+                            println!("{:?}", x);
+                        }
+                        println!("------------")
                     }
                 },
                 _ => {},
