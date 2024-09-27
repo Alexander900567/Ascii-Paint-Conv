@@ -60,12 +60,6 @@ fn main() {
         window_array.push(a_row);
     }
 
-
-    for x in &window_array{
-        println!("{:?}", x);
-    }
-
-
     let sdl_context = sdl2::init().expect("failed to init sdl");
     let video_subsystem = sdl_context.video().expect("failed to init video subsytem");
 
