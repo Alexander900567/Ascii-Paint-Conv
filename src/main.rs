@@ -80,7 +80,7 @@ fn main() {
         .expect("failed to build canvas");
 
     let ttf_context = sdl2::ttf::init().unwrap();
-    let font = ttf_context.load_font("/usr/share/fonts/truetype/noto/NotoSansMono-Regular.ttf", 16).unwrap();
+    let font = ttf_context.load_font("./NotoSansMono-Regular.ttf", 16).unwrap();
         
 
 
