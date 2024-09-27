@@ -87,6 +87,8 @@ fn main() {
     let mut event_queue = sdl_context.event_pump().expect("failed to init event queue");
     let mut running = true;
     let mut render_change = true;
+    let mut current_key = 'a';
+    let mut keycombo = String::new();
     while running {
         for event in event_queue.poll_iter(){
             match event{
@@ -99,7 +101,7 @@ fn main() {
                         sdl2::mouse::MouseButton::Left => {
                             let gpos = get_mouse_gpos(x, y, col_length, row_length);
                             //println!("{:?}", gpos);
-                            window_array[gpos[0] as usize][gpos[1] as usize] = 'a';
+                            window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                         },
                         _ => {},
                     }
@@ -109,7 +111,7 @@ fn main() {
                     if mousestate.left(){
                         let gpos = get_mouse_gpos(x, y, col_length, row_length);
                         //println!("{:?}", gpos);
-                        window_array[gpos[0] as usize][gpos[1] as usize] = 'a';
+                        window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                         render_change = true
                         /*
                         for x in &window_array{
@@ -119,6 +121,25 @@ fn main() {
                         */
                     }
                 },
+                Event::KeyUp {keycode, ..} => {
+                    if keycombo.len() > 0{
+                        if keycombo == String::from("I"){
+                            let keycode_vec: Vec<char> = keycode.unwrap().name().chars().collect();
+                            current_key = keycode_vec[0];
+                            println!("{:?} {}", keycode_vec, current_key);
+                            keycombo = String::from("");
+                        }
+                    }
+                    else {
+                        match keycode{
+                            Some(sdl2::keyboard::Keycode::I) => {
+                                keycombo = String::from("I");
+                            },
+                            None => {},
+                            _ => {}
+                        }
+                    }
+                },   
                 _ => {},
             }
         }
