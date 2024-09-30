@@ -9,7 +9,7 @@ fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,  //main render
           preview_buffer: &Vec<[i32;2]>,
           clen: i32, rlen: i32,
           current_key: char){ //our dimenions for the canvas
-    
+
     canvas.set_draw_color(Color::RGB(0, 0, 0)); //set canvas to black
     canvas.clear(); //clears frame allows new one
     let mut rpos = 0; //0,0 is top left
@@ -102,6 +102,7 @@ fn line_tool(preview_buffer: &mut Vec<[i32; 2]>,
         x_is_long = false;
     }
 
+    
     let per_chunk = long_slope / short_slope;
     let mut extra = (long_slope % short_slope) + 1;
 
@@ -201,7 +202,10 @@ fn main() {
 
     let mut event_queue = sdl_context.event_pump().expect("failed to init event queue");
     let mut running = true;
+    //decide whether or not to render a new frame (only render when something has a changed)
     let mut render_change = true;
+    //holds on to the previous loops gpos so a render doesn't get called if the mouse hasn't moved grid position
+    let mut prev_gpos = [-1, -1];
     let mut current_key = 'a';
     let mut keycombo = String::new();
     let mut current_tool = 'f';
@@ -228,6 +232,7 @@ fn main() {
                                 mstart_pos = gpos;
                                 line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                             }
+                            prev_gpos = gpos;
                         },
                         _ => {}, //include left-click erase, eventually tool list in match outside
                     }
@@ -245,8 +250,10 @@ fn main() {
                         else if current_tool == 'l'{
                             line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                         }
-                        render_change = true;
-                        
+                        if prev_gpos != gpos{
+                            render_change = true;
+                        }
+                        prev_gpos = gpos;
                     }
                 },
                 Event::MouseButtonUp {mouse_btn, ..} => {
