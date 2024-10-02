@@ -198,7 +198,7 @@ fn main() {
     let ttf_context = sdl2::ttf::init().unwrap(); //Maybe add a error message
     let font = ttf_context.load_font("./NotoSansMono-Regular.ttf", 16).unwrap();
         
-
+    video_subsystem.text_input().start();
 
     let mut event_queue = sdl_context.event_pump().expect("failed to init event queue");
     let mut running = true;
@@ -208,7 +208,7 @@ fn main() {
     let mut prev_gpos = [-1, -1];
     let mut current_key = 'a';
     let mut keycombo = String::new();
-    let mut current_tool = 'f';
+    let mut current_tool = String::from("f");
     let mut mstart_pos = [0, 0];
     while running {
         for event in event_queue.poll_iter(){
@@ -221,14 +221,14 @@ fn main() {
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
                             let gpos = get_mouse_gpos(x, y, col_length, row_length);
-                            if current_tool == 'f'{
+                            if current_tool == String::from("f"){
                                 window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                             }
-                            else if current_tool == 'r'{
+                            else if current_tool == String::from("r"){
                                 mstart_pos = gpos;
                                 rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
                             }
-                            else if current_tool == 'l'{
+                            else if current_tool == String::from("l"){
                                 mstart_pos = gpos;
                                 line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                             }
@@ -241,13 +241,13 @@ fn main() {
                 Event::MouseMotion {mousestate, x, y, ..} => { //this is for holding down button
                     if mousestate.left(){
                         let gpos = get_mouse_gpos(x, y, col_length, row_length);
-                        if current_tool == 'f'{
+                        if current_tool == String::from("f"){
                             window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                         }
-                        else if current_tool == 'r'{
+                        else if current_tool == String::from("r"){
                             rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
                         }
-                        else if current_tool == 'l'{
+                        else if current_tool == String::from("l"){
                             line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                         }
                         if prev_gpos != gpos{
@@ -264,29 +264,24 @@ fn main() {
                         _ => {}
                     }
                 },
-                Event::KeyUp {keycode, ..} => {
+                Event::TextInput {text, ..} => {
                     if keycombo.len() > 0{
-                        let keycode_vec: Vec<char> = keycode.unwrap().name().chars().collect();
-                        if keycombo == String::from("I"){
-                            current_key = keycode_vec[0];
-                            println!("{:?} {}", keycode_vec, current_key);
+                        if keycombo == String::from("i"){
+                            let text_vec: Vec<char> = text.chars().collect();
+                            current_key = text_vec[0];
+                            println!("{:?} {}", text, current_key);
                         }
-                        else if keycombo == String::from("C"){
-                            let lowercase: Vec<_> = keycode_vec[0].to_lowercase().collect(); 
-                            current_tool = lowercase[0];
+                        else if keycombo == String::from("c"){
+                            current_tool = text.to_lowercase();
                         }
                         keycombo = String::from("");
                     }
                     else {
-                        match keycode{
-                            Some(sdl2::keyboard::Keycode::I) => {
-                                keycombo = String::from("I");
-                            },
-                            Some(sdl2::keyboard::Keycode::C) => {
-                                keycombo = String::from("C");
-                            },
-                            None => {},
-                            _ => {}
+                        if text.to_lowercase() == String::from("i"){
+                            keycombo = String::from("i");
+                        }
+                        else if text.to_lowercase() == String::from("c"){
+                            keycombo = String::from("c");
                         }
                     }
                 },   
