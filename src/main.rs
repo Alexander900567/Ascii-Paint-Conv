@@ -221,14 +221,14 @@ fn main() {
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
                             let gpos = get_mouse_gpos(x, y, col_length, row_length);
-                            if current_tool == String::from("f"){
+                            if &current_tool == "f"{
                                 window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                             }
-                            else if current_tool == String::from("r"){
+                            else if &current_tool == "r"{
                                 mstart_pos = gpos;
                                 rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
                             }
-                            else if current_tool == String::from("l"){
+                            else if &current_tool == "l"{
                                 mstart_pos = gpos;
                                 line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                             }
@@ -241,13 +241,13 @@ fn main() {
                 Event::MouseMotion {mousestate, x, y, ..} => { //this is for holding down button
                     if mousestate.left(){
                         let gpos = get_mouse_gpos(x, y, col_length, row_length);
-                        if current_tool == String::from("f"){
+                        if &current_tool == "f"{
                             window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                         }
-                        else if current_tool == String::from("r"){
+                        else if &current_tool == "r"{
                             rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
                         }
-                        else if current_tool == String::from("l"){
+                        else if &current_tool == "l"{
                             line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                         }
                         if prev_gpos != gpos{
@@ -266,21 +266,21 @@ fn main() {
                 },
                 Event::TextInput {text, ..} => {
                     if keycombo.len() > 0{
-                        if keycombo == String::from("i"){
+                        if &keycombo == "i"{
                             let text_vec: Vec<char> = text.chars().collect();
                             current_key = text_vec[0];
                             println!("{:?} {}", text, current_key);
                         }
-                        else if keycombo == String::from("c"){
+                        else if &keycombo == "c"{
                             current_tool = text.to_lowercase();
                         }
                         keycombo = String::from("");
                     }
                     else {
-                        if text.to_lowercase() == String::from("i"){
+                        if &(text.to_lowercase()) == "i"{
                             keycombo = String::from("i");
                         }
-                        else if text.to_lowercase() == String::from("c"){
+                        else if &(text.to_lowercase()) == "c"{
                             keycombo = String::from("c");
                         }
                     }
