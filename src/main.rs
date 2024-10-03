@@ -57,6 +57,17 @@ fn write_buffer(window_array: &mut Vec<Vec<char>>, preview_buffer: &mut Vec<[i32
     preview_buffer.clear();
 }
 
+fn copy_to_clipboard(window_array: &Vec<Vec<char>>, clipboard: &sdl2::clipboard::ClipboardUtil){
+    let mut array_string = String::new();
+    for x in window_array{
+        for grid_char in x{
+            array_string.push(*grid_char);
+        }
+        array_string.push('\n');
+    }
+    clipboard.set_clipboard_text(&array_string);
+}
+
 fn get_mouse_gpos(cpos: i32, rpos: i32, clen: i32, rlen: i32) -> [i32; 2]{
     return [rpos / rlen, cpos / clen]; //converts window dimensions to canvas dimensions
 }
@@ -197,6 +208,7 @@ fn main() {
 
     let ttf_context = sdl2::ttf::init().unwrap(); //Maybe add a error message
     let font = ttf_context.load_font("./NotoSansMono-Regular.ttf", 16).unwrap();
+    let clipboard = video_subsystem.clipboard();
         
     video_subsystem.text_input().start();
 
@@ -282,6 +294,9 @@ fn main() {
                         }
                         else if &(text.to_lowercase()) == "c"{
                             keycombo = String::from("c");
+                        }
+                        else if &(text.to_lowercase()) == "b"{
+                            copy_to_clipboard(&window_array, &clipboard);
                         }
                     }
                 },   
