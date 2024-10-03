@@ -187,7 +187,7 @@ fn main() {
     for _ in 0..num_of_rows{
         let mut a_row = Vec::new(); 
         for _ in 0..num_of_cols{
-            a_row.push(' ');
+            a_row.push('p');
 
         }
         window_array.push(a_row);
@@ -211,6 +211,11 @@ fn main() {
     let clipboard = video_subsystem.clipboard();
         
     video_subsystem.text_input().start();
+
+    /////////
+    let mut times = Vec::new();
+    ////
+
 
     let mut event_queue = sdl_context.event_pump().expect("failed to init event queue");
     let mut running = true;
@@ -305,10 +310,21 @@ fn main() {
             }
         }
         if render_change{ //render if change
+            let pre = std::time::SystemTime::now();
             render(&mut canvas, &font, &window_array, &preview_buffer, col_length, row_length, current_key);
             render_change = false;
+            let post = std::time::SystemTime::now();
+            times.push(post.duration_since(pre).unwrap().as_secs_f64());
         }
     }
+
+    println!("Average render from {} renders", times.len());
+    let mut sum: f64 = 0.0;
+    for x in &times{
+        sum += x;
+    }
+
+    println!("{}", sum / times.len() as f64);
 }
 
 
