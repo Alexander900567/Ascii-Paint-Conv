@@ -12,32 +12,29 @@ fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,  //main render
 
     canvas.set_draw_color(Color::RGB(0, 0, 0)); //set canvas to black
     canvas.clear(); //clears frame allows new one
-    let mut rpos = 0; //0,0 is top left
-    let mut cpos = 0;
+    
+    let mut array_string = String::new();
     for x in window_array{
         for grid_char in x{
-            if *grid_char != ' '{ //character render
-                let render_string = String::from(*grid_char); //character of choice used here
-                let font_render = font.render(&render_string); //create a render of the given string
-                let font_surface = font_render.solid(Color::RGB(255, 255, 255)).unwrap(); //create a surface out of that render
-                let canvas_texture = canvas.texture_creator(); //generate a blank canvas from the canvas 
-                let texture = canvas_texture.create_texture_from_surface(font_surface).unwrap(); //copy the font surface onto that texture
-                let _ = canvas.copy(
-                    &texture,
-                    None, //part of texture we want... all of it 
-                    sdl2::rect::Rect::new(cpos, rpos, clen as u32, rlen as u32), //first two is where, second is how big
-                ).expect("failed copying texture to canvas"); //display that texture to the canvas
-            }
-            cpos += clen;
+            array_string.push(*grid_char);
         }
-        rpos += rlen;
-        cpos = 0;
+        array_string.push('\n');
     }
+
+    let font_render = font.render(&array_string); //create a render of the given string
+    let font_surface = font_render.blended_wrapped(Color::RGB(255, 255, 255), 1200).unwrap(); //create a surface out of that render
+    let canvas_texture = canvas.texture_creator(); //generate a blank canvas from the canvas 
+    let texture = canvas_texture.create_texture_from_surface(font_surface).unwrap(); //copy the font surface onto that texture
+    let _ = canvas.copy(
+        &texture,
+        None, //part of texture we want... all of it 
+        sdl2::rect::Rect::new(0, 0, 1200, 800), //first two is where, second is how big
+    ).expect("failed copying texture to canvas"); //display that texture to the canvas
 
     for buffer_item in preview_buffer{ 
         let render_string = String::from(current_key); //character of choice used here
         let font_render = font.render(&render_string); //create a render of the given string
-        let font_surface = font_render.solid(Color::RGB(255, 255, 255)).unwrap(); //create a surface out of that render
+        let font_surface = font_render.blended(Color::RGB(255, 255, 255)).unwrap(); //create a surface out of that render
         let canvas_texture = canvas.texture_creator(); //generate a blank canvas from the canvas 
         let texture = canvas_texture.create_texture_from_surface(font_surface).unwrap(); //copy the font surface onto that texture
         let _ = canvas.copy(
@@ -177,7 +174,7 @@ fn main() {
     
     let window_width: u32 = 1200;
     let window_height: u32 = 800;
-    let num_of_cols: u32 = 60; //60
+    let num_of_cols: u32 = 119; //60
     let num_of_rows: u32 = 40; //40
     let col_length: i32 = (window_width / num_of_cols) as i32;
     let row_length: i32 = (window_height / num_of_rows) as i32;
@@ -187,9 +184,10 @@ fn main() {
     for _ in 0..num_of_rows{
         let mut a_row = Vec::new(); 
         for _ in 0..num_of_cols{
-            a_row.push(' ');
-
+            a_row.push('*');
         }
+        a_row.pop();
+        a_row.push('n');
         window_array.push(a_row);
     }
 
