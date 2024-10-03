@@ -272,6 +272,7 @@ fn main() {
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
                             write_buffer(&mut window_array, &mut preview_buffer, current_key);
+                            render_change = true;
                         },
                         _ => {}
                     }
