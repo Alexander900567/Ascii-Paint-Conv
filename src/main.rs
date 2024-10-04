@@ -58,8 +58,18 @@ fn copy_to_clipboard(window_array: &Vec<Vec<char>>, clipboard: &sdl2::clipboard:
     let _ = clipboard.set_clipboard_text(&array_string).expect("Failed to copy to clipboard");
 }
 
-fn get_mouse_gpos(cpos: i32, rpos: i32, clen: i32, rlen: i32) -> [i32; 2]{
-    return [rpos / rlen, cpos / clen]; //converts window dimensions to canvas dimensions
+fn get_mouse_gpos(cpos: i32, rpos: i32, clen: i32, rlen: i32, num_of_cols: u32, num_of_rows: u32) -> [i32; 2]{
+    let mut rgpos: i32 = rpos / rlen;
+    let mut cgpos: i32 = cpos / clen;
+    let rnumi = num_of_rows as i32;
+    let cnumi = num_of_cols as i32;
+
+    if rgpos < 0 {rgpos = 0;}
+    else if rgpos >= rnumi {rgpos = rnumi - 1;}
+    if cgpos < 0 {cgpos = 0;}
+    else if cgpos >= cnumi {cgpos = cnumi - 1;}
+
+    return [rgpos, cgpos]; //converts window dimensions to canvas dimensions
 }
 
 fn line_tool(preview_buffer: &mut Vec<[i32; 2]>,
@@ -236,7 +246,7 @@ fn main() {
                 Event::MouseButtonDown {mouse_btn, x, y, ..} => {
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
-                            let gpos = get_mouse_gpos(x, y, col_length, row_length);
+                            let gpos = get_mouse_gpos(x, y, col_length, row_length, num_of_cols, num_of_rows);
                             if &current_tool == "f"{
                                 window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                             }
@@ -256,7 +266,7 @@ fn main() {
                 },
                 Event::MouseMotion {mousestate, x, y, ..} => { //this is for holding down button
                     if mousestate.left(){
-                        let gpos = get_mouse_gpos(x, y, col_length, row_length);
+                        let gpos = get_mouse_gpos(x, y, col_length, row_length, num_of_cols, num_of_rows);
                         if &current_tool == "f"{
                             window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                         }
