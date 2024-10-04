@@ -161,36 +161,52 @@ fn rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 
               false);
 
 } //change after this is done running
+fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
+    current_mouse_pos: &[i32; 2],
+    start_mouse_pos: &[i32; 2],
+    clear_buffer: bool) { //this is faster when ellipse is circle
+    
+        if clear_buffer{
+            preview_buffer.clear();
+        }
+// Uses the [Midpoint Ellipse Drawing Algorithm](https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/).
+// (Modified from Bresenham's algorithm)
+    let beginx: i32 = start_mouse_pos[0];
+    let finx: i32 = current_mouse_pos[0];
+    let beginy: i32 = start_mouse_pos[1];
+    let finy: i32 = current_mouse_pos[1];
 
-fn ellipse_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2])
-{   //ellipse formula is (x-h)^2/a^2 + (y-k)^2/b^2 = 1
-    //center at (h,k)
-    //a is distance from center to vertecies (furthest point)
-    //b is distance from center to covertecies (side points)
-    let beginx = start_mouse_pos[0];
-    let beginy = start_mouse_pos[1];
-    let finx = current_mouse_pos[0];
-    let finy = current_mouse_pos[1];
+    let r0:f32 = (beginx as f32 - finx as f32) * 0.5; //radius as float
+    let r:i32 = r0.floor() as i32; //radius as int
+    let xproto:f32 = (beginx as f32 + finx as f32) * 0.5; //center x value
+    let x0:i32 = xproto.floor() as i32;
+    let mut x:i32 = 0i32;
+    let yproto:f32 = (beginy as f32 + finy as f32) * 0.5; //center y value
+    let y0:i32 = yproto.floor() as i32;
+    let mut y:i32 = r;
+    let mut p:i32 = 1 - r;
 
-    let h:f32 = (beginx + finx) / 2; //h = center x value
-    let k:f32 = (beginy + finy) / 2; //k = center y value
+    while x <= y {
+        preview_buffer.push([(x0 + x), (y0 + y)]);
+        preview_buffer.push([(x0 + y), (y0 + x)]);
+        preview_buffer.push([(x0 - y), (y0 + x)]);
+        preview_buffer.push([(x0 - x), (y0 + y)]);
+        preview_buffer.push([(x0 - x), (y0 - y)]);
+        preview_buffer.push([(x0 - y), (y0 - x)]);
+        preview_buffer.push([(x0 + y), (y0 - x)]);
+        preview_buffer.push([(x0 + x), (y0 - y)]);
 
-    let a:f32 =  match a_assign {
-        (beginx - h).abs() >= (beginy - k).abs() => (beginx - h).abs(), //if x is major axis or EQUAL, make it a
-        (beginx - h).abs() < (beginy - k).abs() => (beginx - h).abs() //if y is major axis, make it a
-    };
-    let b:f32 = match b_assign {
-        (beginx - h).abs() <= (beginy - k).abs() => (beginx - h).abs(), //if x is minor axis or EQUAL, make it b
-        (beginx - h).abs() > (beginy - k).abs() => (beginx - h).abs() //if y is minor axis, make it b
-    };
-    let mut draw_x: f32 = 0; //THE REST OF THESE VARIABLES NEED TO BE ASSIGNED!
-    let mut draw_y: f32 = 0;
-    let mut p1: f32 = 0;
-    let mut p2: f32 = 0;
-
-
-    //implement midpoint circle drawing alg
+        x += 1;
+        if p < 0 {
+            p += 2 * x + 1
+        }
+        else {
+            y -= 1;
+            p += 2 * (x - y) + 1;
+        }
+    }    
 }
+
 
 fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_col: u32) -> [i32;2]{
     let text_vec: Vec<char> = input.chars().collect();
@@ -278,6 +294,10 @@ fn main() {
                                 mstart_pos = gpos;
                                 line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                             }
+                            else if &current_tool == "o"{
+                                mstart_pos = gpos;
+                                circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                            }
                             prev_gpos = gpos;
                         },
                         _ => {}, //include left-click erase, eventually tool list in match outside
@@ -295,6 +315,9 @@ fn main() {
                         }
                         else if &current_tool == "l"{
                             line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                        }
+                        else if &current_tool == "o"{
+                            circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                         }
                         if prev_gpos != gpos{
                             render_change = true;
