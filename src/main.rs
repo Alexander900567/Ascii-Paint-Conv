@@ -7,14 +7,19 @@ fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,  //main render
           font: &sdl2::ttf::Font, //our chosen font
           window_array: &Vec<Vec<char>>, //3d array for our window
           preview_buffer: &Vec<[i32;2]>,
-          clen: i32, rlen: i32,
           current_key: char){ //our dimenions for the canvas
+
+    let mut render_array = window_array.clone();
+    
+    for buffer_item in preview_buffer{ 
+        render_array[buffer_item[0] as usize][buffer_item[1] as usize] = current_key;
+    }
 
     canvas.set_draw_color(Color::RGB(0, 0, 0)); //set canvas to black
     canvas.clear(); //clears frame allows new one
     
     let mut array_string = String::new();
-    for x in window_array{
+    for x in &render_array{
         for grid_char in x{
             array_string.push(*grid_char);
         }
@@ -22,7 +27,7 @@ fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,  //main render
     }
 
     let font_render = font.render(&array_string); //create a render of the given string
-    let font_surface = font_render.blended_wrapped(Color::RGB(255, 255, 255), 1200).unwrap(); //create a surface out of that render
+    let font_surface = font_render.blended_wrapped(Color::RGB(255, 255, 255), 0).unwrap(); //create a surface out of that render
     let canvas_texture = canvas.texture_creator(); //generate a blank canvas from the canvas 
     let texture = canvas_texture.create_texture_from_surface(font_surface).unwrap(); //copy the font surface onto that texture
     let _ = canvas.copy(
@@ -31,18 +36,6 @@ fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,  //main render
         sdl2::rect::Rect::new(0, 0, 1200, 800), //first two is where, second is how big
     ).expect("failed copying texture to canvas"); //display that texture to the canvas
 
-    for buffer_item in preview_buffer{ 
-        let render_string = String::from(current_key); //character of choice used here
-        let font_render = font.render(&render_string); //create a render of the given string
-        let font_surface = font_render.blended(Color::RGB(255, 255, 255)).unwrap(); //create a surface out of that render
-        let canvas_texture = canvas.texture_creator(); //generate a blank canvas from the canvas 
-        let texture = canvas_texture.create_texture_from_surface(font_surface).unwrap(); //copy the font surface onto that texture
-        let _ = canvas.copy(
-            &texture,
-            None, //part of texture we want... all of it 
-            sdl2::rect::Rect::new(buffer_item[1]*clen, buffer_item[0]*rlen, clen as u32, rlen as u32), //first two is where, second is how big
-        ).expect("failed copying texture to canvas"); //display that texture to the canvas 
-    }
 
     canvas.present(); //actually commit changes to screen!
 }
@@ -62,7 +55,7 @@ fn copy_to_clipboard(window_array: &Vec<Vec<char>>, clipboard: &sdl2::clipboard:
         }
         array_string.push('\n');
     }
-    clipboard.set_clipboard_text(&array_string);
+    let _ = clipboard.set_clipboard_text(&array_string).expect("Failed to copy to clipboard");
 }
 
 fn get_mouse_gpos(cpos: i32, rpos: i32, clen: i32, rlen: i32) -> [i32; 2]{
@@ -174,7 +167,7 @@ fn main() {
     
     let window_width: u32 = 1200;
     let window_height: u32 = 800;
-    let num_of_cols: u32 = 119; //60
+    let num_of_cols: u32 = 60; //60
     let num_of_rows: u32 = 40; //40
     let col_length: i32 = (window_width / num_of_cols) as i32;
     let row_length: i32 = (window_height / num_of_rows) as i32;
@@ -184,10 +177,8 @@ fn main() {
     for _ in 0..num_of_rows{
         let mut a_row = Vec::new(); 
         for _ in 0..num_of_cols{
-            a_row.push('p');
+            a_row.push(' ');
         }
-        a_row.pop();
-        a_row.push('n');
         window_array.push(a_row);
     }
 
@@ -285,7 +276,6 @@ fn main() {
                         if &keycombo == "i"{
                             let text_vec: Vec<char> = text.chars().collect();
                             current_key = text_vec[0];
-                            println!("{:?} {}", text, current_key);
                         }
                         else if &keycombo == "c"{
                             current_tool = text.to_lowercase();
@@ -309,7 +299,7 @@ fn main() {
         }
         if render_change{ //render if change
             let pre = std::time::SystemTime::now();
-            render(&mut canvas, &font, &window_array, &preview_buffer, col_length, row_length, current_key);
+            render(&mut canvas, &font, &window_array, &preview_buffer, current_key);
             render_change = false;
             let post = std::time::SystemTime::now();
             times.push(post.duration_since(pre).unwrap().as_secs_f64());
