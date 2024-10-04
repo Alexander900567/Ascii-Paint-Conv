@@ -309,6 +309,16 @@ fn main() {
                         }
                     }
                 },   
+                Event::KeyUp {keycode, ..} =>{
+                    match keycode {
+                        Some(sdl2::keyboard::Keycode::ESCAPE) =>{
+                            if &current_tool == "t"{
+                                current_tool = String::from("f");
+                            }
+                        }
+                        _ => {}
+                    }
+                }
                 _ => {},
             }
         }
