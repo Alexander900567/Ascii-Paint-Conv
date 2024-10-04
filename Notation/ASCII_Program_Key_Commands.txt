@@ -1,0 +1,10 @@
+Cheat Sheet:
+
+Choose Letter: i + [Shift Optional] + Letter/Key
+Copy to Clipboard: cb
+
+Regular Mode: cf
+Line Tool: cl
+Rectangle Tool: cr
+Text Mode: ct
+
