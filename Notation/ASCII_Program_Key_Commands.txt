@@ -1,10 +1,12 @@
 Cheat Sheet:
 
 Choose Letter: i + [Shift Optional] + Letter/Key
-Copy to Clipboard: cb
+Copy to Clipboard: b
 
 Regular Mode: cf
 Line Tool: cl
 Rectangle Tool: cr
-Text Mode: ct
+Circle Tool: co
+Text Mode: ct (Exit with Escape)
+
 
