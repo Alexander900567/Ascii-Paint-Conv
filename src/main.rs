@@ -162,6 +162,16 @@ fn rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 
 
 } //change after this is done running
 
+fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_col: u32) -> [i32;2]{
+    let text_vec: Vec<char> = input.chars().collect();
+    if prev_gpos[1] >= (num_of_col as i32){
+        window_array[prev_gpos[0] as usize][(num_of_col - 1) as usize] = text_vec[0];
+    }
+    else{
+        window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] = text_vec[0];
+    }
+    return [prev_gpos[0], prev_gpos[1] + 1];
+}
 
 fn main() {
     
@@ -272,7 +282,12 @@ fn main() {
                     }
                 },
                 Event::TextInput {text, ..} => {
-                    if keycombo.len() > 0{
+                    println!("text: {}", text);
+                    if &current_tool == "t"{
+                        prev_gpos = text_tool(&mut window_array, &prev_gpos, &text, num_of_cols);
+                        render_change = true;
+                    }
+                    else if keycombo.len() > 0{
                         if &keycombo == "i"{
                             let text_vec: Vec<char> = text.chars().collect();
                             current_key = text_vec[0];
