@@ -326,8 +326,13 @@ fn main() {
                                 current_tool = String::from("f");
                             }
                             Some(sdl2::keyboard::Keycode::BACKSPACE) => {
-                                window_array[prev_gpos[0] as usize][(std::cmp::max(prev_gpos[1]-1, 0)) as usize] = ' ';
-                                prev_gpos = [prev_gpos[0], std::cmp::max(prev_gpos[1]-1, 0)];
+                                let mut end_offset = 0;
+                                if prev_gpos[1] == (num_of_cols as i32) - 1 &&
+                                window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] != ' '{
+                                    end_offset = 1;
+                                }
+                                window_array[prev_gpos[0] as usize][(std::cmp::max(prev_gpos[1]-1+end_offset, 0)) as usize] = ' ';
+                                prev_gpos = [prev_gpos[0], std::cmp::max(prev_gpos[1]-1+end_offset, 0)];
                                 render_change = true;
                             }
                             Some(sdl2::keyboard::Keycode::UP) => {
