@@ -58,18 +58,8 @@ fn copy_to_clipboard(window_array: &Vec<Vec<char>>, clipboard: &sdl2::clipboard:
     let _ = clipboard.set_clipboard_text(&array_string).expect("Failed to copy to clipboard");
 }
 
-fn get_mouse_gpos(cpos: i32, rpos: i32, clen: i32, rlen: i32, num_of_cols: u32, num_of_rows: u32) -> [i32; 2]{
-    let mut rgpos: i32 = rpos / rlen;
-    let mut cgpos: i32 = cpos / clen;
-    let rnumi = num_of_rows as i32;
-    let cnumi = num_of_cols as i32;
-
-    if rgpos < 0 {rgpos = 0;}
-    else if rgpos >= rnumi {rgpos = rnumi - 1;}
-    if cgpos < 0 {cgpos = 0;}
-    else if cgpos >= cnumi {cgpos = cnumi - 1;}
-
-    return [rgpos, cgpos]; //converts window dimensions to canvas dimensions
+fn get_mouse_gpos(cpos: i32, rpos: i32, clen: i32, rlen: i32) -> [i32; 2]{
+    return [rpos / rlen, cpos / clen]; //converts window dimensions to canvas dimensions
 }
 
 fn line_tool(preview_buffer: &mut Vec<[i32; 2]>,
@@ -186,25 +176,23 @@ fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
     let beginy: i32 = start_mouse_pos[1];
     let finy: i32 = current_mouse_pos[1];
 
-    let r0:f32 = (beginx as f32 - finx as f32) * 0.5; //radius as float
-    let r:i32 = r0.floor() as i32; //radius as int
-    let xproto:f32 = (beginx as f32 + finx as f32) * 0.5; //center x value
-    let x0:i32 = xproto.floor() as i32;
+    let x_component:i32 = (finx - beginx);
+    let y_component:i32 = (finy - beginy);
+    let r0:f32 = sqrtf32((x_component as f32 * x_component as f32) + (y_component as f32 + y_component as f32)); //radius as float using pythag
+    let r:i32 = r0.floor() as i32; //radius converted to int to work with buffer vector
     let mut x:i32 = 0i32;
-    let yproto:f32 = (beginy as f32 + finy as f32) * 0.5; //center y value
-    let y0:i32 = yproto.floor() as i32;
     let mut y:i32 = r;
     let mut p:i32 = 1 - r;
 
     while x <= y {
-        preview_buffer.push([(x0 + x), (y0 + y)]);
-        preview_buffer.push([(x0 + y), (y0 + x)]);
-        preview_buffer.push([(x0 - y), (y0 + x)]);
-        preview_buffer.push([(x0 - x), (y0 + y)]);
-        preview_buffer.push([(x0 - x), (y0 - y)]);
-        preview_buffer.push([(x0 - y), (y0 - x)]);
-        preview_buffer.push([(x0 + y), (y0 - x)]);
-        preview_buffer.push([(x0 + x), (y0 - y)]);
+        preview_buffer.push([(beginx + x), (beginy + y)]);
+        preview_buffer.push([(beginx + y), (beginy + x)]);
+        preview_buffer.push([(beginx - y), (beginy + x)]);
+        preview_buffer.push([(beginx - x), (beginy + y)]);
+        preview_buffer.push([(beginx - x), (beginy - y)]);
+        preview_buffer.push([(beginx - y), (beginy - x)]);
+        preview_buffer.push([(beginx + y), (beginy - x)]);
+        preview_buffer.push([(beginx + x), (beginy - y)]);
 
         x += 1;
         if p < 0 {
@@ -218,15 +206,15 @@ fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
 }
 
 
-fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_cols: u32) -> [i32;2]{
+fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_col: u32) -> [i32;2]{
     let text_vec: Vec<char> = input.chars().collect();
-    if prev_gpos[1] >= (num_of_cols as i32){
-        window_array[prev_gpos[0] as usize][(num_of_cols - 1) as usize] = text_vec[0];
+    if prev_gpos[1] >= (num_of_col as i32){
+        window_array[prev_gpos[0] as usize][(num_of_col - 1) as usize] = text_vec[0];
     }
     else{
         window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] = text_vec[0];
     }
-    return [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (num_of_cols as i32)-1)];
+    return [prev_gpos[0], prev_gpos[1] + 1];
 }
 
 fn main() {
@@ -292,7 +280,7 @@ fn main() {
                 Event::MouseButtonDown {mouse_btn, x, y, ..} => {
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
-                            let gpos = get_mouse_gpos(x, y, col_length, row_length, num_of_cols, num_of_rows);
+                            let gpos = get_mouse_gpos(x, y, col_length, row_length);
                             if &current_tool == "f"{
                                 window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                             }
@@ -316,7 +304,7 @@ fn main() {
                 },
                 Event::MouseMotion {mousestate, x, y, ..} => { //this is for holding down button
                     if mousestate.left(){
-                        let gpos = get_mouse_gpos(x, y, col_length, row_length, num_of_cols, num_of_rows);
+                        let gpos = get_mouse_gpos(x, y, col_length, row_length);
                         if &current_tool == "f"{
                             window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                         }
@@ -373,35 +361,13 @@ fn main() {
                     }
                 },   
                 Event::KeyUp {keycode, ..} =>{
-                    if &current_tool == "t"{
-                        match keycode {
-                            Some(sdl2::keyboard::Keycode::ESCAPE) =>{
+                    match keycode {
+                        Some(sdl2::keyboard::Keycode::ESCAPE) =>{
+                            if &current_tool == "t"{
                                 current_tool = String::from("f");
                             }
-                            Some(sdl2::keyboard::Keycode::BACKSPACE) => {
-                                let mut end_offset = 0;
-                                if prev_gpos[1] == (num_of_cols as i32) - 1 &&
-                                window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] != ' '{
-                                    end_offset = 1;
-                                }
-                                window_array[prev_gpos[0] as usize][(std::cmp::max(prev_gpos[1]-1+end_offset, 0)) as usize] = ' ';
-                                prev_gpos = [prev_gpos[0], std::cmp::max(prev_gpos[1]-1+end_offset, 0)];
-                                render_change = true;
-                            }
-                            Some(sdl2::keyboard::Keycode::UP) => {
-                                prev_gpos = [std::cmp::max(prev_gpos[0]-1, 0), prev_gpos[1]];
-                            }
-                            Some(sdl2::keyboard::Keycode::DOWN) => {
-                                prev_gpos = [std::cmp::min(prev_gpos[0]+1, (num_of_rows as i32)-1), prev_gpos[1]];
-                            }
-                            Some(sdl2::keyboard::Keycode::LEFT) => {
-                                prev_gpos = [prev_gpos[0], std::cmp::max(prev_gpos[1]-1, 0)];
-                            }
-                            Some(sdl2::keyboard::Keycode::RIGHT) => {
-                                prev_gpos = [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (num_of_cols as i32)-1)];
-                            }
-                            _ => {}
-                        }   
+                        }
+                        _ => {}
                     }
                 }
                 _ => {},
