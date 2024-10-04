@@ -162,6 +162,36 @@ fn rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 
 
 } //change after this is done running
 
+fn ellipse_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2])
+{   //ellipse formula is (x-h)^2/a^2 + (y-k)^2/b^2 = 1
+    //center at (h,k)
+    //a is distance from center to vertecies (furthest point)
+    //b is distance from center to covertecies (side points)
+    let beginx = start_mouse_pos[0];
+    let beginy = start_mouse_pos[1];
+    let finx = current_mouse_pos[0];
+    let finy = current_mouse_pos[1];
+
+    let h:f32 = (beginx + finx) / 2; //h = center x value
+    let k:f32 = (beginy + finy) / 2; //k = center y value
+
+    let a:f32 =  match a_assign {
+        (beginx - h).abs() >= (beginy - k).abs() => (beginx - h).abs(), //if x is major axis or EQUAL, make it a
+        (beginx - h).abs() < (beginy - k).abs() => (beginx - h).abs() //if y is major axis, make it a
+    };
+    let b:f32 = match b_assign {
+        (beginx - h).abs() <= (beginy - k).abs() => (beginx - h).abs(), //if x is minor axis or EQUAL, make it b
+        (beginx - h).abs() > (beginy - k).abs() => (beginx - h).abs() //if y is minor axis, make it b
+    };
+    let mut draw_x: f32 = 0; //THE REST OF THESE VARIABLES NEED TO BE ASSIGNED!
+    let mut draw_y: f32 = 0;
+    let mut p1: f32 = 0;
+    let mut p2: f32 = 0;
+
+
+    //implement midpoint circle drawing alg
+}
+
 fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_col: u32) -> [i32;2]{
     let text_vec: Vec<char> = input.chars().collect();
     if prev_gpos[1] >= (num_of_col as i32){
