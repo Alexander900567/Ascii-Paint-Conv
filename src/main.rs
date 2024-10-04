@@ -162,15 +162,15 @@ fn rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 
 
 } //change after this is done running
 
-fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_col: u32) -> [i32;2]{
+fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_cols: u32) -> [i32;2]{
     let text_vec: Vec<char> = input.chars().collect();
-    if prev_gpos[1] >= (num_of_col as i32){
-        window_array[prev_gpos[0] as usize][(num_of_col - 1) as usize] = text_vec[0];
+    if prev_gpos[1] >= (num_of_cols as i32){
+        window_array[prev_gpos[0] as usize][(num_of_cols - 1) as usize] = text_vec[0];
     }
     else{
         window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] = text_vec[0];
     }
-    return [prev_gpos[0], prev_gpos[1] + 1];
+    return [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (num_of_cols as i32)-1)];
 }
 
 fn main() {
@@ -310,13 +310,30 @@ fn main() {
                     }
                 },   
                 Event::KeyUp {keycode, ..} =>{
-                    match keycode {
-                        Some(sdl2::keyboard::Keycode::ESCAPE) =>{
-                            if &current_tool == "t"{
+                    if &current_tool == "t"{
+                        match keycode {
+                            Some(sdl2::keyboard::Keycode::ESCAPE) =>{
                                 current_tool = String::from("f");
                             }
-                        }
-                        _ => {}
+                            Some(sdl2::keyboard::Keycode::BACKSPACE) => {
+                                window_array[prev_gpos[0] as usize][(std::cmp::max(prev_gpos[1]-1, 0)) as usize] = ' ';
+                                prev_gpos = [prev_gpos[0], std::cmp::max(prev_gpos[1]-1, 0)];
+                                render_change = true;
+                            }
+                            Some(sdl2::keyboard::Keycode::UP) => {
+                                prev_gpos = [std::cmp::max(prev_gpos[0]-1, 0), prev_gpos[1]];
+                            }
+                            Some(sdl2::keyboard::Keycode::DOWN) => {
+                                prev_gpos = [std::cmp::min(prev_gpos[0]+1, (num_of_rows as i32)-1), prev_gpos[1]];
+                            }
+                            Some(sdl2::keyboard::Keycode::LEFT) => {
+                                prev_gpos = [prev_gpos[0], std::cmp::max(prev_gpos[1]-1, 0)];
+                            }
+                            Some(sdl2::keyboard::Keycode::RIGHT) => {
+                                prev_gpos = [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (num_of_cols as i32)-1)];
+                            }
+                            _ => {}
+                        }   
                     }
                 }
                 _ => {},
