@@ -46,6 +46,9 @@ fn write_buffer(window_array: &mut Vec<Vec<char>>, preview_buffer: &mut Vec<[i32
     }
     preview_buffer.clear();
 }
+//consider:
+//adding backspace compatibility
+//adding delete compatibility (clears buffer?)
 
 fn copy_to_clipboard(window_array: &Vec<Vec<char>>, clipboard: &sdl2::clipboard::ClipboardUtil){
     let mut array_string = String::new();
@@ -176,9 +179,9 @@ fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
     let beginy: i32 = start_mouse_pos[1];
     let finy: i32 = current_mouse_pos[1];
 
-    let x_component:i32 = (finx - beginx);
-    let y_component:i32 = (finy - beginy);
-    let r0:f32 = sqrtf32((x_component as f32 * x_component as f32) + (y_component as f32 + y_component as f32)); //radius as float using pythag
+    let x_component:i32 = finx - beginx;
+    let y_component:i32 = finy - beginy;
+    let r0:f32 = f32::sqrt((x_component as f32 * x_component as f32) + (y_component as f32 * y_component as f32)); //radius as float using pythag
     let r:i32 = r0.floor() as i32; //radius converted to int to work with buffer vector
     let mut x:i32 = 0i32;
     let mut y:i32 = r;
