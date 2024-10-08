@@ -176,9 +176,6 @@ fn filled_rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: 
         bigx = beginx;
     }
 
-    println!("smallx: {} ", smallx);
-    println!("bigx: {} ", bigx);
-    
     if beginy <= finy {
     for _ in beginy..=finy {
         line_tool(preview_buffer,
