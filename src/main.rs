@@ -106,7 +106,6 @@ fn line_tool(preview_buffer: &mut Vec<[i32; 2]>,
         x_is_long = false;
     }
 
-    
     let per_chunk = long_slope / short_slope;
     let mut extra = (long_slope % short_slope) + 1;
 
@@ -134,36 +133,60 @@ fn line_tool(preview_buffer: &mut Vec<[i32; 2]>,
     }
 } //commit changes after run
 
+fn rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]){
 
-fn rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]){ //need to implement preview buffer
+    preview_buffer.clear();
+    //4 lines
+    line_tool(preview_buffer,
+              &[start_mouse_pos[0], start_mouse_pos[1]], //s,s to c,s
+              &[current_mouse_pos[0], start_mouse_pos[1]], //top left to bottom left
+              false);
+    line_tool(preview_buffer,
+              &[start_mouse_pos[0], start_mouse_pos[1]], //s,s to s,c
+              &[start_mouse_pos[0], current_mouse_pos[1]], //top left to top right
+              false);
+    line_tool(preview_buffer,
+              &[start_mouse_pos[0], current_mouse_pos[1]], //s,c to c,c
+              &[current_mouse_pos[0], current_mouse_pos[1]], //top right to bottom right
+              false);
+    line_tool(preview_buffer,
+              &[current_mouse_pos[0], start_mouse_pos[1]], //c,s to c,c
+              &[current_mouse_pos[0], current_mouse_pos[1]], //bottom left to bottom right
+              false);
+}
+
+fn filled_rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) {
 
     preview_buffer.clear();
 
-    //this is usually top assuming top left to bottom right
-    line_tool(preview_buffer,
-              &[start_mouse_pos[0], start_mouse_pos[1]],
-              &[current_mouse_pos[0], start_mouse_pos[1]],
-              false);
+    let beginx: i32 = start_mouse_pos[0];
+    let mut beginy: i32 = start_mouse_pos[1];
+    let finx: i32 = current_mouse_pos[0];
+    let finy: i32 = current_mouse_pos[1];
+    
+    let smallx:i32;
+    let bigx:i32;
 
-    //left
-    line_tool(preview_buffer,
-              &[start_mouse_pos[0], start_mouse_pos[1]],
-              &[start_mouse_pos[0], current_mouse_pos[1]],
-              false);
+    if beginx <= finx {
+        smallx = beginx;
+        bigx = finx;
+    }
+    else {
+        smallx = finx;
+        bigx = beginx;
+    }
+    
+    if beginy <= finy {
+    for _ in beginy..=finy {
+        line_tool(preview_buffer,
+        &[bigx, beginy],
+        &[smallx, beginy],
+        false);
+        beginy += 1;
+        }
+    }   
+}
 
-    //bottom
-    line_tool(preview_buffer,
-              &[start_mouse_pos[0], current_mouse_pos[1]],
-              &[current_mouse_pos[0], current_mouse_pos[1]],
-              false);
-
-    //right
-    line_tool(preview_buffer,
-              &[current_mouse_pos[0], start_mouse_pos[1]],
-              &[current_mouse_pos[0], current_mouse_pos[1]],
-              false);
-
-} //change after this is done running
 fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
     current_mouse_pos: &[i32; 2],
     start_mouse_pos: &[i32; 2],
@@ -181,8 +204,20 @@ fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
 
     let x_component:i32 = finx - beginx;
     let y_component:i32 = finy - beginy;
-    let r0:f32 = f32::sqrt((x_component as f32 * x_component as f32) + (y_component as f32 * y_component as f32)); //radius as float using pythag
-    let r:i32 = r0.floor() as i32; //radius converted to int to work with buffer vector
+    let r:i32;
+    let r0:f32 = f32::sqrt((x_component as f32 * x_component as f32) + (y_component as f32 * y_component as f32)); //REAL hypotenuse length
+    match(x_component, y_component) {
+        (x,y) if x != 0 && y != 0 => {
+        let o:i32 = y_component.abs(); //to keep scalar factor positive
+        let r0:f32 = r0/(2f32 * f32::sin(o as f32/r0));
+        r = r0.floor() as i32; //radius converted to int to work with buffer vector
+        }, 
+        (0,0) => {
+            r = r0.floor() as i32;
+        },
+        _ => r = 0
+    }
+
     let mut x:i32 = 0i32;
     let mut y:i32 = r;
     let mut p:i32 = 1 - r;
@@ -282,18 +317,22 @@ fn main() {
                 },
                 Event::MouseButtonDown {mouse_btn, x, y, ..} => {
                     match mouse_btn{
-                        sdl2::mouse::MouseButton::Left => {
+                        sdl2::mouse::MouseButton::Left => { //Keybinds
                             let gpos = get_mouse_gpos(x, y, col_length, row_length);
                             if &current_tool == "f"{
                                 window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
+                            }
+                            else if &current_tool == "l"{
+                                mstart_pos = gpos;
+                                line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                             }
                             else if &current_tool == "r"{
                                 mstart_pos = gpos;
                                 rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
                             }
-                            else if &current_tool == "l"{
+                            else if &current_tool == "s"{
                                 mstart_pos = gpos;
-                                line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                                filled_rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos);
                             }
                             else if &current_tool == "o"{
                                 mstart_pos = gpos;
@@ -311,11 +350,14 @@ fn main() {
                         if &current_tool == "f"{
                             window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                         }
+                        else if &current_tool == "l"{
+                            line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                        }
                         else if &current_tool == "r"{
                             rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
                         }
-                        else if &current_tool == "l"{
-                            line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                        else if &current_tool == "s"{
+                            filled_rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
                         }
                         else if &current_tool == "o"{
                             circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
