@@ -171,7 +171,7 @@ fn filled_rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: 
     preview_buffer.clear();
 
     let beginx: i32 = start_mouse_pos[0];
-    let mut beginy: i32 = start_mouse_pos[1];
+    let beginy: i32 = start_mouse_pos[1];
     let finx: i32 = current_mouse_pos[0];
     let finy: i32 = current_mouse_pos[1];
     
