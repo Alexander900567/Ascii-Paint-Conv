@@ -61,8 +61,19 @@ fn copy_to_clipboard(window_array: &Vec<Vec<char>>, clipboard: &sdl2::clipboard:
     let _ = clipboard.set_clipboard_text(&array_string).expect("Failed to copy to clipboard");
 }
 
-fn get_mouse_gpos(cpos: i32, rpos: i32, clen: i32, rlen: i32) -> [i32; 2]{
-    return [rpos / rlen, cpos / clen]; //converts window dimensions to canvas dimensions
+
+fn get_mouse_gpos(cpos: i32, rpos: i32, clen: i32, rlen: i32, num_of_cols: u32, num_of_rows: u32) -> [i32; 2]{
+    let mut rgpos: i32 = rpos / rlen;
+    let mut cgpos: i32 = cpos / clen;
+    let rnumi = num_of_rows as i32;
+    let cnumi = num_of_cols as i32;
+
+    if rgpos < 0 {rgpos = 0;}
+    else if rgpos >= rnumi {rgpos = rnumi - 1;}
+    if cgpos < 0 {cgpos = 0;}
+    else if cgpos >= cnumi {cgpos = cnumi - 1;}
+
+    return [rgpos, cgpos]; //converts window dimensions to canvas dimensions
 }
 
 fn line_tool(preview_buffer: &mut Vec<[i32; 2]>,
@@ -164,27 +175,24 @@ fn filled_rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: 
     let finx: i32 = current_mouse_pos[0];
     let finy: i32 = current_mouse_pos[1];
     
-    let smallx:i32;
-    let bigx:i32;
+    let leftx:i32;
+    let rightx:i32;
 
     if beginx <= finx {
-        smallx = beginx;
-        bigx = finx;
+        leftx = beginx;
+        rightx = finx + 1;
     }
     else {
-        smallx = finx;
-        bigx = beginx;
+        leftx = finx;
+        rightx = beginx + 1;
     }
 
-    if beginy <= finy {
-    for _ in beginy..=finy {
+    for x in leftx..rightx {
         line_tool(preview_buffer,
-        &[bigx, beginy],
-        &[smallx, beginy],
+        &[x, beginy],
+        &[x, finy],
         false);
-        beginy += 1;
-        }
-    }   
+    }
 }
 
 fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
@@ -244,15 +252,15 @@ fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
 }
 
 
-fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_col: u32) -> [i32;2]{
+fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_cols: u32) -> [i32;2]{
     let text_vec: Vec<char> = input.chars().collect();
-    if prev_gpos[1] >= (num_of_col as i32){
-        window_array[prev_gpos[0] as usize][(num_of_col - 1) as usize] = text_vec[0];
+    if prev_gpos[1] >= (num_of_cols as i32){
+        window_array[prev_gpos[0] as usize][(num_of_cols - 1) as usize] = text_vec[0];
     }
     else{
         window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] = text_vec[0];
     }
-    return [prev_gpos[0], prev_gpos[1] + 1];
+    return [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (num_of_cols as i32)-1)];
 }
 
 fn main() {
@@ -318,7 +326,7 @@ fn main() {
                 Event::MouseButtonDown {mouse_btn, x, y, ..} => {
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => { //Keybinds
-                            let gpos = get_mouse_gpos(x, y, col_length, row_length);
+                            let gpos = get_mouse_gpos(x, y, col_length, row_length, num_of_cols, num_of_rows);
                             if &current_tool == "f"{
                                 window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                             }
@@ -346,7 +354,7 @@ fn main() {
                 },
                 Event::MouseMotion {mousestate, x, y, ..} => { //this is for holding down button
                     if mousestate.left(){
-                        let gpos = get_mouse_gpos(x, y, col_length, row_length);
+                        let gpos = get_mouse_gpos(x, y, col_length, row_length, num_of_cols, num_of_rows);
                         if &current_tool == "f"{
                             window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                         }
@@ -406,15 +414,37 @@ fn main() {
                     }
                 },   
                 Event::KeyUp {keycode, ..} =>{
-                    match keycode {
-                        Some(sdl2::keyboard::Keycode::ESCAPE) =>{
-                            if &current_tool == "t"{
+                    if &current_tool == "t"{
+                        match keycode {
+                            Some(sdl2::keyboard::Keycode::ESCAPE) =>{
                                 current_tool = String::from("f");
                             }
-                        }
-                        _ => {}
+                            Some(sdl2::keyboard::Keycode::BACKSPACE) => {
+                                let mut end_offset = 0;
+                                if prev_gpos[1] == (num_of_cols as i32) - 1 &&
+                                window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] != ' '{
+                                    end_offset = 1;
+                                }
+                                window_array[prev_gpos[0] as usize][(std::cmp::max(prev_gpos[1]-1+end_offset, 0)) as usize] = ' ';
+                                prev_gpos = [prev_gpos[0], std::cmp::max(prev_gpos[1]-1+end_offset, 0)];
+                                render_change = true;
+                            }
+                            Some(sdl2::keyboard::Keycode::UP) => {
+                                prev_gpos = [std::cmp::max(prev_gpos[0]-1, 0), prev_gpos[1]];
+                            }
+                            Some(sdl2::keyboard::Keycode::DOWN) => {
+                                prev_gpos = [std::cmp::min(prev_gpos[0]+1, (num_of_rows as i32)-1), prev_gpos[1]];
+                            }
+                            Some(sdl2::keyboard::Keycode::LEFT) => {
+                                prev_gpos = [prev_gpos[0], std::cmp::max(prev_gpos[1]-1, 0)];
+                            }
+                            Some(sdl2::keyboard::Keycode::RIGHT) => {
+                                prev_gpos = [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (num_of_cols as i32)-1)];
+                            }
+                            _ => {}
+                        }   
                     }
-                }
+                },
                 _ => {},
             }
         }
