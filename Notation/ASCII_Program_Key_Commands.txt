@@ -8,6 +8,6 @@ Line Tool: cl
 Rectangle Tool: cr
 Filled Rectangle Tool: cs
 Circle Tool: co
-Text Mode: ct (Exit with Escape, Erase with Backspace, Move with Arrows)
+Text Mode: ct (Exit with Escape)
 
 
