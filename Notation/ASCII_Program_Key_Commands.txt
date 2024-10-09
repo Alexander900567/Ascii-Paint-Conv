@@ -6,7 +6,6 @@ Copy to Clipboard: b
 Regular Mode: cf
 Line Tool: cl
 Rectangle Tool: cr
-Filled Rectangle Tool: cs
 Circle Tool: co
 Text Mode: ct (Exit with Escape)
 
