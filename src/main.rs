@@ -205,7 +205,8 @@ fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
             preview_buffer.clear();
         }
 // Uses the [Midpoint Ellipse Drawing Algorithm](https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/).
-// (Modified from Bresenham's algorithm) <- These are the credits given by the Rust conics functions. This is just one of those modified (draw_hollow_circle) I believe
+// (Modified from Bresenham's algorithm) <- These are the credits given by the Rust imageproc conics functions.
+//This is just a modified draw_hollow_circle
     let beginx: i32 = start_mouse_pos[0];
     let finx: i32 = current_mouse_pos[0];
     let beginy: i32 = start_mouse_pos[1];
@@ -264,6 +265,78 @@ fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
     }    
 }
 
+fn filled_circle_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2], clear_buffer: bool) { //basically, just fill in line tools, trig if necessary
+    //same credits as above, just draw_filled_circle modified
+
+    if clear_buffer{
+        preview_buffer.clear();
+    }
+
+    let beginx: i32 = start_mouse_pos[0];
+    let finx: i32 = current_mouse_pos[0];
+    let beginy: i32 = start_mouse_pos[1];
+    let finy: i32 = current_mouse_pos[1];
+
+    let x_component:i32 = finx - beginx;
+    let y_component:i32 = finy - beginy;
+    let r:i32;
+    let diagonal_r:f32 = f32::sqrt((x_component as f32 * x_component as f32) + (y_component as f32 * y_component as f32));
+
+    match(x_component, y_component) {
+        (x,y) if x != 0 && y != 0 => { //non-cardinal case
+        let o:i32 = y_component.abs(); //to keep scalar factor positive (since we're about to use sin)
+        let angle_theta:f32 = f32::asin(o as f32/diagonal_r);
+        let h:f32 = (o as f32/diagonal_r as f32)/f32::sin(angle_theta);
+        let r0: f32 = diagonal_r/h;
+        r = r0.floor() as i32; //radius converted to int to work with buffer vector
+        }, 
+        (0, _) => { //y-axis cardinal case
+            let r0: f32 = diagonal_r;
+            r = r0.floor() as i32;
+        },
+        (_, 0) => { //x-axis cardinal case
+            let r0: f32 = diagonal_r;
+            r = r0.floor() as i32;
+        },
+        _ => r = 0 //catch all
+    }
+
+    let mut x = 0i32;
+    let mut y = r;
+    let mut p = 1 - r; //haven't assigned r, assign later
+
+    while x <= y {
+
+        line_tool(preview_buffer,
+        &[(beginx + x), (beginy + y)], 
+        &[(beginx - x), (beginy + y)],
+        false);
+
+        line_tool(preview_buffer,
+        &[(beginx + y), (beginy + x)], 
+        &[(beginx - y), (beginy + x)],
+        false);
+
+        line_tool(preview_buffer,
+        &[(beginx + x), (beginy - y)], 
+        &[(beginx - x), (beginy - y)],
+        false);
+
+        line_tool(preview_buffer,
+        &[(beginx + y), (beginy - x)], 
+        &[(beginx - y), (beginy - x)],
+        false);
+
+        x += 1;
+        if p < 0 {
+            p += 2 * x + 1;
+        }
+        else {
+            y -= 1;
+            p += 2 * (x - y) + 1;
+        }
+    }
+}
 
 fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_cols: u32) -> [i32;2] {
     let text_vec: Vec<char> = input.chars().collect();
@@ -359,6 +432,10 @@ fn main() {
                                 mstart_pos = gpos;
                                 circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                             }
+                            else if &current_tool == "q"{
+                                mstart_pos = gpos;
+                                filled_circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                            }
                             prev_gpos = gpos;
                         },
                         _ => {}, //eventually will be replaced with a tool list
@@ -382,6 +459,9 @@ fn main() {
                         }
                         else if &current_tool == "o"{
                             circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                        }
+                        else if &current_tool == "q"{
+                            filled_circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                         }
                         if prev_gpos != gpos{
                             render_change = true;
