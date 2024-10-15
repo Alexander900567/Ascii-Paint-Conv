@@ -1,4 +1,6 @@
 extern crate sdl2;
+extern crate image;
+mod image_conv;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
 use sdl2::pixels::Color; // Like call this with Color:: (you don't actually have to, its just a standard for clarity)
@@ -436,6 +438,10 @@ fn main() {
                                 mstart_pos = gpos;
                                 filled_circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                             }
+                            else if &current_tool == "p"{
+                                mstart_pos = gpos;
+                                rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
+                            }
                             prev_gpos = gpos;
                         },
                         _ => {}, //eventually will be replaced with a tool list
@@ -463,16 +469,26 @@ fn main() {
                         else if &current_tool == "q"{
                             filled_circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                         }
+                        else if &current_tool == "p"{
+                            rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
+                        }
                         if prev_gpos != gpos{
                             render_change = true;
                         }
                         prev_gpos = gpos;
                     }
                 },
-                Event::MouseButtonUp {mouse_btn, ..} => { //let go
+                Event::MouseButtonUp {mouse_btn, x, y, ..} => { //let go
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
-                            write_buffer(&mut window_array, &mut preview_buffer, current_key);
+                            if &current_tool == "p"{
+                                let gpos = get_mouse_gpos(x, y, col_length, row_length, num_of_cols, num_of_rows);
+                                image_conv::convert_image_put_in_window(&mut window_array, &gpos, &mstart_pos); 
+                                preview_buffer.clear();
+                            }
+                            else{
+                                write_buffer(&mut window_array, &mut preview_buffer, current_key);
+                            }
                             render_change = true;
                         },
                         _ => {}
