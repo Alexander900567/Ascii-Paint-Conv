@@ -7,7 +7,8 @@ Regular Mode: cf
 Line Tool: cl
 Rectangle Tool: cr
 Filled Rectangle Tool: cs
-Circle Tool: co
-Text Mode: ct (Exit with Escape, Erase with Backspace, Move with Arrows)
+Q1`3 Circle Tool: co
+Filled Circle Tool: cq
+Text Mode: ct (Exit with Escape)
 
 
