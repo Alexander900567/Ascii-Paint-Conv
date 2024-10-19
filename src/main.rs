@@ -207,7 +207,7 @@ fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
             preview_buffer.clear();
         }
 // Uses the [Midpoint Ellipse Drawing Algorithm](https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/).
-// (Modified from Bresenham's algorithm) <- These are the credits given by the Rust imageproc conics functions.
+// (Modified from Bresenham's algorithm) <- These are the credits given by the docs.rs imageproc conics functions.
 //This is just a modified draw_hollow_circle
     let beginx: i32 = start_mouse_pos[0];
     let finx: i32 = current_mouse_pos[0];
@@ -340,6 +340,106 @@ fn filled_circle_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[
     }
 }
 
+fn draw_ellipse<F>(preview_buffer: &mut Vec<[i32; 2]>, mut render_func: F, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2], clear_buffer: bool) //necessary for ellipse_tool and filled_ellipse_tool
+    //same credits (docs.rs) but draw_ellipse ofc
+    where
+    F: FnMut(&mut Vec<[i32; 2]>, i32, i32, i32, i32),
+    {
+    if clear_buffer{
+        preview_buffer.clear();
+    }
+
+    let beginx: i32 = start_mouse_pos[0]; //we do this a lot. maybe we should make it inherited lol
+    let finx: i32 = current_mouse_pos[0];
+    let beginy: i32 = start_mouse_pos[1];
+    let finy: i32 = current_mouse_pos[1];
+
+    let x_component:i32 = finx - beginx;
+    let y_component:i32 = finy - beginy;
+    let x_squared: f32 = (x_component * x_component) as f32;
+    let y_squared: f32 = (y_component * y_component) as f32;
+
+    let mut x: i32 = 0i32;
+    let mut y: i32 = y_component;
+    let mut px:f32 = 0.0;
+    let mut py:f32 = 2.0 * x_squared * y as f32;
+
+    render_func(preview_buffer, beginx, beginy, x, y);
+
+    //Top and bottom
+    let mut p:f32 = y_squared - (x_squared * y_component as f32) + (0.25f32 * x_squared);
+    while px < py {
+        x += 1;
+        px += 2.0 * y_squared;
+        if p < 0.0 {
+            p += y_squared + px;
+        }
+        else {
+            y -= 1;
+            py += -2.0 * x_squared;
+            p += y_squared + px - py;
+        }
+
+        render_func(preview_buffer, beginx, beginy, x, y);
+    }
+
+    //Left and right
+    p = (y_squared * (x as f32 + 0.5).powi(2)) + (x_squared * (y - 1).pow(2) as f32) - (x_squared * y_squared);
+    while y > 0 {
+        y -= 1;
+        py += -2.0 * x_squared;
+        if p > 0.0 {
+            p += x_squared - py;
+        }
+        else {
+            x += 1;
+            px += 2.0 * y_squared;
+            p += x_squared - py + px;
+        }
+
+        render_func(preview_buffer, beginx, beginy, x, y);
+    }
+
+}
+
+fn ellipse_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2], clear_buffer: bool) {
+    //docs.rs draw_hollow_ellipse
+    if clear_buffer{
+        preview_buffer.clear();
+    }
+
+    let beginx: i32 = start_mouse_pos[0];
+    let finx: i32 = current_mouse_pos[0];
+    let beginy: i32 = start_mouse_pos[1];
+    let finy: i32 = current_mouse_pos[1];
+
+    let x_component:i32 = finx - beginx;
+    let y_component:i32 = finy - beginy;
+    // Circle is faster, so do not waste time using this tool if it's a circle
+    if x_component == y_component {
+        circle_tool(preview_buffer,
+        &[beginx, beginy],
+        &[finx, finy],
+        false);
+        return;
+    }
+
+    let draw_quad_pixels = |preview_buffer: &mut Vec<[i32; 2]>, beginx: i32, beginy: i32, x: i32, y: i32| {
+        //mentioned in previous credits's source, but I figured I'd be specific https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/
+        //modified from render_func in source and drawEllipse in link
+        preview_buffer.push([(beginx + x), (beginy + y)]);
+        preview_buffer.push([(beginx - x), (beginy + y)]);
+        preview_buffer.push([(beginx + x), (beginy - y)]);
+        preview_buffer.push([(beginx - x), (beginy - y)]);
+    };
+
+    draw_ellipse(preview_buffer,
+        draw_quad_pixels,
+        &[beginx, beginy],
+        &[finx, finy],
+        false);
+}
+
 fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_cols: u32) -> [i32;2] {
     let text_vec: Vec<char> = input.chars().collect();
     if prev_gpos[1] >= (num_of_cols as i32) {
@@ -438,9 +538,13 @@ fn main() {
                                 mstart_pos = gpos;
                                 filled_circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                             }
-                            else if &current_tool == "p"{
+                            else if &current_tool == "p"{ //for image converter
                                 mstart_pos = gpos;
                                 rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
+                            }
+                            else if &current_tool == "e"{
+                                mstart_pos = gpos;
+                                ellipse_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
                             }
                             prev_gpos = gpos;
                         },
@@ -472,7 +576,11 @@ fn main() {
                         else if &current_tool == "p"{
                             rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
                         }
-                        if prev_gpos != gpos{
+                        else if &current_tool == "e"{
+                            mstart_pos = gpos;
+                            ellipse_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                        }
+                        if prev_gpos != gpos{ //prevents rerender w/ no change
                             render_change = true;
                         }
                         prev_gpos = gpos;
