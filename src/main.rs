@@ -1,5 +1,6 @@
 extern crate sdl2;
 extern crate image;
+extern crate rayon;
 mod image_conv;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
@@ -399,10 +400,11 @@ fn main() {
     //decide whether or not to render a new frame (only render when something has a changed)
     let mut render_change = true;
     //holds on to the previous loops' gpos so a render doesn't get called if the mouse hasn't moved grid position
-    let mut prev_gpos = [-1, -1];
+    let mut prev_gpos = [0, 0];
     let mut current_key = 'a'; //default char is 'a'
     let mut keycombo = String::new(); //will hold our key commands
     let mut current_tool = String::from("f"); //default "f" because c + f is our paint tool
+    let mut tool_modifier = Vec::from([String::from(" "), String::from(" ")]);
     let mut mstart_pos = [0, 0];
     while running {
         for event in event_queue.poll_iter() {
@@ -483,7 +485,7 @@ fn main() {
                         sdl2::mouse::MouseButton::Left => {
                             if &current_tool == "p"{
                                 let gpos = get_mouse_gpos(x, y, col_length, row_length, num_of_cols, num_of_rows);
-                                image_conv::convert_image_put_in_window(&mut window_array, &gpos, &mstart_pos); 
+                                image_conv::convert_image_put_in_window(&mut window_array, &gpos, &mstart_pos, &tool_modifier[0], &tool_modifier[1]); 
                                 preview_buffer.clear();
                             }
                             else{
@@ -508,6 +510,15 @@ fn main() {
                         else if &keycombo == "c"{
                             current_tool = text.to_lowercase();
                         }
+                        else if &keycombo == "m"{
+                            if &current_tool == "p" && &(text.to_lowercase()) == "l"{ 
+                                if &tool_modifier[1] == " " {tool_modifier[1] = String::from("l");}
+                                else {tool_modifier[1] = String::from(" ");}
+                            }
+                            else{
+                                tool_modifier[0] = text.to_lowercase();
+                            }
+                        }
                         keycombo = String::from("");
                     }
                     else {
@@ -519,6 +530,9 @@ fn main() {
                         }
                         else if &(text.to_lowercase()) == "b"{
                             copy_to_clipboard(&window_array, &clipboard);
+                        }
+                        else if &(text.to_lowercase()) == "m"{
+                            keycombo = String::from("m");
                         }
                     }
                 },   
