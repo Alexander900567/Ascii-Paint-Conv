@@ -2,82 +2,9 @@ extern crate sdl2;
 extern crate image;
 extern crate rayon;
 mod image_conv;
+mod main_window;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
-use sdl2::pixels::Color; // Like call this with Color:: (you don't actually have to, its just a standard for clarity)
-
-fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,  //main render function
-          font: &sdl2::ttf::Font, //our chosen font
-          window_array: &Vec<Vec<char>>, //3d array for our window
-          preview_buffer: &Vec<[i32;2]>,
-          current_key: char){ //our dimenions for the canvas
-
-    let mut render_array = window_array.clone();
-    
-    for buffer_item in preview_buffer{ 
-        render_array[buffer_item[0] as usize][buffer_item[1] as usize] = current_key;
-    }
-
-    canvas.set_draw_color(Color::RGB(0, 0, 0)); //set canvas to black
-    canvas.clear(); //clears frame allows new one
-    
-    let mut array_string = String::new(); //makes our grid a string, so we can write, copy, etc.
-    for x in &render_array{
-        for grid_char in x{
-            array_string.push(*grid_char);
-        }
-        array_string.push('\n');
-    }
-
-    let font_render = font.render(&array_string); //create a render of the given string
-    let font_surface = font_render.blended_wrapped(Color::RGB(255, 255, 255), 0).unwrap(); //create a surface out of that render
-    let canvas_texture = canvas.texture_creator(); //generate a blank canvas from the canvas 
-    let texture = canvas_texture.create_texture_from_surface(font_surface).unwrap(); //copy the font surface onto that texture
-    let _ = canvas.copy(
-        &texture,
-        None, //part of texture we want... all of it 
-        sdl2::rect::Rect::new(0, 0, 1200, 800), //first two is where, second is how big
-    ).expect("failed copying texture to canvas"); //display that texture to the canvas
-
-
-    canvas.present(); //actually commit changes to screen!
-}
-
-fn write_buffer(window_array: &mut Vec<Vec<char>>, preview_buffer: &mut Vec<[i32;2]>, current_char: char) {
-    for buffer_item in &*preview_buffer{
-        window_array[buffer_item[0] as usize][buffer_item[1] as usize] = current_char;
-    }
-    preview_buffer.clear();
-}
-//consider:
-//adding backspace compatibility
-//adding delete compatibility (clears buffer?)
-
-fn copy_to_clipboard(window_array: &Vec<Vec<char>>, clipboard: &sdl2::clipboard::ClipboardUtil) {
-    let mut array_string = String::new();
-    for x in window_array {
-        for grid_char in x{
-            array_string.push(*grid_char);
-        }
-        array_string.push('\n');
-    }
-    let _ = clipboard.set_clipboard_text(&array_string).expect("Failed to copy to clipboard");
-}
-
-
-fn get_mouse_gpos(cpos: i32, rpos: i32, clen: i32, rlen: i32, num_of_cols: u32, num_of_rows: u32) -> [i32; 2] {
-    let mut rgpos: i32 = rpos / rlen; //row global position, row position, row length
-    let mut cgpos: i32 = cpos / clen; // same but column
-    let rnumi = num_of_rows as i32;
-    let cnumi = num_of_cols as i32;
-
-    if rgpos < 0 {rgpos = 0;} //sets 0 as left bound
-    else if rgpos >= rnumi {rgpos = rnumi - 1;} //right bound
-    if cgpos < 0 {cgpos = 0;} //upper bound
-    else if cgpos >= cnumi {cgpos = cnumi - 1;} //lower bound
-
-    return [rgpos, cgpos]; //converts window dimensions to canvas dimensions
-}
 
 fn line_tool(preview_buffer: &mut Vec<[i32; 2]>,
              current_mouse_pos: &[i32; 2], 
@@ -199,13 +126,13 @@ fn filled_rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: 
     }
 }
 
-fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
+fn circle_tool(main_window: &mut main_window::MainWindow<'_>,
     current_mouse_pos: &[i32; 2],
     start_mouse_pos: &[i32; 2],
     clear_buffer: bool) { //this is faster when ellipse is circle
     
         if clear_buffer{
-            preview_buffer.clear();
+            main_window.preview_buffer.clear();
         }
 // Uses the [Midpoint Ellipse Drawing Algorithm](https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/).
 // (Modified from Bresenham's algorithm) <- These are the credits given by the Rust imageproc conics functions.
@@ -248,14 +175,14 @@ fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
     let mut p:i32 = 1 - r;
 
     while x <= y {
-        preview_buffer.push([(beginx + x), (beginy + y)]);
-        preview_buffer.push([(beginx + y), (beginy + x)]);
-        preview_buffer.push([(beginx - y), (beginy + x)]);
-        preview_buffer.push([(beginx - x), (beginy + y)]);
-        preview_buffer.push([(beginx - x), (beginy - y)]);
-        preview_buffer.push([(beginx - y), (beginy - x)]);
-        preview_buffer.push([(beginx + y), (beginy - x)]);
-        preview_buffer.push([(beginx + x), (beginy - y)]);
+        main_window.preview_buffer.push([beginx + x, beginy + y]);
+        main_window.preview_buffer.push([beginx + y, beginy + x]);
+        main_window.preview_buffer.push([beginx - y, beginy + x]);
+        main_window.preview_buffer.push([beginx - x, beginy + y]);
+        main_window.preview_buffer.push([beginx - x, beginy - y]);
+        main_window.preview_buffer.push([beginx - y, beginy - x]);
+        main_window.preview_buffer.push([beginx + y, beginy - x]);
+        main_window.preview_buffer.push([beginx + x, beginy - y]);
 
         x += 1; //all 4 regions
         if p < 0 {
@@ -353,40 +280,21 @@ fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &St
 }
 
 fn main() {
-    
-    let window_width: u32 = 1200; //1200x800 screen
-    let window_height: u32 = 800;
-    let num_of_cols: u32 = 60; //60x40
-    let num_of_rows: u32 = 40;
-    let col_length: i32 = (window_width / num_of_cols) as i32;
-    let row_length: i32 = (window_height / num_of_rows) as i32;
-    let mut preview_buffer: Vec<[i32;2]> = Vec::new();
-
-    let mut window_array = Vec::new();
-    for _ in 0..num_of_rows{
-        let mut a_row = Vec::new(); 
-        for _ in 0..num_of_cols{
-            a_row.push(' '); //populate with spaces
-        }
-        window_array.push(a_row);
-    }
-
     let sdl_context = sdl2::init().expect("failed to init sdl");
     let video_subsystem = sdl_context.video().expect("failed to init video subsytem");
-
-    let window = video_subsystem.window("ascii", window_width, window_height) //builds and names window
-        .position_centered()
-        .build()
-        .expect("failed to build window");
-
-    let mut canvas = window.into_canvas() //builds canvas
-        .present_vsync()
-        .build()
-        .expect("failed to build canvas");
-
-    let ttf_context = sdl2::ttf::init().unwrap(); //Maybe add a error message
-    let font = ttf_context.load_font("./NotoSansMono-Regular.ttf", 16).unwrap();
     let clipboard = video_subsystem.clipboard();
+    let ttf_context = sdl2::ttf::init().unwrap(); //Maybe add a error message
+
+    let mut main_window = main_window::MainWindow::new(
+        &sdl_context,
+        &ttf_context,
+        &video_subsystem,
+        &clipboard,
+        1200,
+        800,
+        60,
+        40,
+    );
         
     video_subsystem.text_input().start();
 
@@ -416,33 +324,33 @@ fn main() {
                 Event::MouseButtonDown {mouse_btn, x, y, ..} => { //initial click
                     match mouse_btn {
                         sdl2::mouse::MouseButton::Left => { //Keybinds
-                            let gpos = get_mouse_gpos(x, y, col_length, row_length, num_of_cols, num_of_rows);
+                            let gpos = main_window.get_mouse_gpos(x, y);
                             if &current_tool == "f"{
-                                window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
+                                main_window.window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                             }
                             else if &current_tool == "l"{
                                 mstart_pos = gpos;
-                                line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                                line_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos, true);
                             }
                             else if &current_tool == "r"{
                                 mstart_pos = gpos;
-                                rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
+                                rectangle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos)
                             }
                             else if &current_tool == "s"{
                                 mstart_pos = gpos;
-                                filled_rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos);
+                                filled_rectangle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos);
                             }
                             else if &current_tool == "o"{
                                 mstart_pos = gpos;
-                                circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                                circle_tool(&mut main_window, &gpos, &mstart_pos, true);
                             }
                             else if &current_tool == "q"{
                                 mstart_pos = gpos;
-                                filled_circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                                filled_circle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos, true);
                             }
                             else if &current_tool == "p"{
                                 mstart_pos = gpos;
-                                rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
+                                rectangle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos)
                             }
                             prev_gpos = gpos;
                         },
@@ -452,27 +360,27 @@ fn main() {
                 },
                 Event::MouseMotion {mousestate, x, y, ..} => { //this is for holding down button
                     if mousestate.left(){
-                        let gpos = get_mouse_gpos(x, y, col_length, row_length, num_of_cols, num_of_rows);
+                        let gpos = main_window.get_mouse_gpos(x, y);
                         if &current_tool == "f"{ //gives these functions the needed parameters
-                            window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
+                            main_window.window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                         }
                         else if &current_tool == "l"{
-                            line_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                            line_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos, true);
                         }
                         else if &current_tool == "r"{
-                            rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
+                            rectangle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos)
                         }
                         else if &current_tool == "s"{
-                            filled_rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
+                            filled_rectangle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos)
                         }
                         else if &current_tool == "o"{
-                            circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                            circle_tool(&mut main_window, &gpos, &mstart_pos, true);
                         }
                         else if &current_tool == "q"{
-                            filled_circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                            filled_circle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos, true);
                         }
                         else if &current_tool == "p"{
-                            rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
+                            rectangle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos)
                         }
                         if prev_gpos != gpos{
                             render_change = true;
@@ -484,12 +392,15 @@ fn main() {
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
                             if &current_tool == "p"{
-                                let gpos = get_mouse_gpos(x, y, col_length, row_length, num_of_cols, num_of_rows);
-                                image_conv::convert_image_put_in_window(&mut window_array, &gpos, &mstart_pos, &tool_modifier[0], &tool_modifier[1]); 
-                                preview_buffer.clear();
+                                let gpos = main_window.get_mouse_gpos(x, y);
+                                image_conv::convert_image_put_in_window(&mut main_window.window_array, 
+                                                                        &gpos, &mstart_pos, 
+                                                                        &tool_modifier[0], &tool_modifier[1]
+                                ); 
+                                main_window.preview_buffer.clear();
                             }
                             else{
-                                write_buffer(&mut window_array, &mut preview_buffer, current_key);
+                                main_window.write_buffer(current_key);
                             }
                             render_change = true;
                         },
@@ -499,7 +410,10 @@ fn main() {
                 Event::TextInput {text, ..} => { //keyboard determines keycombo (keybinds)
                     println!("text: {}", text);
                     if &current_tool == "t"{
-                        prev_gpos = text_tool(&mut window_array, &prev_gpos, &text, num_of_cols); //text mode case
+                        prev_gpos = text_tool(&mut main_window.window_array, 
+                                              &prev_gpos, &text, 
+                                              main_window.num_of_cols
+                        ); //text mode case
                         render_change = true;
                     }
                     else if keycombo.len() > 0{
@@ -529,7 +443,7 @@ fn main() {
                             keycombo = String::from("c");
                         }
                         else if &(text.to_lowercase()) == "b"{
-                            copy_to_clipboard(&window_array, &clipboard);
+                            main_window.copy_to_clipboard();
                         }
                         else if &(text.to_lowercase()) == "m"{
                             keycombo = String::from("m");
@@ -544,11 +458,11 @@ fn main() {
                             }
                             Some(sdl2::keyboard::Keycode::BACKSPACE) => { //backspace! finally! what is this? 2024? are we sure it isn't 3024?
                                 let mut end_offset = 0;
-                                if prev_gpos[1] == (num_of_cols as i32) - 1 && //updates our position
-                                window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] != ' '{ //moves to that new position
+                                if prev_gpos[1] == (main_window.num_of_cols as i32) - 1 && //updates our position
+                                main_window.window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] != ' '{ //moves to that new position
                                     end_offset = 1;
                                 }
-                                window_array[prev_gpos[0] as usize][(std::cmp::max(prev_gpos[1]-1+end_offset, 0)) as usize] = ' ';
+                                main_window.window_array[prev_gpos[0] as usize][(std::cmp::max(prev_gpos[1]-1+end_offset, 0)) as usize] = ' ';
                                 prev_gpos = [prev_gpos[0], std::cmp::max(prev_gpos[1] - 1 + end_offset, 0)];
                                 render_change = true;
                             }
@@ -556,13 +470,13 @@ fn main() {
                                 prev_gpos = [std::cmp::max(prev_gpos[0]-1, 0), prev_gpos[1]];
                             }
                             Some(sdl2::keyboard::Keycode::DOWN) => {
-                                prev_gpos = [std::cmp::min(prev_gpos[0]+1, (num_of_rows as i32)-1), prev_gpos[1]];
+                                prev_gpos = [std::cmp::min(prev_gpos[0]+1, (main_window.num_of_rows as i32)-1), prev_gpos[1]];
                             }
                             Some(sdl2::keyboard::Keycode::LEFT) => {
                                 prev_gpos = [prev_gpos[0], std::cmp::max(prev_gpos[1]-1, 0)];
                             }
                             Some(sdl2::keyboard::Keycode::RIGHT) => {
-                                prev_gpos = [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (num_of_cols as i32)-1)];
+                                prev_gpos = [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (main_window.num_of_cols as i32)-1)];
                             }
                             _ => {}
                         }   
@@ -573,7 +487,7 @@ fn main() {
         }
         if render_change{ //render if change
             let pre = std::time::SystemTime::now();
-            render(&mut canvas, &font, &window_array, &preview_buffer, current_key);
+            main_window.render(current_key);
             render_change = false;
             let post = std::time::SystemTime::now();
             times.push(post.duration_since(pre).unwrap().as_secs_f64());
