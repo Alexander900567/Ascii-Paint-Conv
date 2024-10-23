@@ -136,7 +136,7 @@ impl MainWindow<'_>{
         return [rgpos, cgpos]; //converts window dimensions to canvas dimensions
     }
 
-    pub fn add_to_preview_buffer(&mut self, cpos: i32, rpos: i32){
+    pub fn add_to_preview_buffer(&mut self, rpos: i32, cpos: i32){
         //don't add to preview buffer if out of bounds
         let rnumi = self.num_of_rows as i32;
         let cnumi = self.num_of_cols as i32;

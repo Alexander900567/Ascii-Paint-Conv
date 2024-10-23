@@ -175,14 +175,14 @@ fn circle_tool(main_window: &mut main_window::MainWindow<'_>,
     let mut p:i32 = 1 - r;
 
     while x <= y {
-        main_window.preview_buffer.push([beginx + x, beginy + y]);
-        main_window.preview_buffer.push([beginx + y, beginy + x]);
-        main_window.preview_buffer.push([beginx - y, beginy + x]);
-        main_window.preview_buffer.push([beginx - x, beginy + y]);
-        main_window.preview_buffer.push([beginx - x, beginy - y]);
-        main_window.preview_buffer.push([beginx - y, beginy - x]);
-        main_window.preview_buffer.push([beginx + y, beginy - x]);
-        main_window.preview_buffer.push([beginx + x, beginy - y]);
+        main_window.add_to_preview_buffer(beginx + x, beginy + y);
+        main_window.add_to_preview_buffer(beginx + y, beginy + x);
+        main_window.add_to_preview_buffer(beginx - y, beginy + x);
+        main_window.add_to_preview_buffer(beginx - x, beginy + y);
+        main_window.add_to_preview_buffer(beginx - x, beginy - y);
+        main_window.add_to_preview_buffer(beginx - y, beginy - x);
+        main_window.add_to_preview_buffer(beginx + y, beginy - x);
+        main_window.add_to_preview_buffer(beginx + x, beginy - y);
 
         x += 1; //all 4 regions
         if p < 0 {
