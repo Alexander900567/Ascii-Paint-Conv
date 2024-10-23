@@ -1,6 +1,6 @@
 Cheat Sheet:
 
-Choose Letter: i + [Shift Optional] + Letter/Key
+Choose Letter: i + Letter/Key
 Copy to Clipboard: b
 
 Regular Mode: cf
@@ -10,5 +10,13 @@ Filled Rectangle Tool: cs
 Q1`3 Circle Tool: co
 Filled Circle Tool: cq
 Text Mode: ct (Exit with Escape)
+Picture Mode: cp
 
+Modifiers: m ->
+	Picture:
+		l = toggles lines in conversion
+		1 = ascci pattern 1
+		2 = ascci pattern 2
+		3 = if line active, hollow ; else pattern 4
+		4 = ascci pattern 4
 
