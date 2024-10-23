@@ -271,12 +271,12 @@ fn filled_circle_tool(main_window: &mut main_window::MainWindow<'_>, current_mou
 fn text_tool(main_window: &mut main_window::MainWindow<'_>, &prev_gpos: &[i32;2], input: &String) -> [i32;2] {
     let text_vec: Vec<char> = input.chars().collect();
     if prev_gpos[1] >= (main_window.num_of_cols as i32) {
-        main_window.window_array[prev_gpos[0] as usize][(num_of_cols - 1) as usize] = text_vec[0];
+        main_window.window_array[prev_gpos[0] as usize][(main_window.num_of_cols - 1) as usize] = text_vec[0];
     }
     else {
         main_window.window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] = text_vec[0];
     }
-    return [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (num_of_cols as i32)-1)];
+    return [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (main_window.num_of_cols as i32)-1)];
 }
 
 fn main() {
@@ -410,7 +410,7 @@ fn main() {
                 Event::TextInput {text, ..} => { //keyboard determines keycombo (keybinds)
                     println!("text: {}", text);
                     if &current_tool == "t"{
-                        prev_gpos = text_tool(&mut main_window, &prev_gpos, &text) //text mode case
+                        prev_gpos = text_tool(&mut main_window, &prev_gpos, &text); //text mode case
                         render_change = true;
                     }
                     else if keycombo.len() > 0{
