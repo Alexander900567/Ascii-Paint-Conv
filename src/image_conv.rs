@@ -332,13 +332,27 @@ fn downscale_sobel(sobel_ascii_output: &Vec<Vec<char>>, wcount: u32, hcount: u32
     let box_total_pixel = x_box_size * y_box_size as u32;
     let edge_threshold = (box_total_pixel as f32 * 0.05) as u32; //lowering decimal value makes more edges
 
+    println!("wc {} hc {}", wcount, hcount);
+    println!("x {} y {}", x_box_size, y_box_size);
+
     //prepare a vector of topleft positions to start each downscale box on
+    let mut num_of_rows_added = 0;
+    let mut num_of_cols_added = 0;
     let mut boxes: Vec<[u32; 2]>= Vec::new();
     for y in (0..full_height).step_by(y_box_size as usize){
-        for x in (0..full_width).step_by(x_box_size as usize){
-            boxes.push([x as u32, y as u32]);
+        if num_of_rows_added < hcount{
+            for x in (0..full_width).step_by(x_box_size as usize){
+                if num_of_cols_added < wcount{
+                    boxes.push([x as u32, y as u32]);
+                    num_of_cols_added += 1;
+                }
+            }
         }
+        num_of_cols_added = 0;
+        num_of_rows_added += 1;
     }
+
+    boxes.iter().for_each(|cord| println!("{:?}", cord));
    
     //compress the "pixels" of each downscale box into a a single character
     let downscaled: Vec<(u32, u32, char)> = boxes.par_iter().map(|top_left|{
