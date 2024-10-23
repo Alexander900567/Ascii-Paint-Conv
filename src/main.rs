@@ -6,7 +6,7 @@ mod main_window;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
 
-fn line_tool(preview_buffer: &mut Vec<[i32; 2]>,
+fn line_tool(main_window: &mut main_window::MainWindow<'_>,
              current_mouse_pos: &[i32; 2], 
              start_mouse_pos: &[i32; 2], 
              clear_buffer: bool) {     
@@ -16,7 +16,7 @@ fn line_tool(preview_buffer: &mut Vec<[i32; 2]>,
     let finy: i32 = current_mouse_pos[1];
     
     if clear_buffer{
-        preview_buffer.clear();
+        main_window.preview_buffer.clear();
     }
 
     let mut x_slope = finx - beginx;
@@ -58,7 +58,7 @@ fn line_tool(preview_buffer: &mut Vec<[i32; 2]>,
             extra -= 1;
         }
         for _ in 0..this_chunk {
-            preview_buffer.push([beginx, beginy]);    
+            main_window.add_to_preview_buffer(beginx, beginy);    
             if x_is_long {
                 beginx += x_iter;   
             }
@@ -75,31 +75,31 @@ fn line_tool(preview_buffer: &mut Vec<[i32; 2]>,
     }
 } //commit changes after run
 
-fn rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]){
+fn rectangle_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]){
 
-    preview_buffer.clear();
+    main_window.preview_buffer.clear();
     //4 lines
-    line_tool(preview_buffer,
+    line_tool(main_window,
               &[start_mouse_pos[0], start_mouse_pos[1]], //(s,s) to (c,s)
               &[current_mouse_pos[0], start_mouse_pos[1]], //top left to bottom left
               false);
-    line_tool(preview_buffer,
+    line_tool(main_window,
               &[start_mouse_pos[0], start_mouse_pos[1]], //(s,s) to (s,c)
               &[start_mouse_pos[0], current_mouse_pos[1]], //top left to top right
               false);
-    line_tool(preview_buffer,
+    line_tool(main_window,
               &[start_mouse_pos[0], current_mouse_pos[1]], //(s,c) to (c,c)
               &[current_mouse_pos[0], current_mouse_pos[1]], //top right to bottom right
               false);
-    line_tool(preview_buffer,
+    line_tool(main_window,
               &[current_mouse_pos[0], start_mouse_pos[1]], //(c,s) to (c,c)
               &[current_mouse_pos[0], current_mouse_pos[1]], //bottom left to bottom right
               false);
 }
 
-fn filled_rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) {
+fn filled_rectangle_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) {
 
-    preview_buffer.clear(); //clears previous preview, so we can load new one
+    main_window.preview_buffer.clear(); //clears previous preview, so we can load new one
 
     let beginx: i32 = start_mouse_pos[0];
     let beginy: i32 = start_mouse_pos[1];
@@ -119,7 +119,7 @@ fn filled_rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: 
     }
 
     for x in leftx..=rightx { //iterates vertical lines
-        line_tool(preview_buffer,
+        line_tool(main_window,
         &[x, beginy], //further iterates those lines horizontally (left to right or right to left)
         &[x, finy],
         false);
@@ -175,14 +175,14 @@ fn circle_tool(main_window: &mut main_window::MainWindow<'_>,
     let mut p:i32 = 1 - r;
 
     while x <= y {
-        main_window.preview_buffer.push([beginx + x, beginy + y]);
-        main_window.preview_buffer.push([beginx + y, beginy + x]);
-        main_window.preview_buffer.push([beginx - y, beginy + x]);
-        main_window.preview_buffer.push([beginx - x, beginy + y]);
-        main_window.preview_buffer.push([beginx - x, beginy - y]);
-        main_window.preview_buffer.push([beginx - y, beginy - x]);
-        main_window.preview_buffer.push([beginx + y, beginy - x]);
-        main_window.preview_buffer.push([beginx + x, beginy - y]);
+        main_window.add_to_preview_buffer(beginx + x, beginy + y);
+        main_window.add_to_preview_buffer(beginx + y, beginy + x);
+        main_window.add_to_preview_buffer(beginx - y, beginy + x);
+        main_window.add_to_preview_buffer(beginx - x, beginy + y);
+        main_window.add_to_preview_buffer(beginx - x, beginy - y);
+        main_window.add_to_preview_buffer(beginx - y, beginy - x);
+        main_window.add_to_preview_buffer(beginx + y, beginy - x);
+        main_window.add_to_preview_buffer(beginx + x, beginy - y);
 
         x += 1; //all 4 regions
         if p < 0 {
@@ -195,11 +195,11 @@ fn circle_tool(main_window: &mut main_window::MainWindow<'_>,
     }    
 }
 
-fn filled_circle_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2], clear_buffer: bool) { //basically, just fill in line tools, trig if necessary
+fn filled_circle_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2], clear_buffer: bool) { //basically, just fill in line tools, trig if necessary
     //same credits as above, just draw_filled_circle modified
 
     if clear_buffer{
-        preview_buffer.clear();
+        main_window.preview_buffer.clear();
     }
 
     let beginx: i32 = start_mouse_pos[0];
@@ -237,22 +237,22 @@ fn filled_circle_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[
 
     while x <= y {
 
-        line_tool(preview_buffer,
+        line_tool(main_window,
         &[(beginx + x), (beginy + y)], 
         &[(beginx - x), (beginy + y)],
         false);
 
-        line_tool(preview_buffer,
+        line_tool(main_window,
         &[(beginx + y), (beginy + x)], 
         &[(beginx - y), (beginy + x)],
         false);
 
-        line_tool(preview_buffer,
+        line_tool(main_window,
         &[(beginx + x), (beginy - y)], 
         &[(beginx - x), (beginy - y)],
         false);
 
-        line_tool(preview_buffer,
+        line_tool(main_window,
         &[(beginx + y), (beginy - x)], 
         &[(beginx - y), (beginy - x)],
         false);
@@ -268,15 +268,15 @@ fn filled_circle_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[
     }
 }
 
-fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_cols: u32) -> [i32;2] {
+fn text_tool(main_window: &mut main_window::MainWindow<'_>, &prev_gpos: &[i32;2], input: &String) -> [i32;2] {
     let text_vec: Vec<char> = input.chars().collect();
-    if prev_gpos[1] >= (num_of_cols as i32) {
-        window_array[prev_gpos[0] as usize][(num_of_cols - 1) as usize] = text_vec[0];
+    if prev_gpos[1] >= (main_window.num_of_cols as i32) {
+        main_window.window_array[prev_gpos[0] as usize][(main_window.num_of_cols - 1) as usize] = text_vec[0];
     }
     else {
-        window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] = text_vec[0];
+        main_window.window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] = text_vec[0];
     }
-    return [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (num_of_cols as i32)-1)];
+    return [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (main_window.num_of_cols as i32)-1)];
 }
 
 fn main() {
@@ -330,15 +330,15 @@ fn main() {
                             }
                             else if &current_tool == "l"{
                                 mstart_pos = gpos;
-                                line_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos, true);
+                                line_tool(&mut main_window, &gpos, &mstart_pos, true);
                             }
                             else if &current_tool == "r"{
                                 mstart_pos = gpos;
-                                rectangle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos)
+                                rectangle_tool(&mut main_window, &gpos, &mstart_pos)
                             }
                             else if &current_tool == "s"{
                                 mstart_pos = gpos;
-                                filled_rectangle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos);
+                                filled_rectangle_tool(&mut main_window, &gpos, &mstart_pos);
                             }
                             else if &current_tool == "o"{
                                 mstart_pos = gpos;
@@ -346,11 +346,11 @@ fn main() {
                             }
                             else if &current_tool == "q"{
                                 mstart_pos = gpos;
-                                filled_circle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos, true);
+                                filled_circle_tool(&mut main_window, &gpos, &mstart_pos, true);
                             }
                             else if &current_tool == "p"{
                                 mstart_pos = gpos;
-                                rectangle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos)
+                                rectangle_tool(&mut main_window, &gpos, &mstart_pos)
                             }
                             prev_gpos = gpos;
                         },
@@ -365,22 +365,22 @@ fn main() {
                             main_window.window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
                         }
                         else if &current_tool == "l"{
-                            line_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos, true);
+                            line_tool(&mut main_window, &gpos, &mstart_pos, true);
                         }
                         else if &current_tool == "r"{
-                            rectangle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos)
+                            rectangle_tool(&mut main_window, &gpos, &mstart_pos)
                         }
                         else if &current_tool == "s"{
-                            filled_rectangle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos)
+                            filled_rectangle_tool(&mut main_window, &gpos, &mstart_pos)
                         }
                         else if &current_tool == "o"{
                             circle_tool(&mut main_window, &gpos, &mstart_pos, true);
                         }
                         else if &current_tool == "q"{
-                            filled_circle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos, true);
+                            filled_circle_tool(&mut main_window, &gpos, &mstart_pos, true);
                         }
                         else if &current_tool == "p"{
-                            rectangle_tool(&mut main_window.preview_buffer, &gpos, &mstart_pos)
+                            rectangle_tool(&mut main_window, &gpos, &mstart_pos)
                         }
                         if prev_gpos != gpos{
                             render_change = true;
@@ -410,10 +410,7 @@ fn main() {
                 Event::TextInput {text, ..} => { //keyboard determines keycombo (keybinds)
                     println!("text: {}", text);
                     if &current_tool == "t"{
-                        prev_gpos = text_tool(&mut main_window.window_array, 
-                                              &prev_gpos, &text, 
-                                              main_window.num_of_cols
-                        ); //text mode case
+                        prev_gpos = text_tool(&mut main_window, &prev_gpos, &text); //text mode case
                         render_change = true;
                     }
                     else if keycombo.len() > 0{
