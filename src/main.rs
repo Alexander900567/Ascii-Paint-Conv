@@ -128,12 +128,9 @@ fn filled_rectangle_tool(main_window: &mut main_window::MainWindow<'_>, current_
 
 fn circle_tool(main_window: &mut main_window::MainWindow<'_>,
     current_mouse_pos: &[i32; 2],
-    start_mouse_pos: &[i32; 2],
-    clear_buffer: bool) { //this is faster when ellipse is circle
-    
-        if clear_buffer{
-            main_window.preview_buffer.clear();
-        }
+    start_mouse_pos: &[i32; 2]) { //this is faster when ellipse is circle
+
+    main_window.preview_buffer.clear();
 // Uses the [Midpoint Ellipse Drawing Algorithm](https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/).
 // (Modified from Bresenham's algorithm) <- These are the credits given by the Rust imageproc conics functions.
 //This is just a modified draw_hollow_circle
@@ -195,12 +192,11 @@ fn circle_tool(main_window: &mut main_window::MainWindow<'_>,
     }    
 }
 
-fn filled_circle_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2], clear_buffer: bool) { //basically, just fill in line tools, trig if necessary
+fn filled_circle_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) { //basically, just fill in line tools, trig if necessary
     //same credits as above, just draw_filled_circle modified
 
-    if clear_buffer{
-        main_window.preview_buffer.clear();
-    }
+    main_window.preview_buffer.clear();
+
 
     let beginx: i32 = start_mouse_pos[0];
     let finx: i32 = current_mouse_pos[0];
@@ -266,6 +262,144 @@ fn filled_circle_tool(main_window: &mut main_window::MainWindow<'_>, current_mou
             p += 2 * (x - y) + 1;
         }
     }
+}
+
+fn draw_ellipse<F>(main_window: &mut main_window::MainWindow<'_>, mut render_func: F, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) //necessary for ellipse_tool and filled_ellipse_tool
+    //same credits (docs.rs) but draw_ellipse ofc
+    //this func is the meat for drawing the ellipse, ellipse_tool and filled_ellipse tool just call specialized versions of this
+    where
+    F: FnMut(&mut main_window::MainWindow<'_>, i32, i32, i32, i32), {
+
+    let beginx: i32 = start_mouse_pos[0];
+    let finx: i32 = current_mouse_pos[0];
+    let beginy: i32 = start_mouse_pos[1];
+    let finy: i32 = current_mouse_pos[1];
+
+    let x_component:i32 = (finx - beginx).abs();
+    let y_component:i32 = (finy - beginy).abs();
+    let x_squared: f32 = (x_component * x_component) as f32;
+    let y_squared: f32 = (y_component * y_component) as f32;
+
+    let mut x: i32 = 0i32;
+    let mut y: i32 = y_component;
+    let mut px:f32 = 0.0;
+    let mut py:f32 = 2.0 * x_squared * y as f32;
+
+    render_func(main_window, beginx, beginy, x, y);
+
+    println!("x_component: {}", x_component);
+    println!("y_component: {}", y_component);
+    //Top and bottom
+    let mut p:f32 = y_squared - (x_squared * y_component as f32) + (0.25f32 * x_squared);
+    while px < py {
+        x += 1;
+        px += 2.0 * y_squared;
+        if p < 0.0 {
+            p += y_squared + px;
+        }
+        else {
+            y -= 1;
+            py += -2.0 * x_squared;
+            p += y_squared + px - py;
+        }
+
+        render_func(main_window, beginx, beginy, x, y);
+    }
+
+    //Left and right
+    p = (y_squared * (x as f32 + 0.5).powi(2)) + (x_squared * (y - 1).pow(2) as f32) - (x_squared * y_squared);
+    while y >= 0 {
+        y -= 1;
+        py += -2.0 * x_squared;
+        if p > 0.0 {
+            p += x_squared - py;
+        }
+        else {
+            x += 1;
+            px += 2.0 * y_squared;
+            p += x_squared - py + px;
+        }
+
+        render_func(main_window, beginx, beginy, x, y);
+    }
+
+}
+
+fn ellipse_tool (main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) {
+    //docs.rs draw_hollow_ellipse_mut
+
+    main_window.preview_buffer.clear();
+
+
+    let beginx: i32 = start_mouse_pos[0];
+    let finx: i32 = current_mouse_pos[0];
+    let beginy: i32 = start_mouse_pos[1];
+    let finy: i32 = current_mouse_pos[1];
+
+    let x_component:i32 = (finx - beginx).abs();
+    let y_component:i32 = (finy - beginy).abs();
+    // Circle is faster, so do not waste time using this tool if it's a circle
+    if x_component == y_component {
+        circle_tool(main_window,
+        &[beginx, beginy],
+        &[finx, finy]);
+        return;
+    }
+    //passed to draw_ellipse
+    let draw_quad_pixels = |main_window: &mut main_window::MainWindow<'_>, beginx: i32, beginy: i32, x: i32, y: i32| { //i don't think this needs clear_buffer?
+        //mentioned in previous credits's source, but I figured I'd be specific https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/
+        //draw_quad_pixels in doc.rs
+        main_window.add_to_preview_buffer(beginx + x, beginy + y);
+        main_window.add_to_preview_buffer(beginx - x, beginy + y);
+        main_window.add_to_preview_buffer(beginx + x, beginy - y);
+        main_window.add_to_preview_buffer(beginx - x, beginy - y);
+    };
+
+    draw_ellipse(main_window,
+        draw_quad_pixels,
+        &[beginx, beginy],
+        &[finx, finy]);
+}
+
+fn filled_ellipse_tool (main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) {
+    //docs.rs draw_filled_ellipse_mut, same source as above
+
+    main_window.preview_buffer.clear();
+
+
+    let beginx: i32 = start_mouse_pos[0];
+    let finx: i32 = current_mouse_pos[0];
+    let beginy: i32 = start_mouse_pos[1];
+    let finy: i32 = current_mouse_pos[1];
+
+    let x_component:i32 = finx - beginx;
+    let y_component:i32 = finy - beginy;
+
+    //same as above tool, circle will be faster
+    if x_component == y_component {
+        circle_tool(main_window,
+        &[beginx, beginy],
+        &[finx, finy]);
+        return;
+    }
+    //will be passed to draw_ellipse to draw line pair when drawing
+    let draw_line_pairs = |main_window: &mut main_window::MainWindow<'_>, beginx: i32, beginy: i32, x: i32, y: i32| {
+        line_tool(
+            main_window,
+            &[(beginx - x), (beginy + y)],
+            &[(beginx + x), (beginy + y)],
+            false );
+        line_tool(
+            main_window,
+            &[(beginx - x), (beginy - y)],
+            &[(beginx + x) , (beginy - y)],
+            false );
+    };
+
+    draw_ellipse(main_window,
+        draw_line_pairs,
+        &[beginx, beginy],
+        &[finx, finy]);
 }
 
 fn text_tool(main_window: &mut main_window::MainWindow<'_>, &prev_gpos: &[i32;2], input: &String) -> [i32;2] {
@@ -342,15 +476,23 @@ fn main() {
                             }
                             else if &current_tool == "o"{
                                 mstart_pos = gpos;
-                                circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                circle_tool(&mut main_window, &gpos, &mstart_pos);
                             }
                             else if &current_tool == "q"{
                                 mstart_pos = gpos;
-                                filled_circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                filled_circle_tool(&mut main_window, &gpos, &mstart_pos);
                             }
                             else if &current_tool == "p"{
                                 mstart_pos = gpos;
                                 rectangle_tool(&mut main_window, &gpos, &mstart_pos)
+                            }
+                            else if &current_tool == "e"{
+                                mstart_pos = gpos;
+                                ellipse_tool(&mut main_window, &gpos, &mstart_pos);
+                            }
+                            else if &current_tool == "w"{
+                                mstart_pos = gpos;
+                                ellipse_tool(&mut main_window, &gpos, &mstart_pos);
                             }
                             prev_gpos = gpos;
                         },
@@ -374,13 +516,19 @@ fn main() {
                             filled_rectangle_tool(&mut main_window, &gpos, &mstart_pos)
                         }
                         else if &current_tool == "o"{
-                            circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                            circle_tool(&mut main_window, &gpos, &mstart_pos);
                         }
                         else if &current_tool == "q"{
-                            filled_circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                            filled_circle_tool(&mut main_window, &gpos, &mstart_pos);
                         }
                         else if &current_tool == "p"{
                             rectangle_tool(&mut main_window, &gpos, &mstart_pos)
+                        }
+                        else if &current_tool == "e"{
+                            ellipse_tool(&mut main_window, &gpos, &mstart_pos);
+                        }
+                        else if &current_tool == "w"{
+                            filled_ellipse_tool(&mut main_window, &gpos, &mstart_pos);
                         }
                         if prev_gpos != gpos{
                             render_change = true;

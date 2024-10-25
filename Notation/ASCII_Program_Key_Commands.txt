@@ -1,22 +1,22 @@
-Cheat Sheet:
-
-Choose Letter: i + Letter/Key
+Choose Letter: i + [Shift Optional] + Letter/Key
 Copy to Clipboard: b
 
 Regular Mode: cf
 Line Tool: cl
 Rectangle Tool: cr
 Filled Rectangle Tool: cs
-Q1`3 Circle Tool: co
+Circle Tool: co
 Filled Circle Tool: cq
+Ellipse Tool: ce
+Filled Ellipse Tool: cw
 Text Mode: ct (Exit with Escape)
 Picture Mode: cp
 
 Modifiers: m ->
 	Picture:
 		l = toggles lines in conversion
-		1 = ascci pattern 1
-		2 = ascci pattern 2
+		1 = ascii pattern 1
+		2 = ascii pattern 2
 		3 = if line active, hollow ; else pattern 4
-		4 = ascci pattern 4
+		4 = ascii pattern 4
 
