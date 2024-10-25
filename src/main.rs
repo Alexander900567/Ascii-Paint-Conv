@@ -274,8 +274,8 @@ fn filled_circle_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[
     let beginy: i32 = start_mouse_pos[1];
     let finy: i32 = current_mouse_pos[1];
 
-    let x_component:i32 = finx - beginx;
-    let y_component:i32 = finy - beginy;
+    let x_component:i32 = (finx - beginx).abs();
+    let y_component:i32 = (finy - beginy).abs();
     let r:i32;
     let diagonal_r:f32 = f32::sqrt((x_component as f32 * x_component as f32) + (y_component as f32 * y_component as f32));
 
@@ -346,8 +346,8 @@ fn draw_ellipse<F>(preview_buffer: &mut Vec<[i32; 2]>, mut render_func: F, curre
     let beginy: i32 = start_mouse_pos[1];
     let finy: i32 = current_mouse_pos[1];
 
-    let x_component:i32 = finx - beginx;
-    let y_component:i32 = finy - beginy;
+    let x_component:i32 = (finx - beginx).abs();
+    let y_component:i32 = (finy - beginy).abs();
     let x_squared: f32 = (x_component * x_component) as f32;
     let y_squared: f32 = (y_component * y_component) as f32;
 
@@ -358,6 +358,8 @@ fn draw_ellipse<F>(preview_buffer: &mut Vec<[i32; 2]>, mut render_func: F, curre
 
     render_func(preview_buffer, beginx, beginy, x, y);
 
+    println!("x_component: {}", x_component);
+    println!("y_component: {}", y_component);
     //Top and bottom
     let mut p:f32 = y_squared - (x_squared * y_component as f32) + (0.25f32 * x_squared);
     while px < py {
@@ -377,7 +379,7 @@ fn draw_ellipse<F>(preview_buffer: &mut Vec<[i32; 2]>, mut render_func: F, curre
 
     //Left and right
     p = (y_squared * (x as f32 + 0.5).powi(2)) + (x_squared * (y - 1).pow(2) as f32) - (x_squared * y_squared);
-    while y > 0 {
+    while y >= 0 {
         y -= 1;
         py += -2.0 * x_squared;
         if p > 0.0 {
@@ -405,8 +407,8 @@ fn ellipse_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2
     let beginy: i32 = start_mouse_pos[1];
     let finy: i32 = current_mouse_pos[1];
 
-    let x_component:i32 = finx - beginx;
-    let y_component:i32 = finy - beginy;
+    let x_component:i32 = (finx - beginx).abs();
+    let y_component:i32 = (finy - beginy).abs();
     // Circle is faster, so do not waste time using this tool if it's a circle
     if x_component == y_component {
         circle_tool(preview_buffer,
@@ -612,11 +614,9 @@ fn main() {
                             rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
                         }
                         else if &current_tool == "e"{
-                            mstart_pos = gpos;
                             ellipse_tool(&mut preview_buffer, &gpos, &mstart_pos);
                         }
                         else if &current_tool == "w"{
-                            mstart_pos = gpos;
                             filled_ellipse_tool(&mut preview_buffer, &gpos, &mstart_pos);
                         }
                         if prev_gpos != gpos{ //prevents rerender w/ no change
