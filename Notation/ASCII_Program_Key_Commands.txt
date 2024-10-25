@@ -10,6 +10,7 @@ Filled Rectangle Tool: cs
 Circle Tool: co
 Filled Circle Tool: cq
 Ellipse Tool: ce
+Filled Ellipse Tool: cw
 Text Mode: ct (Exit with Escape)
 
 

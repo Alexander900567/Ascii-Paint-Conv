@@ -200,12 +200,9 @@ fn filled_rectangle_tool(preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: 
 
 fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
     current_mouse_pos: &[i32; 2],
-    start_mouse_pos: &[i32; 2],
-    clear_buffer: bool) { //this is faster when ellipse is circle
+    start_mouse_pos: &[i32; 2]) {
     
-        if clear_buffer{
-            preview_buffer.clear();
-        }
+        preview_buffer.clear();
 // Uses the [Midpoint Ellipse Drawing Algorithm](https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/).
 // (Modified from Bresenham's algorithm) <- These are the credits given by the docs.rs imageproc conics functions.
 //This is just a modified draw_hollow_circle
@@ -267,12 +264,10 @@ fn circle_tool(preview_buffer: &mut Vec<[i32; 2]>,
     }    
 }
 
-fn filled_circle_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2], clear_buffer: bool) { //basically, just fill in line tools, trig if necessary
+fn filled_circle_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) { //basically, just fill in line tools, trig if necessary
     //same credits as above, just draw_filled_circle modified
 
-    if clear_buffer{
-        preview_buffer.clear();
-    }
+    preview_buffer.clear();
 
     let beginx: i32 = start_mouse_pos[0];
     let finx: i32 = current_mouse_pos[0];
@@ -340,16 +335,13 @@ fn filled_circle_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[
     }
 }
 
-fn draw_ellipse<F>(preview_buffer: &mut Vec<[i32; 2]>, mut render_func: F, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2], clear_buffer: bool) //necessary for ellipse_tool and filled_ellipse_tool
+fn draw_ellipse<F>(preview_buffer: &mut Vec<[i32; 2]>, mut render_func: F, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) //necessary for ellipse_tool and filled_ellipse_tool
     //same credits (docs.rs) but draw_ellipse ofc
+    //this func is the meat for drawing the ellipse, ellipse_tool and filled_ellipse tool just call specialized versions of this
     where
-    F: FnMut(&mut Vec<[i32; 2]>, i32, i32, i32, i32),
-    {
-    if clear_buffer{
-        preview_buffer.clear();
-    }
+    F: FnMut(&mut Vec<[i32; 2]>, i32, i32, i32, i32), {
 
-    let beginx: i32 = start_mouse_pos[0]; //we do this a lot. maybe we should make it inherited lol
+    let beginx: i32 = start_mouse_pos[0];
     let finx: i32 = current_mouse_pos[0];
     let beginy: i32 = start_mouse_pos[1];
     let finy: i32 = current_mouse_pos[1];
@@ -402,11 +394,11 @@ fn draw_ellipse<F>(preview_buffer: &mut Vec<[i32; 2]>, mut render_func: F, curre
 
 }
 
-fn ellipse_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2], clear_buffer: bool) {
-    //docs.rs draw_hollow_ellipse
-    if clear_buffer{
-        preview_buffer.clear();
-    }
+fn ellipse_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) {
+    //docs.rs draw_hollow_ellipse_mut
+
+    preview_buffer.clear();
+
 
     let beginx: i32 = start_mouse_pos[0];
     let finx: i32 = current_mouse_pos[0];
@@ -419,14 +411,13 @@ fn ellipse_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2
     if x_component == y_component {
         circle_tool(preview_buffer,
         &[beginx, beginy],
-        &[finx, finy],
-        false);
+        &[finx, finy]);
         return;
     }
-
-    let draw_quad_pixels = |preview_buffer: &mut Vec<[i32; 2]>, beginx: i32, beginy: i32, x: i32, y: i32| {
+    //passed to draw_ellipse
+    let draw_quad_pixels = |preview_buffer: &mut Vec<[i32; 2]>, beginx: i32, beginy: i32, x: i32, y: i32| { //i don't think this needs clear_buffer?
         //mentioned in previous credits's source, but I figured I'd be specific https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/
-        //modified from render_func in source and drawEllipse in link
+        //draw_quad_pixels in doc.rs
         preview_buffer.push([(beginx + x), (beginy + y)]);
         preview_buffer.push([(beginx - x), (beginy + y)]);
         preview_buffer.push([(beginx + x), (beginy - y)]);
@@ -436,8 +427,48 @@ fn ellipse_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2
     draw_ellipse(preview_buffer,
         draw_quad_pixels,
         &[beginx, beginy],
-        &[finx, finy],
-        false);
+        &[finx, finy]);
+}
+
+fn filled_ellipse_tool (preview_buffer: &mut Vec<[i32; 2]>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) {
+    //docs.rs draw_filled_ellipse_mut, same source as above
+
+    preview_buffer.clear();
+
+
+    let beginx: i32 = start_mouse_pos[0];
+    let finx: i32 = current_mouse_pos[0];
+    let beginy: i32 = start_mouse_pos[1];
+    let finy: i32 = current_mouse_pos[1];
+
+    let x_component:i32 = finx - beginx;
+    let y_component:i32 = finy - beginy;
+
+    //same as above tool, circle will be faster
+    if x_component == y_component {
+        circle_tool(preview_buffer,
+        &[beginx, beginy],
+        &[finx, finy]);
+        return;
+    }
+    //will be passed to draw_ellipse to draw line pair when drawing
+    let draw_line_pairs = |preview_buffer: &mut Vec<[i32; 2]>, beginx: i32, beginy: i32, x: i32, y: i32| {
+        line_tool(
+            preview_buffer,
+            &[(beginx - x), (beginy + y)],
+            &[(beginx + x), (beginy + y)],
+            false );
+        line_tool(
+            preview_buffer,
+            &[(beginx - x), (beginy - y)],
+            &[(beginx + x) , (beginy - y)],
+            false );
+    };
+
+    draw_ellipse(preview_buffer,
+        draw_line_pairs,
+        &[beginx, beginy],
+        &[finx, finy]);
 }
 
 fn text_tool(window_array: &mut Vec<Vec<char>>, &prev_gpos: &[i32;2], input: &String, num_of_cols: u32) -> [i32;2] {
@@ -532,11 +563,11 @@ fn main() {
                             }
                             else if &current_tool == "o"{
                                 mstart_pos = gpos;
-                                circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                                circle_tool(&mut preview_buffer, &gpos, &mstart_pos);
                             }
                             else if &current_tool == "q"{
                                 mstart_pos = gpos;
-                                filled_circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                                filled_circle_tool(&mut preview_buffer, &gpos, &mstart_pos);
                             }
                             else if &current_tool == "p"{ //for image converter
                                 mstart_pos = gpos;
@@ -544,7 +575,11 @@ fn main() {
                             }
                             else if &current_tool == "e"{
                                 mstart_pos = gpos;
-                                ellipse_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                                ellipse_tool(&mut preview_buffer, &gpos, &mstart_pos);
+                            }
+                            else if &current_tool == "w"{
+                                mstart_pos = gpos;
+                                ellipse_tool(&mut preview_buffer, &gpos, &mstart_pos);
                             }
                             prev_gpos = gpos;
                         },
@@ -568,17 +603,21 @@ fn main() {
                             filled_rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
                         }
                         else if &current_tool == "o"{
-                            circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                            circle_tool(&mut preview_buffer, &gpos, &mstart_pos);
                         }
                         else if &current_tool == "q"{
-                            filled_circle_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                            filled_circle_tool(&mut preview_buffer, &gpos, &mstart_pos);
                         }
                         else if &current_tool == "p"{
                             rectangle_tool(&mut preview_buffer, &gpos, &mstart_pos)
                         }
                         else if &current_tool == "e"{
                             mstart_pos = gpos;
-                            ellipse_tool(&mut preview_buffer, &gpos, &mstart_pos, true);
+                            ellipse_tool(&mut preview_buffer, &gpos, &mstart_pos);
+                        }
+                        else if &current_tool == "w"{
+                            mstart_pos = gpos;
+                            filled_ellipse_tool(&mut preview_buffer, &gpos, &mstart_pos);
                         }
                         if prev_gpos != gpos{ //prevents rerender w/ no change
                             render_change = true;
