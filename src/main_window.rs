@@ -46,10 +46,13 @@ impl MainWindow<'_>{
 
         let start_font = ttf_context.load_font("./NotoSansMono-Regular.ttf", 16).unwrap();
 
-        let start_window = video_subsystem.window("ascii", window_width, window_height) //builds and names window
+        let mut start_window = video_subsystem.window("ascii", window_width, window_height) //builds and names window
             .position_centered()
             .build()
             .expect("failed to build window");
+
+        start_window.set_resizable(true);
+        let _ = start_window.set_minimum_size(500, gui_height + 100).unwrap();
 
         let start_canvas = start_window.into_canvas() //builds canvas
             .present_vsync()
@@ -126,6 +129,14 @@ impl MainWindow<'_>{
         ).expect("failed copying texture to canvas"); //display that texture to the canvas
     }
 
+    pub fn window_size_changed(&mut self, new_width: i32, new_height: i32) {
+        self.window_width = new_width as u32;
+        self.window_height = new_height as u32;
+
+        self.col_length = (self.window_width / self.num_of_cols) as i32;
+        self.row_length = ((self.window_height - self.gui_height) / self.num_of_rows) as i32;
+    }
+
     //grid functions
 
     pub fn write_buffer(&mut self, current_char: char) {
@@ -152,11 +163,18 @@ impl MainWindow<'_>{
         let rnumi = self.num_of_rows as i32;
         let cnumi = self.num_of_cols as i32;
     
+            
+        
+
         if rgpos < 0 {rgpos = 0;} //sets 0 as left bound
         else if rgpos >= rnumi {rgpos = rnumi - 1;} //right bound
         if cgpos < 0 {cgpos = 0;} //upper bound
         else if cgpos >= cnumi {cgpos = cnumi - 1;} //lower bound
     
+        println!("----------------------");
+        println!("row_length {} col_length {}", self.row_length, self.col_length);
+        println!("rpos {} cpos {}", rpos, cpos);
+        println!("rgpos {} cgpos {}", rgpos, cgpos);
         return [rgpos, cgpos]; //converts window dimensions to canvas dimensions
     }
 
