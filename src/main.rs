@@ -491,6 +491,15 @@ fn main() {
                         }   
                     }
                 },
+                Event::Window {win_event, ..} =>{
+                    match win_event{
+                        sdl2::event::WindowEvent::SizeChanged(width, height) => {
+                            main_window.window_size_changed(width, height);
+                            render_change = true;
+                        },
+                        _ => {},
+                    }
+                },
                 _ => {},
             }
         }
