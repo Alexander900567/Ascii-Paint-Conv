@@ -13,8 +13,8 @@ pub struct MainWindow<'a> {
     window_height: u32, 
     pub num_of_cols: u32,
     pub num_of_rows: u32, 
-    col_length: i32,
-    row_length: i32,
+    col_length: f32,
+    row_length: f32,
     pub gui_height: u32,
     pub preview_buffer: Vec<[i32;2]>,
     pub window_array: Vec<Vec<char>>, 
@@ -70,8 +70,8 @@ impl MainWindow<'_>{
             window_height: window_height,
             num_of_cols: num_of_cols,
             num_of_rows: num_of_rows,
-            col_length: (window_width / num_of_cols) as i32,
-            row_length: ((window_height - gui_height) / num_of_rows) as i32,
+            col_length: window_width as f32 / num_of_cols as f32,
+            row_length: (window_height as f32 - gui_height as f32) / num_of_rows as f32,
             gui_height: gui_height,
             preview_buffer: Vec::new(),
             window_array: start_window_array,
@@ -133,8 +133,8 @@ impl MainWindow<'_>{
         self.window_width = new_width as u32;
         self.window_height = new_height as u32;
 
-        self.col_length = (self.window_width / self.num_of_cols) as i32;
-        self.row_length = ((self.window_height - self.gui_height) / self.num_of_rows) as i32;
+        self.col_length = self.window_width as f32 / self.num_of_cols as f32;
+        self.row_length = (self.window_height as f32 - self.gui_height as f32) / self.num_of_rows as f32;
     }
 
     //grid functions
@@ -158,23 +158,16 @@ impl MainWindow<'_>{
     }
 
     pub fn get_mouse_gpos(&self, cpos: i32, rpos: i32) -> [i32; 2] {
-        let mut rgpos: i32 = (rpos - (self.gui_height as i32)) / self.row_length; //row global position, row position, row length
-        let mut cgpos: i32 = cpos / self.col_length; // same but column
+        let mut rgpos: i32 = ((rpos as f32 - self.gui_height as f32) / self.row_length) as i32; 
+        let mut cgpos: i32 = (cpos as f32 / self.col_length) as i32;
         let rnumi = self.num_of_rows as i32;
         let cnumi = self.num_of_cols as i32;
     
-            
-        
-
         if rgpos < 0 {rgpos = 0;} //sets 0 as left bound
         else if rgpos >= rnumi {rgpos = rnumi - 1;} //right bound
         if cgpos < 0 {cgpos = 0;} //upper bound
         else if cgpos >= cnumi {cgpos = cnumi - 1;} //lower bound
     
-        println!("----------------------");
-        println!("row_length {} col_length {}", self.row_length, self.col_length);
-        println!("rpos {} cpos {}", rpos, cpos);
-        println!("rgpos {} cgpos {}", rgpos, cgpos);
         return [rgpos, cgpos]; //converts window dimensions to canvas dimensions
     }
 
