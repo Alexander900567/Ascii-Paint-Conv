@@ -52,6 +52,7 @@ impl MainWindow<'_>{
             .expect("failed to build window");
 
         start_window.set_resizable(true);
+        //set a min size for the window; doesn't really work on linux for some reason
         let _ = start_window.set_minimum_size(500, gui_height + 100).unwrap();
 
         let start_canvas = start_window.into_canvas() //builds canvas
@@ -130,8 +131,13 @@ impl MainWindow<'_>{
     }
 
     pub fn window_size_changed(&mut self, new_width: i32, new_height: i32) {
+        if new_height < self.gui_height as i32{ //emergancy don't crash the program check
+            let minimum_height = self.canvas.window().minimum_size().1;
+            let _ = self.canvas.window_mut().set_size(new_width as u32, minimum_height).unwrap();
+            self.window_height = minimum_height;
+        }
+        else {self.window_height = new_height as u32;}
         self.window_width = new_width as u32;
-        self.window_height = new_height as u32;
 
         self.col_length = self.window_width as f32 / self.num_of_cols as f32;
         self.row_length = (self.window_height as f32 - self.gui_height as f32) / self.num_of_rows as f32;
