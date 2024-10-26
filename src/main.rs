@@ -294,7 +294,7 @@ fn main() {
         &ttf_context,
         &video_subsystem,
         &clipboard,
-        1700,
+        1200,
         900,
         60,
         40,
