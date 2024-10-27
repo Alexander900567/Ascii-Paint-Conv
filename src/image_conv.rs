@@ -34,7 +34,19 @@ pub fn convert_image_put_in_window(window_array: &mut Vec<Vec<char>>,
     let map_length = ascii_array.len() as f32;
     let lum_map_num = 255.0 as f32 / map_length; //the span of luminance each character gets
 
-    let mut img = image::open("input.png").unwrap();
+    
+    let path = native_dialog::FileDialog::new()
+        .set_location("~")
+        .add_filter("Image", &["png", "jpeg"])
+        .show_open_single_file()
+        .unwrap().unwrap_or(std::path::PathBuf::new());
+    let path_string = path.as_path().to_str().unwrap(); 
+    
+    if path_string == ""{ //eject if they canceled out of the file picker
+        return;
+    }
+
+    let mut img = image::open(path_string).unwrap();
     img = img.grayscale();
     
     //how many characters is the image being converted to
