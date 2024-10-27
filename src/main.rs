@@ -3,6 +3,7 @@ extern crate image;
 extern crate rayon;
 mod image_conv;
 mod main_window;
+mod undo_redo;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
 
@@ -279,8 +280,10 @@ fn text_tool(main_window: &mut main_window::MainWindow<'_>, &prev_gpos: &[i32;2]
     return [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (main_window.num_of_cols as i32)-1)];
 }
 
-fn free_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2]){
-    main_window.add_to_preview_buffer(current_mouse_pos[0], current_mouse_pos[1]);
+fn free_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], prev_gpos: &[i32; 2]){
+    if current_mouse_pos != prev_gpos{
+        main_window.add_to_preview_buffer(current_mouse_pos[0], current_mouse_pos[1]);
+    }
 }
 
 fn main() {
@@ -332,7 +335,7 @@ fn main() {
                             if y > main_window.gui_height as i32{
                                 let gpos = main_window.get_mouse_gpos(x, y);
                                 if &current_tool == "f"{
-                                    free_tool(&mut main_window, &gpos);
+                                    free_tool(&mut main_window, &gpos, &[-1, -1]);
                                 }
                                 else if &current_tool == "l"{
                                     mstart_pos = gpos;
@@ -373,7 +376,7 @@ fn main() {
                         if y > main_window.gui_height as i32{
                             let gpos = main_window.get_mouse_gpos(x, y);
                             if &current_tool == "f"{ //gives these functions the needed parameters
-                                free_tool(&mut main_window, &gpos);
+                                free_tool(&mut main_window, &gpos, &prev_gpos);
                             }
                             else if &current_tool == "l"{
                                 line_tool(&mut main_window, &gpos, &mstart_pos, true);
@@ -456,6 +459,14 @@ fn main() {
                         }
                         else if &(text.to_lowercase()) == "m"{
                             keycombo = String::from("m");
+                        }
+                        else if &(text.to_lowercase()) == "z"{
+                            main_window.undo_redo.perform_undo(&mut main_window.window_array);
+                            render_change = true;
+                        }
+                        else if &(text.to_lowercase()) == "y"{
+                            main_window.undo_redo.perform_redo(&mut main_window.window_array);
+                            render_change = true;
                         }
                     }
                 },   

@@ -2,6 +2,8 @@ Cheat Sheet:
 
 Choose Letter: i + Letter/Key
 Copy to Clipboard: b
+Undo: z
+Redo: y
 
 Regular Mode: cf
 Line Tool: cl
