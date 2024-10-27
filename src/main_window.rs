@@ -1,4 +1,5 @@
 use sdl2::pixels::Color;
+use crate::undo_redo;
 
 pub struct MainWindow<'a> {
         
@@ -18,6 +19,7 @@ pub struct MainWindow<'a> {
     pub gui_height: u32,
     pub preview_buffer: Vec<[i32;2]>,
     pub window_array: Vec<Vec<char>>, 
+    pub undo_redo: undo_redo::UndoRedo, 
 }
 
 impl MainWindow<'_>{
@@ -76,6 +78,7 @@ impl MainWindow<'_>{
             gui_height: gui_height,
             preview_buffer: Vec::new(),
             window_array: start_window_array,
+            undo_redo: undo_redo::UndoRedo::new(),
         }
     }
 
@@ -146,6 +149,8 @@ impl MainWindow<'_>{
     //grid functions
 
     pub fn write_buffer(&mut self, current_char: char) {
+        self.undo_redo.add_to_undo(&self.preview_buffer, &self.window_array);
+        self.undo_redo.redo_buffer.clear();
         for buffer_item in &(self.preview_buffer){
             self.window_array[buffer_item[0] as usize][buffer_item[1] as usize] = current_char;
         }
