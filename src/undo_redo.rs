@@ -28,8 +28,6 @@ impl UndoRedo{
         if self.undo_buffer.len() > self.max_undo_history{
             let _ = self.undo_buffer.pop_back();
         }
-        println!("{:?}", preview_buffer);
-        println!("{:?}", self.undo_buffer);
     }
 
     pub fn perform_undo(&mut self, window_array: &mut Vec<Vec<char>>){
