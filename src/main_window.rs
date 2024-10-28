@@ -146,6 +146,57 @@ impl MainWindow<'_>{
         self.row_length = (self.window_height as f32 - self.gui_height as f32) / self.num_of_rows as f32;
     }
 
+    pub fn row_count_change(&mut self, new_row_count: i32){
+        if new_row_count < 1{
+            return;
+        }
+
+        let row_diff: i32 = self.num_of_rows as i32 - new_row_count;
+        if row_diff < 0{
+            let mut empty_row = Vec::new();
+            for _ in 0..self.num_of_cols{
+                empty_row.push(' ');
+            }
+            for _ in 0..row_diff.abs(){
+                self.window_array.push(empty_row.clone());
+            }
+        }
+        else if row_diff > 0{
+            for _ in 0..row_diff.abs(){
+                let _ = self.window_array.pop();
+            }
+        }
+        self.num_of_rows = new_row_count as u32;    
+
+        self.col_length = self.window_width as f32 / self.num_of_cols as f32;
+        self.row_length = (self.window_height as f32 - self.gui_height as f32) / self.num_of_rows as f32;
+    }
+
+    pub fn col_count_change(&mut self, new_col_count: i32){
+        if new_col_count < 1{
+            return;
+        }
+
+        let col_diff: i32 = self.num_of_cols as i32 - new_col_count;
+        if col_diff < 0{
+            for r in 0..self.window_array.len(){
+                for _ in 0..col_diff.abs(){
+                    self.window_array[r].push(' ');
+                }
+            }
+        }
+        else if col_diff > 0{
+            for r in 0..self.window_array.len(){
+                for _ in 0..col_diff.abs(){
+                    self.window_array[r].pop();
+                }
+            }
+        }
+        self.num_of_cols = new_col_count as u32;
+
+        self.col_length = self.window_width as f32 / self.num_of_cols as f32;
+        self.row_length = (self.window_height as f32 - self.gui_height as f32) / self.num_of_rows as f32;
+    }
     //grid functions
 
     pub fn write_buffer(&mut self, current_char: char) {
