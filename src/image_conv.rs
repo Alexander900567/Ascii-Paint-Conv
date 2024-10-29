@@ -34,7 +34,19 @@ pub fn convert_image_put_in_window(window_array: &mut Vec<Vec<char>>,
     let map_length = ascii_array.len() as f32;
     let lum_map_num = 255.0 as f32 / map_length; //the span of luminance each character gets
 
-    let mut img = image::open("input.png").unwrap();
+    
+    let path = native_dialog::FileDialog::new()
+        .set_location("~")
+        .add_filter("Image", &["png", "jpeg"])
+        .show_open_single_file()
+        .unwrap().unwrap_or(std::path::PathBuf::new());
+    let path_string = path.as_path().to_str().unwrap(); 
+    
+    if path_string == ""{ //eject if they canceled out of the file picker
+        return;
+    }
+
+    let mut img = image::open(path_string).unwrap();
     img = img.grayscale();
     
     //how many characters is the image being converted to
@@ -332,8 +344,8 @@ fn downscale_sobel(sobel_ascii_output: &Vec<Vec<char>>, wcount: u32, hcount: u32
     let box_total_pixel = x_box_size * y_box_size as u32;
     let edge_threshold = (box_total_pixel as f32 * 0.05) as u32; //lowering decimal value makes more edges
 
-    println!("wc {} hc {}", wcount, hcount);
-    println!("x {} y {}", x_box_size, y_box_size);
+    //println!("wc {} hc {}", wcount, hcount);
+    //println!("x {} y {}", x_box_size, y_box_size);
 
     //prepare a vector of topleft positions to start each downscale box on
     let mut num_of_rows_added = 0;
@@ -352,7 +364,7 @@ fn downscale_sobel(sobel_ascii_output: &Vec<Vec<char>>, wcount: u32, hcount: u32
         num_of_rows_added += 1;
     }
 
-    boxes.iter().for_each(|cord| println!("{:?}", cord));
+    //boxes.iter().for_each(|cord| println!("{:?}", cord));
    
     //compress the "pixels" of each downscale box into a a single character
     let downscaled: Vec<(u32, u32, char)> = boxes.par_iter().map(|top_left|{

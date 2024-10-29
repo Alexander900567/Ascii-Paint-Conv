@@ -3,6 +3,7 @@ extern crate image;
 extern crate rayon;
 mod image_conv;
 mod main_window;
+mod undo_redo;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
 
@@ -413,6 +414,12 @@ fn text_tool(main_window: &mut main_window::MainWindow<'_>, &prev_gpos: &[i32;2]
     return [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (main_window.num_of_cols as i32)-1)];
 }
 
+fn free_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], prev_gpos: &[i32; 2]){
+    if current_mouse_pos != prev_gpos{
+        main_window.add_to_preview_buffer(current_mouse_pos[0], current_mouse_pos[1]);
+    }
+}
+
 fn main() {
     let sdl_context = sdl2::init().expect("failed to init sdl");
     let video_subsystem = sdl_context.video().expect("failed to init video subsytem");
@@ -425,9 +432,10 @@ fn main() {
         &video_subsystem,
         &clipboard,
         1200,
-        800,
+        900,
         60,
         40,
+        100,
     );
         
     video_subsystem.text_input().start();
@@ -458,14 +466,41 @@ fn main() {
                 Event::MouseButtonDown {mouse_btn, x, y, ..} => { //initial click
                     match mouse_btn {
                         sdl2::mouse::MouseButton::Left => { //Keybinds
-                            let gpos = main_window.get_mouse_gpos(x, y);
-                            if &current_tool == "f"{
-                                main_window.window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
+                            if y > main_window.gui_height as i32{
+                                let gpos = main_window.get_mouse_gpos(x, y);
+                                if &current_tool == "f"{
+                                    free_tool(&mut main_window, &gpos, &[-1, -1]);
+                                }
+                                else if &current_tool == "l"{
+                                    mstart_pos = gpos;
+                                    line_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                }
+                                else if &current_tool == "r"{
+                                    mstart_pos = gpos;
+                                    rectangle_tool(&mut main_window, &gpos, &mstart_pos)
+                                }
+                                else if &current_tool == "s"{
+                                    mstart_pos = gpos;
+                                    filled_rectangle_tool(&mut main_window, &gpos, &mstart_pos);
+                                }
+                                else if &current_tool == "o"{
+                                    mstart_pos = gpos;
+                                    circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                }
+                                else if &current_tool == "q"{
+                                    mstart_pos = gpos;
+                                    filled_circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                }
+                                else if &current_tool == "p"{
+                                    mstart_pos = gpos;
+                                    rectangle_tool(&mut main_window, &gpos, &mstart_pos)
+                                }
+                                prev_gpos = gpos;
                             }
-                            else if &current_tool == "l"{
-                                mstart_pos = gpos;
-                                line_tool(&mut main_window, &gpos, &mstart_pos, true);
+                            else{
+                                //gui stuff goes here
                             }
+<<<<<<< HEAD
                             else if &current_tool == "r"{
                                 mstart_pos = gpos;
                                 rectangle_tool(&mut main_window, &gpos, &mstart_pos)
@@ -495,6 +530,8 @@ fn main() {
                                 ellipse_tool(&mut main_window, &gpos, &mstart_pos);
                             }
                             prev_gpos = gpos;
+=======
+>>>>>>> a1799160e7a09be940836c126659adc57234e058
                         },
                         _ => {}, //eventually will be replaced with a tool list
                     }
@@ -502,10 +539,35 @@ fn main() {
                 },
                 Event::MouseMotion {mousestate, x, y, ..} => { //this is for holding down button
                     if mousestate.left(){
-                        let gpos = main_window.get_mouse_gpos(x, y);
-                        if &current_tool == "f"{ //gives these functions the needed parameters
-                            main_window.window_array[gpos[0] as usize][gpos[1] as usize] = current_key;
+                        if y > main_window.gui_height as i32{
+                            let gpos = main_window.get_mouse_gpos(x, y);
+                            if &current_tool == "f"{ //gives these functions the needed parameters
+                                free_tool(&mut main_window, &gpos, &prev_gpos);
+                            }
+                            else if &current_tool == "l"{
+                                line_tool(&mut main_window, &gpos, &mstart_pos, true);
+                            }
+                            else if &current_tool == "r"{
+                                rectangle_tool(&mut main_window, &gpos, &mstart_pos)
+                            }
+                            else if &current_tool == "s"{
+                                filled_rectangle_tool(&mut main_window, &gpos, &mstart_pos)
+                            }
+                            else if &current_tool == "o"{
+                                circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                            }
+                            else if &current_tool == "q"{
+                                filled_circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                            }
+                            else if &current_tool == "p"{
+                                rectangle_tool(&mut main_window, &gpos, &mstart_pos)
+                            }
+                            if prev_gpos != gpos{
+                                render_change = true;
+                            }
+                            prev_gpos = gpos;
                         }
+<<<<<<< HEAD
                         else if &current_tool == "l"{
                             line_tool(&mut main_window, &gpos, &mstart_pos, true);
                         }
@@ -534,6 +596,8 @@ fn main() {
                             render_change = true;
                         }
                         prev_gpos = gpos;
+=======
+>>>>>>> a1799160e7a09be940836c126659adc57234e058
                     }
                 },
                 Event::MouseButtonUp {mouse_btn, x, y, ..} => { //let go
@@ -593,6 +657,14 @@ fn main() {
                         else if &(text.to_lowercase()) == "m"{
                             keycombo = String::from("m");
                         }
+                        else if &(text.to_lowercase()) == "z"{
+                            main_window.undo_redo.perform_undo(&mut main_window.window_array);
+                            render_change = true;
+                        }
+                        else if &(text.to_lowercase()) == "y"{
+                            main_window.undo_redo.perform_redo(&mut main_window.window_array);
+                            render_change = true;
+                        }
                     }
                 },   
                 Event::KeyUp {keycode, ..} =>{
@@ -625,6 +697,15 @@ fn main() {
                             }
                             _ => {}
                         }   
+                    }
+                },
+                Event::Window {win_event, ..} =>{
+                    match win_event{
+                        sdl2::event::WindowEvent::SizeChanged(width, height) => {
+                            main_window.window_size_changed(width, height);
+                            render_change = true;
+                        },
+                        _ => {},
                     }
                 },
                 _ => {},

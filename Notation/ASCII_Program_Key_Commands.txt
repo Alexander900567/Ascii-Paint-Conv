@@ -1,5 +1,7 @@
 Choose Letter: i + [Shift Optional] + Letter/Key
 Copy to Clipboard: b
+Undo: z
+Redo: y
 
 Regular Mode: cf
 Line Tool: cl

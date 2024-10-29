@@ -1,4 +1,5 @@
 use sdl2::pixels::Color;
+use crate::undo_redo;
 
 pub struct MainWindow<'a> {
         
@@ -13,10 +14,12 @@ pub struct MainWindow<'a> {
     window_height: u32, 
     pub num_of_cols: u32,
     pub num_of_rows: u32, 
-    col_length: i32,
-    row_length: i32,
+    col_length: f32,
+    row_length: f32,
+    pub gui_height: u32,
     pub preview_buffer: Vec<[i32;2]>,
     pub window_array: Vec<Vec<char>>, 
+    pub undo_redo: undo_redo::UndoRedo, 
 }
 
 impl MainWindow<'_>{
@@ -29,6 +32,7 @@ impl MainWindow<'_>{
             window_height: u32, 
             num_of_cols: u32,
             num_of_rows: u32, 
+            gui_height: u32,
             ) -> MainWindow<'a>{
 
 
@@ -44,10 +48,14 @@ impl MainWindow<'_>{
 
         let start_font = ttf_context.load_font("./NotoSansMono-Regular.ttf", 16).unwrap();
 
-        let start_window = video_subsystem.window("ascii", window_width, window_height) //builds and names window
+        let mut start_window = video_subsystem.window("ascii", window_width, window_height) //builds and names window
             .position_centered()
             .build()
             .expect("failed to build window");
+
+        start_window.set_resizable(true);
+        //set a min size for the window; doesn't really work on linux for some reason
+        let _ = start_window.set_minimum_size(500, gui_height + 100).unwrap();
 
         let start_canvas = start_window.into_canvas() //builds canvas
             .present_vsync()
@@ -65,14 +73,35 @@ impl MainWindow<'_>{
             window_height: window_height,
             num_of_cols: num_of_cols,
             num_of_rows: num_of_rows,
-            col_length: (window_width / num_of_cols) as i32,
-            row_length: (window_height / num_of_rows) as i32,
+            col_length: window_width as f32 / num_of_cols as f32,
+            row_length: (window_height as f32 - gui_height as f32) / num_of_rows as f32,
+            gui_height: gui_height,
             preview_buffer: Vec::new(),
             window_array: start_window_array,
+            undo_redo: undo_redo::UndoRedo::new(),
         }
     }
 
+    //render_functions
+
     pub fn render(&mut self, current_key: char){
+        
+        self.render_gui();
+
+        self.render_grid(current_key);
+
+        self.canvas.present(); //actually commit changes to screen!
+    }
+
+    fn render_gui(&mut self){
+        self.canvas.set_draw_color(Color::RGB(125, 125, 125)); //set canvas to grey
+        //self.canvas.clear(); //clears frame allows new one
+        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0,
+                              self.window_width, self.gui_height)); //first two is where, second is how big
+    }
+
+    fn render_grid(&mut self, current_key: char){
+
         let mut render_array = self.window_array.clone();
         
         for buffer_item in &self.preview_buffer{ 
@@ -80,7 +109,9 @@ impl MainWindow<'_>{
         }
 
         self.canvas.set_draw_color(Color::RGB(0, 0, 0)); //set canvas to black
-        self.canvas.clear(); //clears frame allows new one
+        //self.canvas.clear(); //clears frame allows new one
+        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, self.gui_height as i32,
+                              self.window_width, self.window_height - self.gui_height)); //first two is where, second is how big
         
         let mut array_string = String::new(); //makes our grid a string, so we can write, copy, etc.
         for x in &render_array{
@@ -97,14 +128,29 @@ impl MainWindow<'_>{
         let _ = self.canvas.copy(
             &texture,
             None, //part of texture we want... all of it 
-            sdl2::rect::Rect::new(0, 0, 1200, 800), //first two is where, second is how big
+            sdl2::rect::Rect::new(0, self.gui_height as i32,
+                                  self.window_width, self.window_height - self.gui_height) //first two is where, second is how big
         ).expect("failed copying texture to canvas"); //display that texture to the canvas
-
-
-        self.canvas.present(); //actually commit changes to screen!
     }
 
+    pub fn window_size_changed(&mut self, new_width: i32, new_height: i32) {
+        if new_height < self.gui_height as i32{ //emergancy don't crash the program check
+            let minimum_height = self.canvas.window().minimum_size().1;
+            let _ = self.canvas.window_mut().set_size(new_width as u32, minimum_height).unwrap();
+            self.window_height = minimum_height;
+        }
+        else {self.window_height = new_height as u32;}
+        self.window_width = new_width as u32;
+
+        self.col_length = self.window_width as f32 / self.num_of_cols as f32;
+        self.row_length = (self.window_height as f32 - self.gui_height as f32) / self.num_of_rows as f32;
+    }
+
+    //grid functions
+
     pub fn write_buffer(&mut self, current_char: char) {
+        self.undo_redo.add_to_undo(&self.preview_buffer, &self.window_array);
+        self.undo_redo.redo_buffer.clear();
         for buffer_item in &(self.preview_buffer){
             self.window_array[buffer_item[0] as usize][buffer_item[1] as usize] = current_char;
         }
@@ -123,8 +169,8 @@ impl MainWindow<'_>{
     }
 
     pub fn get_mouse_gpos(&self, cpos: i32, rpos: i32) -> [i32; 2] {
-        let mut rgpos: i32 = rpos / self.row_length; //row global position, row position, row length
-        let mut cgpos: i32 = cpos / self.col_length; // same but column
+        let mut rgpos: i32 = ((rpos as f32 - self.gui_height as f32) / self.row_length) as i32; 
+        let mut cgpos: i32 = (cpos as f32 / self.col_length) as i32;
         let rnumi = self.num_of_rows as i32;
         let cnumi = self.num_of_cols as i32;
     
@@ -145,6 +191,8 @@ impl MainWindow<'_>{
         }
         self.preview_buffer.push([rpos, cpos]);
     }
+
+    //gui functions
 }
 
 
