@@ -343,7 +343,7 @@ fn ellipse_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos
     else if y_component == 0 { //that's why these were flipped. they're misnamed
         println!("We entered the statement"); //these will make normal lines now, but only that
         line_tool(main_window,
-        &[fin_row + x_component, fin_col], //does this feel weird to you too? like these may be wrong, but they aren't displaying what they should, right?
+        &[begin_row + (-2 * (begin_row - fin_row)), begin_col], //does this feel weird to you too? like these may be wrong, but they aren't displaying what they should, right?
         &[begin_row, begin_col], //didn't matter, they should both be the same. since x_comp = 0, both x are same
         true); //i've been messing with both lol
         return; //these should both be straight lines.
@@ -351,8 +351,8 @@ fn ellipse_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos
     else if x_component == 0 { //oh it'll work fine if you do this, but change ANYTHING, and it goes bonkers
         println!("We entered the other statement");
         line_tool(main_window,
+        &[fin_row, begin_col + (-2 * (begin_col - fin_col))],
         &[begin_row, begin_col],
-        &[fin_row, fin_col],
         false); //this should be futureproofed when we decide to do odd ellipses
         return;  
     }
