@@ -5,6 +5,8 @@ mod image_conv;
 mod main_window;
 mod undo_redo;
 
+use std::thread::current;
+
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
 
 fn line_tool(main_window: &mut main_window::MainWindow<'_>,
@@ -459,6 +461,7 @@ fn main() {
     //holds on to the previous loops' gpos so a render doesn't get called if the mouse hasn't moved grid position
     let mut prev_gpos = [0, 0];
     let mut current_key = 'a'; //default char is 'a'
+    let mut current_gui_button = 0;
     let mut keycombo = String::new(); //will hold our key commands
     let mut current_tool = String::from("f"); //default "f" because c + f is our paint tool
     let mut tool_modifier = Vec::from([String::from(" "), String::from(" ")]);
@@ -512,8 +515,25 @@ fn main() {
                                 }
                                 prev_gpos = gpos;
                             }
-                            else{
-                                //gui stuff goes here
+                            else if y > (main_window.gui_height as f32 * 0.5) as i32 { //bottom row of buttons
+                            }
+                            else { //top row of buttons
+                                if x >= 0 && x < (main_window.window_width as f32 *  0.2) as i32 { //range check
+                                    println!("button 1 pressed");
+                                    current_gui_button = 1; //this whites out, change to create subbuttons,
+                                }
+                                else if x >= (main_window.window_width as f32 *  0.2) as i32 && x < (main_window.window_width as f32 *  0.4) as i32 {
+                                    println!("button 2 pressed");
+                                }
+                                else if x >= (main_window.window_width as f32 *  0.4) as i32 && x < (main_window.window_width as f32 *  0.6) as i32 {
+                                    println!("button 3 pressed");
+                                }
+                                else if x >= (main_window.window_width as f32 *  0.6) as i32 && x < (main_window.window_width as f32 *  0.8) as i32 {
+                                    println!("button 4 pressed");
+                                }
+                                else if x >= (main_window.window_width as f32 *  0.8) as i32 && x <= main_window.window_width as i32 {
+                                    println!("button 5 pressed");
+                                }
                             }
                         },
                         _ => {}, //eventually will be replaced with a tool list
@@ -671,7 +691,7 @@ fn main() {
         }
         if render_change{ //render if change
             let pre = std::time::SystemTime::now();
-            main_window.render(current_key);
+            main_window.render(current_key, current_gui_button);
             render_change = false;
             let post = std::time::SystemTime::now();
             times.push(post.duration_since(pre).unwrap().as_secs_f64());
