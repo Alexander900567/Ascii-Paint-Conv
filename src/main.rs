@@ -523,15 +523,19 @@ fn main() {
                                     current_gui_button = 1; //this whites out, change to create subbuttons,
                                 }
                                 else if x >= (main_window.window_width as f32 *  0.2) as i32 && x < (main_window.window_width as f32 *  0.4) as i32 {
+                                    current_gui_button = 2;
                                     println!("button 2 pressed");
                                 }
                                 else if x >= (main_window.window_width as f32 *  0.4) as i32 && x < (main_window.window_width as f32 *  0.6) as i32 {
+                                    current_gui_button = 3;
                                     println!("button 3 pressed");
                                 }
                                 else if x >= (main_window.window_width as f32 *  0.6) as i32 && x < (main_window.window_width as f32 *  0.8) as i32 {
+                                    current_gui_button = 4;
                                     println!("button 4 pressed");
                                 }
                                 else if x >= (main_window.window_width as f32 *  0.8) as i32 && x <= main_window.window_width as i32 {
+                                    current_gui_button = 5;
                                     println!("button 5 pressed");
                                 }
                             }
@@ -623,10 +627,10 @@ fn main() {
                         keycombo = String::from("");
                     }
                     else {
-                        if &(text.to_lowercase()) == "i"{
+                        if &(text.to_lowercase()) == "i"{ //will start key select
                             keycombo = String::from("i");
                         }
-                        else if &(text.to_lowercase()) == "c"{
+                        else if &(text.to_lowercase()) == "c"{ //these keys just need to be pressed (no combo)
                             keycombo = String::from("c");
                         }
                         else if &(text.to_lowercase()) == "b"{

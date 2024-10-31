@@ -99,33 +99,40 @@ impl MainWindow<'_>{
         self.canvas.set_draw_color(Color::RGB(125, 125, 125)); //set color to grey (which we later use in next func)
         //self.canvas.clear(); //clears frame allows new one
         //button tray
-        //function syntax: first two is where, second two is how big
-        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0, //uses set color (grey), goes from top left corner and populates entire 
+        //function syntax: first two is where, second two is how big (i32, i32, u32, u32)
+        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0, //uses set color (grey), goes from top left corner and populates entire top row
                 self.window_width, self.gui_height)); 
         //top row of buttons are placed on an offset of 1/5 of the window width (All buttons are 1/5th of window width wide)
-        self.canvas.set_draw_color(Color::RGB(50, 100, 150)); //Navy blue
-        let _gui_file_button = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0, //name these if needbe
-            self.window_width / 5u32, (self.gui_height as f32* 0.5) as u32));
-        self.canvas.set_draw_color(Color::RGB(255, 255, 255)); //White
-        let _gui_edit_button = self.canvas.fill_rect(sdl2::rect::Rect::new((self.window_width as f32 *  0.2) as i32, 0,
+        self.canvas.set_draw_color(Color::RGB(50, 100, 150)); //3 navy blue rectangles on top of background
+        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new((self.window_width as f32 *  0.2) as i32, 0,
             self.window_width / 5u32, (self.gui_height as f32 * 0.5) as u32)); //these are done differently for readability (decimals and fractions)
-        self.canvas.set_draw_color(Color::RGB(50, 100, 150)); //Navy blue
-        let _gui_view_button = self.canvas.fill_rect(sdl2::rect::Rect::new((self.window_width as f32 *  0.4) as i32, 0,
-            self.window_width / 5u32, (self.gui_height as f32 * 0.5) as u32));
-        self.canvas.set_draw_color(Color::RGB(255, 255, 255)); //White
-        let _gui_help_button = self.canvas.fill_rect(sdl2::rect::Rect::new((self.window_width as f32 *  0.6) as i32, 0,
-            self.window_width / 5u32, (self.gui_height as f32 * 0.5) as u32));
-        self.canvas.set_draw_color(Color::RGB(50, 100, 150)); //Navy blue
-        let _gui_about_button = self.canvas.fill_rect(sdl2::rect::Rect::new((self.window_width as f32 *  0.8) as i32, 0,
-            self.window_width / 5u32, (self.gui_height as f32 * 0.5) as u32));         
+        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new((self.window_width as f32 *  0.6) as i32, 0,
+            self.window_width / 5u32, (self.gui_height as f32 * 0.5) as u32)); 
     }
 
-    fn render_buttons(&mut self, current_gui_button: i32) { //test, should white out all buttons, eventually will render subbuttons
+    fn render_buttons(&mut self, current_gui_button: i32) { //creates subbuttons (1 and 2 created rn) order of # of subbuttons is 3,3,2,1,1
+        //TODO: create closure to close subbutton menu & call it after every button
         if current_gui_button == 1 {
-            self.canvas.set_draw_color(Color::RGB(255, 255, 255)); //set color to grey (which we later use in next func)
-            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0, //uses set color (grey), goes from top left corner and populates entire 
-                self.window_width, self.gui_height));
-            }
+            self.canvas.set_draw_color(Color::RGB(255, 255, 255)); //white background
+            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, (self.gui_height as f32 * 0.5) as i32,
+                    self.window_width, (self.gui_height as f32 * 0.5) as u32));
+            
+            self.canvas.set_draw_color(Color::RGB(50, 100, 150)); //then does the navy buttons
+            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, (self.gui_height as f32 * 0.5) as i32,
+            self.window_width / 3u32, (self.gui_height as f32 * 0.5) as u32));                 
+            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new((self.window_width as f32 * 2.0/3.0) as i32,
+            (self.gui_height as f32 * 0.5) as i32, self.window_width / 3u32, (self.gui_height as f32 * 0.5) as u32));
+        }
+        else if current_gui_button == 2 {
+            self.canvas.set_draw_color(Color::RGB(255, 255, 255)); //white background
+            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, (self.gui_height as f32 * 0.5) as i32,
+            self.window_width, (self.gui_height as f32 * 0.5) as u32));
+            self.canvas.set_draw_color(Color::RGB(50, 100, 150)); //then does the navy buttons
+            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, (self.gui_height as f32 * 0.5) as i32,
+            self.window_width / 3u32, (self.gui_height as f32 * 0.5) as u32));                 
+            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new((self.window_width as f32 * 2.0/3.0) as i32,
+            (self.gui_height as f32 * 0.5) as i32, self.window_width / 3u32, (self.gui_height as f32 * 0.5) as u32));
+        }
     }
 
     fn render_grid(&mut self, current_key: char){
