@@ -84,55 +84,22 @@ impl MainWindow<'_>{
 
     //render_functions
 
-    pub fn render(&mut self, current_key: char, current_gui_button: i32){ //added current button in all render() remove if harmful
-        
-        self.render_gui();
-        
-        self.render_buttons(current_gui_button);
+    pub fn render(&mut self, current_key: char) { //_current_gui_button: i32
+
+        self.render_gui(); //self.render_gui(current_gui_button);
 
         self.render_grid(current_key);
 
         self.canvas.present(); //actually commit changes to screen!
     }
 
-    fn render_gui(&mut self){ //button tray and buttons cosmetic/render
+    fn render_gui(&mut self) { //button tray and buttons cosmetic/render, , _current_gui_button: i32
         self.canvas.set_draw_color(Color::RGB(125, 125, 125)); //set color to grey (which we later use in next func)
         //self.canvas.clear(); //clears frame allows new one
         //button tray
         //function syntax: first two is where, second two is how big (i32, i32, u32, u32)
         let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0, //uses set color (grey), goes from top left corner and populates entire top row
-                self.window_width, self.gui_height)); 
-        //top row of buttons are placed on an offset of 1/5 of the window width (All buttons are 1/5th of window width wide)
-        self.canvas.set_draw_color(Color::RGB(50, 100, 150)); //3 navy blue rectangles on top of background
-        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new((self.window_width as f32 *  0.2) as i32, 0,
-            self.window_width / 5u32, (self.gui_height as f32 * 0.5) as u32)); //these are done differently for readability (decimals and fractions)
-        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new((self.window_width as f32 *  0.6) as i32, 0,
-            self.window_width / 5u32, (self.gui_height as f32 * 0.5) as u32)); 
-    }
-
-    fn render_buttons(&mut self, current_gui_button: i32) { //creates subbuttons (1 and 2 created rn) order of # of subbuttons is 3,3,2,1,1
-        //TODO: create closure to close subbutton menu & call it after every button
-        if current_gui_button == 1 {
-            self.canvas.set_draw_color(Color::RGB(255, 255, 255)); //white background
-            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, (self.gui_height as f32 * 0.5) as i32,
-                    self.window_width, (self.gui_height as f32 * 0.5) as u32));
-            
-            self.canvas.set_draw_color(Color::RGB(50, 100, 150)); //then does the navy buttons
-            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, (self.gui_height as f32 * 0.5) as i32,
-            self.window_width / 3u32, (self.gui_height as f32 * 0.5) as u32));                 
-            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new((self.window_width as f32 * 2.0/3.0) as i32,
-            (self.gui_height as f32 * 0.5) as i32, self.window_width / 3u32, (self.gui_height as f32 * 0.5) as u32));
-        }
-        else if current_gui_button == 2 {
-            self.canvas.set_draw_color(Color::RGB(255, 255, 255)); //white background
-            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, (self.gui_height as f32 * 0.5) as i32,
-            self.window_width, (self.gui_height as f32 * 0.5) as u32));
-            self.canvas.set_draw_color(Color::RGB(50, 100, 150)); //then does the navy buttons
-            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, (self.gui_height as f32 * 0.5) as i32,
-            self.window_width / 3u32, (self.gui_height as f32 * 0.5) as u32));                 
-            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new((self.window_width as f32 * 2.0/3.0) as i32,
-            (self.gui_height as f32 * 0.5) as i32, self.window_width / 3u32, (self.gui_height as f32 * 0.5) as u32));
-        }
+                self.window_width, (self.gui_height as f32 * 0.5) as u32));
     }
 
     fn render_grid(&mut self, current_key: char){
