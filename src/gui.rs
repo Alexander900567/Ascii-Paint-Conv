@@ -26,7 +26,20 @@ impl Gui{
             }
             start_grid.push(temp);
         }
+        /*
+        making a button
+        (button_id, Button::new(&mut start_grid, &mut start_groups,
+                                button_id, top_left, bottom_right,
+                                button_label, is_pressed, toggle_group, visible)
 
+        button_id: i32 = number that represents the button, do not use -1 or the same value for more than one button
+        top_left: (i32, i32) = the grid position of the top left of the button
+        bottom_right: (i32, i32) = the grid position of the bottom right of the button
+        button_label: &str = the text to be rendered on the button
+        is_pressed: i32 = does the button start toggled on(1) or off(0), -1 makes the button a oneshot (no toggle state)
+        toggle_group: i32 = only one button from a toggle group can be on at once, -1 makes the button independent of all others 
+        visible: bool = does the button start visible on the bar
+        */
         let mut start_buttons = std::collections::HashMap::new();
         let mut start_groups = std::collections::HashMap::new();
         start_buttons.insert(0, Button::new(&mut start_grid, &mut start_groups,
