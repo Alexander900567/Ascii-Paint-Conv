@@ -4,6 +4,7 @@ extern crate rayon;
 mod image_conv;
 mod main_window;
 mod undo_redo;
+mod gui;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
 
@@ -406,6 +407,9 @@ fn main() {
         40,
         100,
     );
+
+
+    let mut gui_bar = gui::Gui::new(main_window.gui_height, main_window.window_width, 8, 20);
         
     video_subsystem.text_input().start();
 
@@ -423,7 +427,7 @@ fn main() {
     let mut current_key = 'a'; //default char is 'a'
     let mut keycombo = String::new(); //will hold our key commands
     let mut current_tool = String::from("f"); //default "f" because c + f is our paint tool
-    let mut tool_modifier = Vec::from([String::from(" "), String::from(" ")]);
+    let mut tool_modifier = Vec::from([String::from(" "), String::from(" "), String::from(" ")]);
     let mut mstart_pos = [0, 0];
     while running {
         for event in event_queue.poll_iter() {
@@ -467,7 +471,7 @@ fn main() {
                                 prev_gpos = gpos;
                             }
                             else{
-                                //gui stuff goes here
+                                gui_bar.handle_gui_click(x, y, &mut main_window, &mut current_tool, &mut tool_modifier);
                             }
                         },
                         _ => {}, //eventually will be replaced with a tool list
@@ -485,16 +489,20 @@ fn main() {
                                 line_tool(&mut main_window, &gpos, &mstart_pos, true);
                             }
                             else if &current_tool == "r"{
-                                rectangle_tool(&mut main_window, &gpos, &mstart_pos)
-                            }
-                            else if &current_tool == "s"{
-                                filled_rectangle_tool(&mut main_window, &gpos, &mstart_pos)
+                                if &tool_modifier[2] == "a"{
+                                    filled_rectangle_tool(&mut main_window, &gpos, &mstart_pos);
+                                }
+                                else{
+                                    rectangle_tool(&mut main_window, &gpos, &mstart_pos);
+                                }
                             }
                             else if &current_tool == "o"{
-                                circle_tool(&mut main_window, &gpos, &mstart_pos, true);
-                            }
-                            else if &current_tool == "q"{
-                                filled_circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                if &tool_modifier[2] == "a"{
+                                    filled_circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                }
+                                else{
+                                    circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                }
                             }
                             else if &current_tool == "p"{
                                 rectangle_tool(&mut main_window, &gpos, &mstart_pos)
@@ -509,16 +517,18 @@ fn main() {
                 Event::MouseButtonUp {mouse_btn, x, y, ..} => { //let go
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
-                            if &current_tool == "p"{
-                                let gpos = main_window.get_mouse_gpos(x, y);
-                                image_conv::convert_image_put_in_window(&mut main_window.window_array, 
-                                                                        &gpos, &mstart_pos, 
-                                                                        &tool_modifier[0], &tool_modifier[1]
-                                ); 
-                                main_window.preview_buffer.clear();
-                            }
-                            else{
-                                main_window.write_buffer(current_key);
+                            if y > main_window.gui_height as i32{
+                                if &current_tool == "p"{
+                                    let gpos = main_window.get_mouse_gpos(x, y);
+                                    image_conv::convert_image_put_in_window(&mut main_window.window_array, 
+                                                                            &gpos, &mstart_pos, 
+                                                                            &tool_modifier[0], &tool_modifier[1]
+                                    ); 
+                                    main_window.preview_buffer.clear();
+                                }
+                                else{
+                                    main_window.write_buffer(current_key);
+                                }
                             }
                             render_change = true;
                         },
@@ -544,8 +554,12 @@ fn main() {
                                 if &tool_modifier[1] == " " {tool_modifier[1] = String::from("l");}
                                 else {tool_modifier[1] = String::from(" ");}
                             }
-                            else{
+                            else if &current_tool == "p"{
                                 tool_modifier[0] = text.to_lowercase();
+                            }
+                            else if &current_tool == "r" || &current_tool == "o"{
+                                if &tool_modifier[2] == " " {tool_modifier[2] = String::from("a");}
+                                else {tool_modifier[2] = String::from(" ");}
                             }
                         }
                         keycombo = String::from("");
@@ -629,7 +643,7 @@ fn main() {
         }
         if render_change{ //render if change
             let pre = std::time::SystemTime::now();
-            main_window.render(current_key);
+            main_window.render(&gui_bar, current_key);
             render_change = false;
             let post = std::time::SystemTime::now();
             times.push(post.duration_since(pre).unwrap().as_secs_f64());

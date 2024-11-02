@@ -1,5 +1,6 @@
 use sdl2::pixels::Color;
 use crate::undo_redo;
+use crate::gui;
 
 pub struct MainWindow<'a> {
         
@@ -10,7 +11,7 @@ pub struct MainWindow<'a> {
     canvas: sdl2::render::WindowCanvas,
     font: sdl2::ttf::Font<'a, 'a>,
 
-    window_width: u32,
+    pub window_width: u32,
     window_height: u32, 
     pub num_of_cols: u32,
     pub num_of_rows: u32, 
@@ -62,6 +63,7 @@ impl MainWindow<'_>{
             .build()
             .expect("failed to build canvas");
 
+
         MainWindow{
             sdl_context: sdl_context,
             ttf_context: ttf_context,
@@ -84,20 +86,43 @@ impl MainWindow<'_>{
 
     //render_functions
 
-    pub fn render(&mut self, current_key: char){
+    pub fn render(&mut self, gui: &gui::Gui, current_key: char){
         
-        self.render_gui();
+        self.render_gui(gui);
 
         self.render_grid(current_key);
 
         self.canvas.present(); //actually commit changes to screen!
     }
 
-    fn render_gui(&mut self){
+    fn render_gui(&mut self, gui: &gui::Gui){
         self.canvas.set_draw_color(Color::RGB(125, 125, 125)); //set canvas to grey
-        //self.canvas.clear(); //clears frame allows new one
         let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0,
                               self.window_width, self.gui_height)); //first two is where, second is how big
+
+        
+        self.canvas.set_draw_color(Color::RGB(90, 90, 90)); //set canvas to grey
+        for button in gui.buttons.values(){
+            if button.visible{
+                let top_col = (button.top_left.1 as f32 * gui.col_size) as i32;
+                let top_row = (button.top_left.0 as f32 * gui.row_size) as i32;
+                let bot_col = ((button.bottom_right.1 - button.top_left.1 + 1) as f32 * gui.col_size) as u32;
+                let bot_row = ((button.bottom_right.0 - button.top_left.0 + 1) as f32 * gui.row_size) as u32;
+
+                if button.is_pressed == 1 {self.canvas.set_draw_color(Color::RGB(20, 20, 20));}
+                let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
+                if button.is_pressed == 1 {self.canvas.set_draw_color(Color::RGB(90, 90, 90));}
+                
+                let font_render = self.font.render(&button.button_label); 
+                let font_surface = font_render.blended_wrapped(Color::RGB(255, 255, 255), 0).unwrap();
+                let canvas_texture = self.canvas.texture_creator();  
+                let texture = canvas_texture.create_texture_from_surface(font_surface).unwrap();
+                let _ = self.canvas.copy(
+                    &texture,
+                    None, //part of texture we want... all of it 
+                    sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
+            }
+        }
     }
 
     fn render_grid(&mut self, current_key: char){
