@@ -62,6 +62,10 @@ impl Gui{
         start_buttons.insert(8, Button::new(&mut start_grid, 8,
                                         (1, 19), (3, 19),
                                         "->", -1, true));
+
+        start_buttons.insert(9, Button::new(&mut start_grid, 9,
+                                        (5, 19), (7, 19),
+                                        "co", -1, true));
         Gui{
             gui_grid: start_grid,
             buttons: start_buttons,
@@ -110,6 +114,9 @@ impl Gui{
         }
         else if clicked_id == 8{
             self.click_redo(main_window);
+        }
+        else if clicked_id == 9{
+            self.click_copy_to_clipboard(main_window);
         }
 
         if clicked_is_pressed != -1{
@@ -209,25 +216,10 @@ impl Gui{
         main_window.undo_redo.perform_redo(&mut main_window.window_array);
     }
 
-}
-
-/*
-
-    pub fn get_mouse_gpos(&self, cpos: i32, rpos: i32) -> [i32; 2] {
-        let mut rgpos: i32 = ((rpos as f32 - self.gui_height as f32) / self.row_length) as i32; 
-        let mut cgpos: i32 = (cpos as f32 / self.col_length) as i32;
-        let rnumi = self.num_of_rows as i32;
-        let cnumi = self.num_of_cols as i32;
-    
-        if rgpos < 0 {rgpos = 0;} //sets 0 as left bound
-        else if rgpos >= rnumi {rgpos = rnumi - 1;} //right bound
-        if cgpos < 0 {cgpos = 0;} //upper bound
-        else if cgpos >= cnumi {cgpos = cnumi - 1;} //lower bound
-    
-        return [rgpos, cgpos]; //converts window dimensions to canvas dimensions
+    fn click_copy_to_clipboard(&mut self, main_window: &mut main_window::MainWindow<'_>){
+        main_window.copy_to_clipboard();
     }
-
-*/
+}
 
 pub struct Button{
     pub button_id: i32,

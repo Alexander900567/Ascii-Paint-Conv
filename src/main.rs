@@ -410,9 +410,6 @@ fn main() {
 
 
     let mut gui_bar = gui::Gui::new(main_window.gui_height, main_window.window_width, 8, 20);
-    for x in &gui_bar.gui_grid{
-        println!("{:?}", x);
-    }
         
     video_subsystem.text_input().start();
 
