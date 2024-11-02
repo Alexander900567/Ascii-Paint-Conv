@@ -4,6 +4,7 @@ extern crate rayon;
 mod image_conv;
 mod main_window;
 mod undo_redo;
+mod gui;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
 
@@ -467,7 +468,7 @@ fn main() {
                                 prev_gpos = gpos;
                             }
                             else{
-                                //gui stuff goes here
+                                main_window.gui.handle_gui_click(x, y);
                             }
                         },
                         _ => {}, //eventually will be replaced with a tool list
