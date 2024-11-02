@@ -3,6 +3,7 @@ use crate::main_window;
 pub struct Gui{
     pub gui_grid: Vec<Vec<i32>>,
     pub buttons: std::collections::HashMap<i32, Button>,
+    pub toggle_groups: std::collections::HashMap<i32, i32>,
     pub num_rows: i32,
     pub num_cols: i32,
     pub row_size: f32,
@@ -27,48 +28,71 @@ impl Gui{
         }
 
         let mut start_buttons = std::collections::HashMap::new();
-        start_buttons.insert(0, Button::new(&mut start_grid, 0,
-                                        (1, 1), (3, 2),
-                                        "free", 1, true));
+        let mut start_groups = std::collections::HashMap::new();
+        start_buttons.insert(0, Button::new(&mut start_grid, &mut start_groups,
+                                            0, (1, 1), (3, 2),
+                                            "free", 1, 0, true));
         
-        start_buttons.insert(1, Button::new(&mut start_grid, 1,
-                                        (1, 12), (3, 13),
-                                        "fill", -1, false));
+        start_buttons.insert(1, Button::new(&mut start_grid, &mut start_groups,
+                                            1, (1, 12), (3, 13),
+                                            "fill", 0, -1, false));
 
-        start_buttons.insert(2, Button::new(&mut start_grid, 2,
-                                        (5, 1), (7, 2),
-                                        "line", 0, true));
+        start_buttons.insert(2, Button::new(&mut start_grid, &mut start_groups,
+                                            2, (5, 1), (7, 2),
+                                            "line", 0, 0, true));
 
-        start_buttons.insert(3, Button::new(&mut start_grid, 3,
-                                        (5, 4), (7, 5),
-                                        "rectangle", 0, true));
+        start_buttons.insert(3, Button::new(&mut start_grid, &mut start_groups,
+                                            3, (5, 4), (7, 5), 
+                                            "rectangle", 0, 0, true));
 
-        start_buttons.insert(4, Button::new(&mut start_grid, 4,
-                                        (1, 4), (3, 5),
-                                        "circle", 0, true));
+        start_buttons.insert(4, Button::new(&mut start_grid, &mut start_groups,
+                                            4, (1, 4), (3, 5),
+                                            "circle", 0, 0, true));
 
-        start_buttons.insert(5, Button::new(&mut start_grid, 5,
-                                        (1, 7), (3, 8),
-                                        "text", 0, true));
+        start_buttons.insert(5, Button::new(&mut start_grid, &mut start_groups, 
+                                            5, (1, 7), (3, 8),
+                                            "text", 0, 0, true));
 
-        start_buttons.insert(6, Button::new(&mut start_grid, 6,
-                                        (5, 7), (7, 8),
-                                        "picture", 0, true));
+        start_buttons.insert(6, Button::new(&mut start_grid, &mut start_groups, 
+                                            6, (5, 7), (7, 8),
+                                            "picture", 0, 0, true));
 
-        start_buttons.insert(7, Button::new(&mut start_grid, 7,
-                                        (1, 17), (3, 17),
-                                        "<-", -1, true));
+        start_buttons.insert(7, Button::new(&mut start_grid, &mut start_groups, 
+                                            7, (1, 17), (3, 17),
+                                            "<-", -1, 0, true));
 
-        start_buttons.insert(8, Button::new(&mut start_grid, 8,
-                                        (1, 19), (3, 19),
-                                        "->", -1, true));
+        start_buttons.insert(8, Button::new(&mut start_grid, &mut start_groups, 
+                                            8, (1, 19), (3, 19),
+                                            "->", -1, 0, true));
 
-        start_buttons.insert(9, Button::new(&mut start_grid, 9,
-                                        (5, 19), (7, 19),
-                                        "co", -1, true));
+        start_buttons.insert(9, Button::new(&mut start_grid, &mut start_groups, 
+                                            9, (5, 19), (7, 19),
+                                            "co", -1, 0, true));
+
+        start_buttons.insert(10, Button::new(&mut start_grid, &mut start_groups, 
+                                            10, (1, 12), (3, 12),
+                                            "1", 0, 1, false));
+
+        start_buttons.insert(11, Button::new(&mut start_grid, &mut start_groups, 
+                                            11, (1, 13), (3, 13),
+                                            "2", 0, 1, false));
+
+        start_buttons.insert(12, Button::new(&mut start_grid, &mut start_groups, 
+                                            12, (1, 14), (3, 14),
+                                            "3", 0, 1, false));
+
+        start_buttons.insert(13, Button::new(&mut start_grid, &mut start_groups, 
+                                            13, (1, 15), (3, 15),
+                                            "4", 1, 1, false));
+
+        start_buttons.insert(14, Button::new(&mut start_grid, &mut start_groups, 
+                                            14, (5, 12), (7, 13),
+                                            "edge", 0, -1, false));
+        println!("{:?}", start_groups);
         Gui{
             gui_grid: start_grid,
             buttons: start_buttons,
+            toggle_groups: start_groups,
             num_rows: num_rows,
             num_cols: num_cols,
             row_size: (gui_height as i32 / num_rows) as f32,
@@ -77,7 +101,7 @@ impl Gui{
         }
     }
 
-    pub fn handle_gui_click(&mut self, x: i32, y: i32, main_window: &mut main_window::MainWindow<'_>, current_tool: &mut String){
+    pub fn handle_gui_click(&mut self, x: i32, y: i32, main_window: &mut main_window::MainWindow<'_>, current_tool: &mut String, tool_modifier: &mut Vec<String>){
         let grid_pos = self.get_gui_grid_pos(x, y);
         
         let clicked_id = self.gui_grid[grid_pos.0 as usize][grid_pos.1 as usize];
@@ -85,10 +109,11 @@ impl Gui{
             return;
         }
         let clicked_is_pressed = self.buttons.get(&clicked_id).unwrap().is_pressed;
-     
+        let toggle_group = self.buttons.get(&clicked_id).unwrap().toggle_group;
+
         let mut unclick_id = 0;
-        if clicked_is_pressed != -1{
-            unclick_id = self.handle_unclick();
+        if clicked_is_pressed != -1 {
+            unclick_id = self.handle_unclick(toggle_group, clicked_id, tool_modifier);
         }
 
         if clicked_id == 0{
@@ -118,19 +143,42 @@ impl Gui{
         else if clicked_id == 9{
             self.click_copy_to_clipboard(main_window);
         }
+        else if Vec::from([10, 11, 12, 13]).contains(&clicked_id){
+            self.click_ascii_pallete(tool_modifier, clicked_id);
+        }
 
-        if clicked_is_pressed != -1{
+        if toggle_group == -1 && clicked_is_pressed == 0{
+            if clicked_id == 1{
+                self.click_fill(tool_modifier);
+            }
+            if clicked_id == 14{
+                self.click_edge(tool_modifier);
+            }
+        }
+
+        if clicked_is_pressed != -1 && toggle_group != -1{
             self.buttons.get_mut(&unclick_id).unwrap().is_pressed = 0;
             self.buttons.get_mut(&clicked_id).unwrap().is_pressed = 1;
+            self.toggle_groups.insert(toggle_group, clicked_id);
+        }
+        else if toggle_group == -1 && clicked_is_pressed == 0{
+            self.buttons.get_mut(&clicked_id).unwrap().is_pressed = 1;
+        }
+        else if toggle_group == -1 && clicked_is_pressed == 1{
+            self.buttons.get_mut(&clicked_id).unwrap().is_pressed = 0;
         }
     }
 
-    pub fn handle_unclick(&mut self) -> i32{
-        let mut unclick_id = 0;
-        for button in self.buttons.values(){
-            if button.is_pressed == 1{
-                unclick_id = button.button_id;
-            }
+    pub fn handle_unclick(&mut self, toggle_group: i32, clicked_id: i32, tool_modifier: &mut Vec<String>) -> i32{
+        let unclick_id: i32; 
+        let pressed_status: i32;
+        if toggle_group == -1{
+            unclick_id = clicked_id;
+            pressed_status = self.buttons.get(&clicked_id).unwrap().is_pressed;
+        }
+        else{
+            unclick_id = *self.toggle_groups.get(&toggle_group).unwrap();
+            pressed_status = -1;
         }
         
         if unclick_id == 3{
@@ -139,7 +187,18 @@ impl Gui{
         else if unclick_id == 4{
             self.unclick_circle();
         }
-            
+        else if unclick_id == 6{
+            self.unclick_picture();
+        }
+
+        if toggle_group == -1 && pressed_status == 1{
+            if unclick_id == 1{
+                self.unclick_fill(tool_modifier);
+            }
+            if unclick_id == 14{
+                self.unclick_edge(tool_modifier);
+            }
+        }
 
         return unclick_id;
     }
@@ -200,12 +259,53 @@ impl Gui{
         self.hide_button(1);
     }
 
+    fn click_fill(&self, tool_modifier: &mut Vec<String>){
+        tool_modifier[2] = String::from("a");
+    }
+    fn unclick_fill(&self, tool_modifier: &mut Vec<String>){
+        tool_modifier[2] = String::from(" ");
+    }
+
+    fn click_ascii_pallete(&self, tool_modifier: &mut Vec<String>, clicked_id: i32){
+        if clicked_id == 10{
+            tool_modifier[0] = String::from("1");
+        }
+        else if clicked_id == 11{
+            tool_modifier[0] = String::from("2");
+        }
+        else if clicked_id == 12{
+            tool_modifier[0] = String::from("3");
+        }
+        else if clicked_id == 13{
+            tool_modifier[0] = String::from("4");
+        }
+    }
+
+    fn click_edge(&self, tool_modifier: &mut Vec<String>){
+        tool_modifier[1] = String::from("l");
+    }
+    fn unclick_edge(&self, tool_modifier: &mut Vec<String>){
+        tool_modifier[1] = String::from(" ");
+    }
+
     fn click_text(&self, current_tool: &mut String){
         *current_tool = String::from('t');
     }
 
-    fn click_picture(&self, current_tool: &mut String){
+    fn click_picture(&mut self, current_tool: &mut String){
+        self.show_button(10);
+        self.show_button(11);
+        self.show_button(12);
+        self.show_button(13);
+        self.show_button(14);
         *current_tool = String::from('p');
+    }
+    fn unclick_picture(&mut self){
+        self.hide_button(10);
+        self.hide_button(11);
+        self.hide_button(12);
+        self.hide_button(13);
+        self.hide_button(14);
     }
 
     fn click_undo(&mut self, main_window: &mut main_window::MainWindow<'_>){
@@ -228,17 +328,20 @@ pub struct Button{
     pub grid_pos: Vec<(i32, i32)>,
     pub button_label: String,
     pub is_pressed: i32, //0 unpressed, 1 pressed, -1 one-shot button
+    pub toggle_group: i32, //-1 toggle
     pub visible: bool,
 }
 
 impl Button{
     pub fn new(
         gui_grid: &mut Vec<Vec<i32>>,
+        toggle_groups: &mut std::collections::HashMap<i32, i32>,
         button_id: i32,
         top_left: (i32, i32),
         bottom_right: (i32, i32),
         button_label: &str,
         is_pressed: i32, //0 unpressed, 1 pressed, -1 one-shot button
+        toggle_group: i32,
         visible: bool,
         ) -> Button{
 
@@ -252,6 +355,15 @@ impl Button{
             }
         }
 
+        if is_pressed == 1 && toggle_group != -1{
+            toggle_groups.insert(toggle_group, button_id);
+        }
+        else if toggle_group > -1 && is_pressed != -1{
+            if !toggle_groups.contains_key(&toggle_group){
+                toggle_groups.insert(toggle_group, -1);
+            }
+        }
+
         Button{
             button_id: button_id,
             top_left: top_left,
@@ -259,6 +371,7 @@ impl Button{
             grid_pos: start_pos,
             button_label: String::from(button_label),
             is_pressed: is_pressed,
+            toggle_group: toggle_group,
             visible: visible,
         }
     }

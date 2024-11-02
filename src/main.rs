@@ -427,7 +427,7 @@ fn main() {
     let mut current_key = 'a'; //default char is 'a'
     let mut keycombo = String::new(); //will hold our key commands
     let mut current_tool = String::from("f"); //default "f" because c + f is our paint tool
-    let mut tool_modifier = Vec::from([String::from(" "), String::from(" ")]);
+    let mut tool_modifier = Vec::from([String::from(" "), String::from(" "), String::from(" ")]);
     let mut mstart_pos = [0, 0];
     while running {
         for event in event_queue.poll_iter() {
@@ -471,7 +471,7 @@ fn main() {
                                 prev_gpos = gpos;
                             }
                             else{
-                                gui_bar.handle_gui_click(x, y, &mut main_window, &mut current_tool);
+                                gui_bar.handle_gui_click(x, y, &mut main_window, &mut current_tool, &mut tool_modifier);
                             }
                         },
                         _ => {}, //eventually will be replaced with a tool list
@@ -489,16 +489,20 @@ fn main() {
                                 line_tool(&mut main_window, &gpos, &mstart_pos, true);
                             }
                             else if &current_tool == "r"{
-                                rectangle_tool(&mut main_window, &gpos, &mstart_pos)
-                            }
-                            else if &current_tool == "s"{
-                                filled_rectangle_tool(&mut main_window, &gpos, &mstart_pos)
+                                if &tool_modifier[2] == "a"{
+                                    filled_rectangle_tool(&mut main_window, &gpos, &mstart_pos);
+                                }
+                                else{
+                                    rectangle_tool(&mut main_window, &gpos, &mstart_pos);
+                                }
                             }
                             else if &current_tool == "o"{
-                                circle_tool(&mut main_window, &gpos, &mstart_pos, true);
-                            }
-                            else if &current_tool == "q"{
-                                filled_circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                if &tool_modifier[2] == "a"{
+                                    filled_circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                }
+                                else{
+                                    circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                }
                             }
                             else if &current_tool == "p"{
                                 rectangle_tool(&mut main_window, &gpos, &mstart_pos)
@@ -550,8 +554,12 @@ fn main() {
                                 if &tool_modifier[1] == " " {tool_modifier[1] = String::from("l");}
                                 else {tool_modifier[1] = String::from(" ");}
                             }
-                            else{
+                            else if &current_tool == "p"{
                                 tool_modifier[0] = text.to_lowercase();
+                            }
+                            else if &current_tool == "r" || &current_tool == "o"{
+                                if &tool_modifier[2] == " " {tool_modifier[2] = String::from("a");}
+                                else {tool_modifier[2] = String::from(" ");}
                             }
                         }
                         keycombo = String::from("");
