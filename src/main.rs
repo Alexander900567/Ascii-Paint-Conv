@@ -407,6 +407,12 @@ fn main() {
         40,
         100,
     );
+
+
+    let mut gui_bar = gui::Gui::new(main_window.gui_height, main_window.window_width, 8, 20);
+    for x in &gui_bar.gui_grid{
+        println!("{:?}", x);
+    }
         
     video_subsystem.text_input().start();
 
@@ -468,7 +474,7 @@ fn main() {
                                 prev_gpos = gpos;
                             }
                             else{
-                                main_window.gui.handle_gui_click(x, y);
+                                gui_bar.handle_gui_click(x, y, &mut main_window, &mut current_tool);
                             }
                         },
                         _ => {}, //eventually will be replaced with a tool list
@@ -510,16 +516,18 @@ fn main() {
                 Event::MouseButtonUp {mouse_btn, x, y, ..} => { //let go
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
-                            if &current_tool == "p"{
-                                let gpos = main_window.get_mouse_gpos(x, y);
-                                image_conv::convert_image_put_in_window(&mut main_window.window_array, 
-                                                                        &gpos, &mstart_pos, 
-                                                                        &tool_modifier[0], &tool_modifier[1]
-                                ); 
-                                main_window.preview_buffer.clear();
-                            }
-                            else{
-                                main_window.write_buffer(current_key);
+                            if y > main_window.gui_height as i32{
+                                if &current_tool == "p"{
+                                    let gpos = main_window.get_mouse_gpos(x, y);
+                                    image_conv::convert_image_put_in_window(&mut main_window.window_array, 
+                                                                            &gpos, &mstart_pos, 
+                                                                            &tool_modifier[0], &tool_modifier[1]
+                                    ); 
+                                    main_window.preview_buffer.clear();
+                                }
+                                else{
+                                    main_window.write_buffer(current_key);
+                                }
                             }
                             render_change = true;
                         },
@@ -627,7 +635,7 @@ fn main() {
         }
         if render_change{ //render if change
             let pre = std::time::SystemTime::now();
-            main_window.render(current_key);
+            main_window.render(&gui_bar, current_key);
             render_change = false;
             let post = std::time::SystemTime::now();
             times.push(post.duration_since(pre).unwrap().as_secs_f64());

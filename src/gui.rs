@@ -1,3 +1,5 @@
+use crate::main_window;
+
 pub struct Gui{
     pub gui_grid: Vec<Vec<i32>>,
     pub buttons: std::collections::HashMap<i32, Button>,
@@ -27,16 +29,39 @@ impl Gui{
         let mut start_buttons = std::collections::HashMap::new();
         start_buttons.insert(0, Button::new(&mut start_grid, 0,
                                         (1, 1), (3, 2),
-                                        "line", 0, true));
+                                        "free", 1, true));
         
         start_buttons.insert(1, Button::new(&mut start_grid, 1,
-                                        (1, 4), (3, 5),
-                                        "test", -1, false));
+                                        (1, 12), (3, 13),
+                                        "fill", -1, false));
 
         start_buttons.insert(2, Button::new(&mut start_grid, 2,
-                                        (1, 8), (3, 10),
-                                        "line", 1, true));
+                                        (5, 1), (7, 2),
+                                        "line", 0, true));
 
+        start_buttons.insert(3, Button::new(&mut start_grid, 3,
+                                        (5, 4), (7, 5),
+                                        "rectangle", 0, true));
+
+        start_buttons.insert(4, Button::new(&mut start_grid, 4,
+                                        (1, 4), (3, 5),
+                                        "circle", 0, true));
+
+        start_buttons.insert(5, Button::new(&mut start_grid, 5,
+                                        (1, 7), (3, 8),
+                                        "text", 0, true));
+
+        start_buttons.insert(6, Button::new(&mut start_grid, 6,
+                                        (5, 7), (7, 8),
+                                        "picture", 0, true));
+
+        start_buttons.insert(7, Button::new(&mut start_grid, 7,
+                                        (1, 17), (3, 17),
+                                        "<-", -1, true));
+
+        start_buttons.insert(8, Button::new(&mut start_grid, 8,
+                                        (1, 19), (3, 19),
+                                        "->", -1, true));
         Gui{
             gui_grid: start_grid,
             buttons: start_buttons,
@@ -48,7 +73,7 @@ impl Gui{
         }
     }
 
-    pub fn handle_gui_click(&mut self, x: i32, y: i32){
+    pub fn handle_gui_click(&mut self, x: i32, y: i32, main_window: &mut main_window::MainWindow<'_>, current_tool: &mut String){
         let grid_pos = self.get_gui_grid_pos(x, y);
         
         let clicked_id = self.gui_grid[grid_pos.0 as usize][grid_pos.1 as usize];
@@ -63,7 +88,28 @@ impl Gui{
         }
 
         if clicked_id == 0{
-            self.click_line();
+            self.click_free(current_tool);
+        }
+        else if clicked_id == 2{
+            self.click_line(current_tool);
+        }
+        else if clicked_id == 3{
+            self.click_rect(current_tool);
+        }
+        else if clicked_id == 4{
+            self.click_circle(current_tool);
+        }
+        else if clicked_id == 5{
+            self.click_text(current_tool);
+        }
+        else if clicked_id == 6{
+            self.click_picture(current_tool);
+        }
+        else if clicked_id == 7{
+            self.click_undo(main_window);
+        }
+        else if clicked_id == 8{
+            self.click_redo(main_window);
         }
 
         if clicked_is_pressed != -1{
@@ -80,8 +126,11 @@ impl Gui{
             }
         }
         
-        if unclick_id == 0{
-            self.unclick_line(); 
+        if unclick_id == 3{
+            self.unclick_rect(); 
+        }
+        else if unclick_id == 4{
+            self.unclick_circle();
         }
             
 
@@ -89,8 +138,14 @@ impl Gui{
     }
 
     pub fn get_gui_grid_pos(&self, x: i32, y: i32) -> (i32, i32){
-        let row_pos = (y as f32 / self.row_size) as i32;
-        let col_pos = (x as f32 / self.col_size) as i32;
+        let mut row_pos = (y as f32 / self.row_size) as i32;
+        let mut col_pos = (x as f32 / self.col_size) as i32;
+
+        if row_pos >= self.num_rows {row_pos = self.num_rows - 1;}
+        else if row_pos < 0 {row_pos = 0;}
+        if col_pos >= self.num_cols {col_pos = self.num_cols - 1;}
+        else if col_pos < 0 {col_pos = 0;}
+
         return (row_pos, col_pos);
     }
 
@@ -114,14 +169,45 @@ impl Gui{
 
     //------------------button functions
     
-    fn click_line(&mut self){
-        self.show_button(1);
+    fn click_free(&self, current_tool: &mut String){
+        *current_tool = String::from('f');
     }
 
-    fn unclick_line(&mut self){
+    fn click_line(&self, current_tool: &mut String){
+        *current_tool = String::from('l');
+    }
+
+    fn click_rect(&mut self, current_tool: &mut String){
+        self.show_button(1);
+        *current_tool = String::from('r');
+    }
+    fn unclick_rect(&mut self){
         self.hide_button(1);
     }
 
+    fn click_circle(&mut self, current_tool: &mut String){
+        self.show_button(1);
+        *current_tool = String::from('o');
+    }
+    fn unclick_circle(&mut self){
+        self.hide_button(1);
+    }
+
+    fn click_text(&self, current_tool: &mut String){
+        *current_tool = String::from('t');
+    }
+
+    fn click_picture(&self, current_tool: &mut String){
+        *current_tool = String::from('p');
+    }
+
+    fn click_undo(&mut self, main_window: &mut main_window::MainWindow<'_>){
+        main_window.undo_redo.perform_undo(&mut main_window.window_array);
+    }
+
+    fn click_redo(&mut self, main_window: &mut main_window::MainWindow<'_>){
+        main_window.undo_redo.perform_redo(&mut main_window.window_array);
+    }
 
 }
 
