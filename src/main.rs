@@ -618,6 +618,9 @@ fn main() {
                             main_window.window_size_changed(width, height);
                             render_change = true;
                         },
+                        sdl2::event::WindowEvent::Exposed => {
+                            render_change = true;
+                        },
                         _ => {},
                     }
                 },
