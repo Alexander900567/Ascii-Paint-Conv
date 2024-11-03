@@ -1,5 +1,6 @@
 use sdl2::pixels::Color;
 use crate::undo_redo;
+use crate::gui;
 
 pub struct MainWindow<'a> {
         
@@ -11,7 +12,7 @@ pub struct MainWindow<'a> {
     font: sdl2::ttf::Font<'a, 'a>,
 
     pub window_width: u32,
-    window_height: u32, //if needed pub this, private for now
+    window_height: u32, 
     pub num_of_cols: u32,
     pub num_of_rows: u32, 
     col_length: f32,
@@ -62,6 +63,7 @@ impl MainWindow<'_>{
             .build()
             .expect("failed to build canvas");
 
+
         MainWindow{
             sdl_context: sdl_context,
             ttf_context: ttf_context,
@@ -84,22 +86,43 @@ impl MainWindow<'_>{
 
     //render_functions
 
-    pub fn render(&mut self, current_key: char) { //_current_gui_button: i32
-
-        self.render_gui(); //self.render_gui(current_gui_button);
+    pub fn render(&mut self, gui: &gui::Gui, current_key: char){
+        
+        self.render_gui(gui);
 
         self.render_grid(current_key);
 
         self.canvas.present(); //actually commit changes to screen!
     }
 
-    fn render_gui(&mut self) { //button tray and buttons cosmetic/render, , _current_gui_button: i32
-        self.canvas.set_draw_color(Color::RGB(125, 125, 125)); //set color to grey (which we later use in next func)
-        //self.canvas.clear(); //clears frame allows new one
-        //button tray
-        //function syntax: first two is where, second two is how big (i32, i32, u32, u32)
-        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0, //uses set color (grey), goes from top left corner and populates entire top row
-                self.window_width, (self.gui_height as f32 * 0.5) as u32));
+    fn render_gui(&mut self, gui: &gui::Gui){
+        self.canvas.set_draw_color(Color::RGB(125, 125, 125)); //set canvas to grey
+        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0,
+                              self.window_width, self.gui_height)); //first two is where, second is how big
+
+        
+        self.canvas.set_draw_color(Color::RGB(90, 90, 90)); //set canvas to grey
+        for button in gui.buttons.values(){
+            if button.visible{
+                let top_col = (button.top_left.1 as f32 * gui.col_size) as i32;
+                let top_row = (button.top_left.0 as f32 * gui.row_size) as i32;
+                let bot_col = ((button.bottom_right.1 - button.top_left.1 + 1) as f32 * gui.col_size) as u32;
+                let bot_row = ((button.bottom_right.0 - button.top_left.0 + 1) as f32 * gui.row_size) as u32;
+
+                if button.is_pressed == 1 {self.canvas.set_draw_color(Color::RGB(20, 20, 20));}
+                let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
+                if button.is_pressed == 1 {self.canvas.set_draw_color(Color::RGB(90, 90, 90));}
+                
+                let font_render = self.font.render(&button.button_label); 
+                let font_surface = font_render.blended_wrapped(Color::RGB(255, 255, 255), 0).unwrap();
+                let canvas_texture = self.canvas.texture_creator();  
+                let texture = canvas_texture.create_texture_from_surface(font_surface).unwrap();
+                let _ = self.canvas.copy(
+                    &texture,
+                    None, //part of texture we want... all of it 
+                    sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
+            }
+        }
     }
 
     fn render_grid(&mut self, current_key: char){
@@ -148,6 +171,57 @@ impl MainWindow<'_>{
         self.row_length = (self.window_height as f32 - self.gui_height as f32) / self.num_of_rows as f32;
     }
 
+    pub fn row_count_change(&mut self, new_row_count: i32){
+        if new_row_count < 1{
+            return;
+        }
+
+        let row_diff: i32 = self.num_of_rows as i32 - new_row_count;
+        if row_diff < 0{
+            let mut empty_row = Vec::new();
+            for _ in 0..self.num_of_cols{
+                empty_row.push(' ');
+            }
+            for _ in 0..row_diff.abs(){
+                self.window_array.push(empty_row.clone());
+            }
+        }
+        else if row_diff > 0{
+            for _ in 0..row_diff.abs(){
+                let _ = self.window_array.pop();
+            }
+        }
+        self.num_of_rows = new_row_count as u32;    
+
+        self.col_length = self.window_width as f32 / self.num_of_cols as f32;
+        self.row_length = (self.window_height as f32 - self.gui_height as f32) / self.num_of_rows as f32;
+    }
+
+    pub fn col_count_change(&mut self, new_col_count: i32){
+        if new_col_count < 1{
+            return;
+        }
+
+        let col_diff: i32 = self.num_of_cols as i32 - new_col_count;
+        if col_diff < 0{
+            for r in 0..self.window_array.len(){
+                for _ in 0..col_diff.abs(){
+                    self.window_array[r].push(' ');
+                }
+            }
+        }
+        else if col_diff > 0{
+            for r in 0..self.window_array.len(){
+                for _ in 0..col_diff.abs(){
+                    self.window_array[r].pop();
+                }
+            }
+        }
+        self.num_of_cols = new_col_count as u32;
+
+        self.col_length = self.window_width as f32 / self.num_of_cols as f32;
+        self.row_length = (self.window_height as f32 - self.gui_height as f32) / self.num_of_rows as f32;
+    }
     //grid functions
 
     pub fn write_buffer(&mut self, current_char: char) {

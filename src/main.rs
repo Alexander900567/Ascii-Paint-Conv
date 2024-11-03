@@ -5,9 +5,8 @@ mod main_window;
 mod tools;
 mod image_conv;
 mod undo_redo;
-//mod buttons;
-
-use std::thread::current;
+mod gui;
+mod save_load;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
 
@@ -28,6 +27,9 @@ fn main() {
         40,
         100,
     );
+
+
+    let mut gui_bar = gui::Gui::new(main_window.gui_height, main_window.window_width, 8, 20);
         
     video_subsystem.text_input().start();
 
@@ -35,7 +37,7 @@ fn main() {
     let mut times = Vec::new();
     ////
 
-
+    let mut path_to_save_file = String::from("");
     let mut event_queue = sdl_context.event_pump().expect("failed to init event queue");
     let mut running = true;
     //decide whether or not to render a new frame (only render when something has a changed)
@@ -46,7 +48,7 @@ fn main() {
     let mut _current_gui_button = 0;
     let mut keycombo = String::new(); //will hold our key commands
     let mut current_tool = String::from("f"); //default "f" because c + f is our paint tool
-    let mut tool_modifier = Vec::from([String::from(" "), String::from(" ")]);
+    let mut tool_modifier = Vec::from([String::from(" "), String::from(" "), String::from(" ")]);
     let mut mstart_pos = [0, 0];
     while running {
         for event in event_queue.poll_iter() {
@@ -97,7 +99,9 @@ fn main() {
                                 }
                                 prev_gpos = gpos;
                             }
-                            else {}
+                            else{
+                                gui_bar.handle_gui_click(x, y, &mut main_window, &mut current_tool, &mut tool_modifier);
+                            }
                         },
                         _ => {}, //eventually will be replaced with a tool list
                     }
@@ -114,16 +118,20 @@ fn main() {
                                 tools::line(&mut main_window, &gpos, &mstart_pos, true);
                             }
                             else if &current_tool == "r"{
-                                tools::rectangle(&mut main_window, &gpos, &mstart_pos)
-                            }
-                            else if &current_tool == "s"{
-                                tools::filled_rectangle(&mut main_window, &gpos, &mstart_pos)
+                                if &tool_modifier[2] == "a"{
+                                    tools::filled_rectangle(&mut main_window, &gpos, &mstart_pos);
+                                }
+                                else{
+                                    tools::rectangle(&mut main_window, &gpos, &mstart_pos);
+                                }
                             }
                             else if &current_tool == "o"{
-                                tools::circle(&mut main_window, &gpos, &mstart_pos);
-                            }
-                            else if &current_tool == "q"{
-                                tools::filled_circle(&mut main_window, &gpos, &mstart_pos);
+                                if &tool_modifier[2] == "a"{
+                                    tools::filled_circle(&mut main_window, &gpos, &mstart_pos);
+                                }
+                                else{
+                                    tools::circle(&mut main_window, &gpos, &mstart_pos);
+                                }
                             }
                             else if &current_tool == "p"{
                                 tools::rectangle(&mut main_window, &gpos, &mstart_pos)
@@ -144,16 +152,18 @@ fn main() {
                 Event::MouseButtonUp {mouse_btn, x, y, ..} => { //let go
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
-                            if &current_tool == "p"{
-                                let gpos = main_window.get_mouse_gpos(x, y);
-                                image_conv::convert_image_put_in_window(&mut main_window.window_array, 
-                                                                        &gpos, &mstart_pos, 
-                                                                        &tool_modifier[0], &tool_modifier[1]
-                                ); 
-                                main_window.preview_buffer.clear();
-                            }
-                            else{
-                                main_window.write_buffer(current_key);
+                            if y > main_window.gui_height as i32{
+                                if &current_tool == "p"{
+                                    let gpos = main_window.get_mouse_gpos(x, y);
+                                    image_conv::convert_image_put_in_window(&mut main_window.window_array, 
+                                                                            &gpos, &mstart_pos, 
+                                                                            &tool_modifier[0], &tool_modifier[1]
+                                    ); 
+                                    main_window.preview_buffer.clear();
+                                }
+                                else{
+                                    main_window.write_buffer(current_key);
+                                }
                             }
                             render_change = true;
                         },
@@ -179,8 +189,12 @@ fn main() {
                                 if &tool_modifier[1] == " " {tool_modifier[1] = String::from("l");}
                                 else {tool_modifier[1] = String::from(" ");}
                             }
-                            else{
+                            else if &current_tool == "p"{
                                 tool_modifier[0] = text.to_lowercase();
+                            }
+                            else if &current_tool == "r" || &current_tool == "o"{
+                                if &tool_modifier[2] == " " {tool_modifier[2] = String::from("a");}
+                                else {tool_modifier[2] = String::from(" ");}
                             }
                         }
                         keycombo = String::from("");
@@ -204,6 +218,13 @@ fn main() {
                         }
                         else if &(text.to_lowercase()) == "y"{
                             main_window.undo_redo.perform_redo(&mut main_window.window_array);
+                            render_change = true;
+                        }
+                        else if &(text.to_lowercase()) == "s"{
+                            path_to_save_file = save_load::save_canvas(&main_window, &path_to_save_file);
+                        }
+                        else if &(text.to_lowercase()) == "l"{
+                            path_to_save_file = save_load::load_canvas(&mut main_window);
                             render_change = true;
                         }
                     }
@@ -246,6 +267,9 @@ fn main() {
                             main_window.window_size_changed(width, height);
                             render_change = true;
                         },
+                        sdl2::event::WindowEvent::Exposed => {
+                            render_change = true;
+                        },
                         _ => {},
                     }
                 },
@@ -254,7 +278,7 @@ fn main() {
         }
         if render_change{ //render if change
             let pre = std::time::SystemTime::now();
-            main_window.render(current_key); //, current_gui_button);
+            main_window.render(&gui_bar, current_key);
             render_change = false;
             let post = std::time::SystemTime::now();
             times.push(post.duration_since(pre).unwrap().as_secs_f64());
