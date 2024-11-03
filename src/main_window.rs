@@ -276,6 +276,3 @@ impl MainWindow<'_>{
 
 
 
-
-
-

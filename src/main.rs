@@ -1,394 +1,14 @@
 extern crate sdl2;
 extern crate image;
 extern crate rayon;
-mod image_conv;
 mod main_window;
+mod tools;
+mod image_conv;
 mod undo_redo;
 mod gui;
+mod save_load;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
-
-fn line_tool(main_window: &mut main_window::MainWindow<'_>,
-             current_mouse_pos: &[i32; 2], 
-             start_mouse_pos: &[i32; 2], 
-             clear_buffer: bool) {     
-    let mut beginx: i32 = start_mouse_pos[0]; //we do this a lot, but we are essentially just shorthanding these vars
-    let mut beginy: i32 = start_mouse_pos[1];
-    let finx: i32 = current_mouse_pos[0];
-    let finy: i32 = current_mouse_pos[1];
-    
-    if clear_buffer{
-        main_window.preview_buffer.clear();
-    }
-
-    let mut x_slope = finx - beginx;
-    let mut y_slope = finy - beginy;
-    let mut x_iter = 0;
-    let mut y_iter = 0;
-
-    if x_slope != 0 {
-        x_iter = x_slope / x_slope.abs(); 
-    }
-    if y_slope != 0 {
-        y_iter = y_slope / y_slope.abs(); 
-    }
-
-    x_slope = x_slope.abs();
-    y_slope = y_slope.abs();
-
-    let long_slope;
-    let short_slope;
-    let x_is_long;
-    if x_slope > y_slope {
-        long_slope = x_slope;
-        short_slope = y_slope + 1;
-        x_is_long = true;
-    }
-    else {
-        long_slope = y_slope;
-        short_slope = x_slope + 1;
-        x_is_long = false;
-    }
-
-    let per_chunk = long_slope / short_slope;
-    let mut extra = (long_slope % short_slope) + 1;
-
-    for _ in 0..short_slope {
-        let mut this_chunk = per_chunk;
-        if extra > 0 {
-            this_chunk += 1;
-            extra -= 1;
-        }
-        for _ in 0..this_chunk {
-            main_window.add_to_preview_buffer(beginx, beginy);    
-            if x_is_long {
-                beginx += x_iter;   
-            }
-            else {
-                beginy += y_iter;
-            }
-        }
-        if !x_is_long {
-            beginx += x_iter;   
-        }
-        else{
-            beginy += y_iter;
-        }
-    }
-} //commit changes after run
-
-fn rectangle_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]){
-
-    main_window.preview_buffer.clear();
-    //4 lines
-    line_tool(main_window,
-              &[start_mouse_pos[0], start_mouse_pos[1]], //(s,s) to (c,s)
-              &[current_mouse_pos[0], start_mouse_pos[1]], //top left to bottom left
-              false);
-    line_tool(main_window,
-              &[start_mouse_pos[0], start_mouse_pos[1]], //(s,s) to (s,c)
-              &[start_mouse_pos[0], current_mouse_pos[1]], //top left to top right
-              false);
-    line_tool(main_window,
-              &[start_mouse_pos[0], current_mouse_pos[1]], //(s,c) to (c,c)
-              &[current_mouse_pos[0], current_mouse_pos[1]], //top right to bottom right
-              false);
-    line_tool(main_window,
-              &[current_mouse_pos[0], start_mouse_pos[1]], //(c,s) to (c,c)
-              &[current_mouse_pos[0], current_mouse_pos[1]], //bottom left to bottom right
-              false);
-}
-
-fn filled_rectangle_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) {
-
-    main_window.preview_buffer.clear(); //clears previous preview, so we can load new one
-
-    let beginx: i32 = start_mouse_pos[0];
-    let beginy: i32 = start_mouse_pos[1];
-    let finx: i32 = current_mouse_pos[0];
-    let finy: i32 = current_mouse_pos[1];
-    
-    let leftx:i32;
-    let rightx:i32;
-
-    if beginx <= finx { //right quadrants case
-        leftx = beginx;
-        rightx = finx;
-    }
-    else { //left quadrants case
-        leftx = finx;
-        rightx = beginx;
-    }
-
-    for x in leftx..=rightx { //iterates vertical lines
-        line_tool(main_window,
-        &[x, beginy], //further iterates those lines horizontally (left to right or right to left)
-        &[x, finy],
-        false);
-    }
-}
-
-fn circle_tool(main_window: &mut main_window::MainWindow<'_>,
-    current_mouse_pos: &[i32; 2],
-    start_mouse_pos: &[i32; 2],
-    clear_buffer: bool) { //this is faster when ellipse is circle
-    
-        if clear_buffer{
-            main_window.preview_buffer.clear();
-        }
-// Uses the [Midpoint Ellipse Drawing Algorithm](https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/).
-// (Modified from Bresenham's algorithm) <- These are the credits given by the Rust imageproc conics functions.
-//This is just a modified draw_hollow_circle
-    let beginx: i32 = start_mouse_pos[0];
-    let finx: i32 = current_mouse_pos[0];
-    let beginy: i32 = start_mouse_pos[1];
-    let finy: i32 = current_mouse_pos[1];
-
-    let x_component:i32 = finx - beginx;
-    let y_component:i32 = finy - beginy;
-    let r:i32;
-    let diagonal_r:f32 = f32::sqrt((x_component as f32 * x_component as f32) + (y_component as f32 * y_component as f32)); //pythag h
-    //theory: given r = 10
-    /* diagonal_r = real hypotenuse = 10*sqrt(2) = r*ratio
-    r (radius of circle)= diagonal_r / ratio
-    ratio = hypotenuse of a triangle with sides divided by r with same angle theta = h = (o/r)/sin(theta) 
-    theta = sin^-1(o/diagonal_r) */
-    match(x_component, y_component) {
-        (x,y) if x != 0 && y != 0 => { //non-cardinal case
-        let o:i32 = y_component.abs(); //to keep scalar factor positive (since we're about to use sin)
-        let angle_theta:f32 = f32::asin(o as f32/diagonal_r);
-        let h:f32 = (o as f32/diagonal_r as f32)/f32::sin(angle_theta);
-        let r0: f32 = diagonal_r/h;
-        r = r0.floor() as i32; //radius converted to int to work with buffer vector
-        }, 
-        (0, _) => { //y-axis cardinal case
-            let r0: f32 = diagonal_r;
-            r = r0.floor() as i32;
-        },
-        (_, 0) => { //x-axis cardinal case
-            let r0: f32 = diagonal_r;
-            r = r0.floor() as i32;
-        },
-        _ => r = 0 //catch all
-    }
-
-    let mut x:i32 = 0i32;
-    let mut y:i32 = r; //(x,y) = (0,r)
-    let mut p:i32 = 1 - r;
-
-    while x <= y {
-        main_window.add_to_preview_buffer(beginx + x, beginy + y);
-        main_window.add_to_preview_buffer(beginx + y, beginy + x);
-        main_window.add_to_preview_buffer(beginx - y, beginy + x);
-        main_window.add_to_preview_buffer(beginx - x, beginy + y);
-        main_window.add_to_preview_buffer(beginx - x, beginy - y);
-        main_window.add_to_preview_buffer(beginx - y, beginy - x);
-        main_window.add_to_preview_buffer(beginx + y, beginy - x);
-        main_window.add_to_preview_buffer(beginx + x, beginy - y);
-
-        x += 1; //all 4 regions
-        if p < 0 {
-            p += 2 * x + 1
-        }
-        else {
-            y -= 1;
-            p += 2 * (x - y) + 1;
-        }
-    }    
-}
-
-fn filled_circle_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2], clear_buffer: bool) { //basically, just fill in line tools, trig if necessary
-    //same credits as above, just draw_filled_circle modified
-
-    if clear_buffer{
-        main_window.preview_buffer.clear();
-    }
-
-    let beginx: i32 = start_mouse_pos[0];
-    let finx: i32 = current_mouse_pos[0];
-    let beginy: i32 = start_mouse_pos[1];
-    let finy: i32 = current_mouse_pos[1];
-
-    let x_component:i32 = finx - beginx;
-    let y_component:i32 = finy - beginy;
-    let r:i32;
-    let diagonal_r:f32 = f32::sqrt((x_component as f32 * x_component as f32) + (y_component as f32 * y_component as f32));
-
-    match(x_component, y_component) {
-        (x,y) if x != 0 && y != 0 => { //non-cardinal case
-        let o:i32 = y_component.abs(); //to keep scalar factor positive (since we're about to use sin)
-        let angle_theta:f32 = f32::asin(o as f32/diagonal_r);
-        let h:f32 = (o as f32/diagonal_r as f32)/f32::sin(angle_theta);
-        let r0: f32 = diagonal_r/h;
-        r = r0.floor() as i32; //radius converted to int to work with buffer vector
-        }, 
-        (0, _) => { //y-axis cardinal case
-            let r0: f32 = diagonal_r;
-            r = r0.floor() as i32;
-        },
-        (_, 0) => { //x-axis cardinal case
-            let r0: f32 = diagonal_r;
-            r = r0.floor() as i32;
-        },
-        _ => r = 0 //catch all
-    }
-
-    let mut x = 0i32;
-    let mut y = r;
-    let mut p = 1 - r; //haven't assigned r, assign later
-
-    while x <= y {
-
-        line_tool(main_window,
-        &[(beginx + x), (beginy + y)], 
-        &[(beginx - x), (beginy + y)],
-        false);
-
-        line_tool(main_window,
-        &[(beginx + y), (beginy + x)], 
-        &[(beginx - y), (beginy + x)],
-        false);
-
-        line_tool(main_window,
-        &[(beginx + x), (beginy - y)], 
-        &[(beginx - x), (beginy - y)],
-        false);
-
-        line_tool(main_window,
-        &[(beginx + y), (beginy - x)], 
-        &[(beginx - y), (beginy - x)],
-        false);
-
-        x += 1;
-        if p < 0 {
-            p += 2 * x + 1;
-        }
-        else {
-            y -= 1;
-            p += 2 * (x - y) + 1;
-        }
-    }
-}
-
-fn text_tool(main_window: &mut main_window::MainWindow<'_>, &prev_gpos: &[i32;2], input: &String) -> [i32;2] {
-    let text_vec: Vec<char> = input.chars().collect();
-    if prev_gpos[1] >= (main_window.num_of_cols as i32) {
-        main_window.window_array[prev_gpos[0] as usize][(main_window.num_of_cols - 1) as usize] = text_vec[0];
-    }
-    else {
-        main_window.window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] = text_vec[0];
-    }
-    return [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (main_window.num_of_cols as i32)-1)];
-}
-
-fn free_tool(main_window: &mut main_window::MainWindow<'_>, current_mouse_pos: &[i32; 2], prev_gpos: &[i32; 2]){
-    if current_mouse_pos != prev_gpos{
-        main_window.add_to_preview_buffer(current_mouse_pos[0], current_mouse_pos[1]);
-    }
-}
-
-fn save_canvas(main_window: &main_window::MainWindow<'_>, file_path: &String) -> String{
-
-    //get the file path to the save file
-    let path_string;
-    let path;
-    if file_path == ""{ //if a save file hasn't been selected yet
-        path = native_dialog::FileDialog::new()
-            .set_location("~")
-            .add_filter("Text", &["txt"])
-            .set_filename(".txt")
-            .show_save_single_file()
-            .unwrap().unwrap_or(std::path::PathBuf::new());
-        path_string = path.as_path().to_str().unwrap(); 
-        
-        if path_string == ""{ //eject if they canceled out of the file picker
-            return String::from("");
-        }
-    }
-    else{ //if a save file has been selected
-        path_string = file_path;
-    }
-    
-    //create the conents of the save file
-    let mut save_string = String::new();
-
-    //the array is saved as: {num_of_times character appears in a row}{character}\t
-    for row in &main_window.window_array{
-        let mut current_char = row[0];
-        let mut num_of_char = 0;
-        for character in row{
-            if *character == current_char{
-                num_of_char += 1;
-            }
-            else{
-                save_string.push_str(&(num_of_char.to_string()));
-                save_string.push(current_char);
-                save_string.push('\t');
-                current_char = *character;
-                num_of_char = 1;
-            }
-        } 
-        save_string.push_str(&(num_of_char.to_string()));
-        save_string.push(current_char);
-        save_string.push('\n');
-    }
-
-    save_string.push_str(&("num_of_rows:".to_owned() + &(main_window.num_of_rows).to_string() + ":\n"));
-    save_string.push_str(&("num_of_cols:".to_owned() + &(main_window.num_of_cols).to_string() + ":\n"));
-
-    //write to save file
-    let _ = std::fs::write(&path_string, &save_string).unwrap();
-
-    return String::from(path_string);
-}
-
-fn load_canvas(main_window: &mut main_window::MainWindow<'_>) -> String{
-    
-    let path = native_dialog::FileDialog::new()
-        .set_location("~")
-        .add_filter("Text", &["txt"])
-        .show_open_single_file()
-        .unwrap().unwrap_or(std::path::PathBuf::new());
-    let path_string = path.as_path().to_str().unwrap(); 
-    
-    if path_string == ""{ //eject if they canceled out of the file picker
-        return String::from("");
-    }
-    
-    let file_string = std::fs::read_to_string(path_string).unwrap();
-    let mut split_file_string: Vec<&str> = file_string.split("\n").collect();
-
-    //pop the empty line at the end
-    let _ = split_file_string.pop().unwrap();
-    
-    let mut temp_line = split_file_string.pop().unwrap();
-    let mut temp_split: Vec<&str> = temp_line.split(":").collect();
-    main_window.col_count_change(temp_split[1].parse::<i32>().unwrap());   
-
-    temp_line = split_file_string.pop().unwrap();
-    temp_split = temp_line.split(":").collect();
-    main_window.row_count_change(temp_split[1].parse::<i32>().unwrap());   
-    
-    let mut row_count = 0;
-    let mut col_count = 0;
-    for line in split_file_string{
-        let line_split: Vec<&str> = line.split("\t").collect();   
-        for entry in line_split{
-            let (num, character) = entry.split_at(entry.len() - 1);
-            let int_num = num.parse::<i32>().unwrap();
-            let char_character: Vec<char> = character.chars().collect();
-            for _ in 0..int_num{
-                main_window.window_array[row_count as usize][col_count as usize] = char_character[0];
-                col_count += 1;
-            }
-        }
-        col_count = 0;
-        row_count += 1;
-    }
-
-    
-    return String::from(path_string);
-}
 
 fn main() {
     let sdl_context = sdl2::init().expect("failed to init sdl");
@@ -442,31 +62,39 @@ fn main() {
                             if y > main_window.gui_height as i32{
                                 let gpos = main_window.get_mouse_gpos(x, y);
                                 if &current_tool == "f"{
-                                    free_tool(&mut main_window, &gpos, &[-1, -1]);
+                                    tools::free(&mut main_window, &gpos, &[-1, -1]);
                                 }
                                 else if &current_tool == "l"{
                                     mstart_pos = gpos;
-                                    line_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                    tools::line(&mut main_window, &gpos, &mstart_pos, true);
                                 }
                                 else if &current_tool == "r"{
                                     mstart_pos = gpos;
-                                    rectangle_tool(&mut main_window, &gpos, &mstart_pos)
+                                    tools::rectangle(&mut main_window, &gpos, &mstart_pos)
                                 }
                                 else if &current_tool == "s"{
                                     mstart_pos = gpos;
-                                    filled_rectangle_tool(&mut main_window, &gpos, &mstart_pos);
+                                    tools::filled_rectangle(&mut main_window, &gpos, &mstart_pos);
                                 }
                                 else if &current_tool == "o"{
                                     mstart_pos = gpos;
-                                    circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                    tools::circle(&mut main_window, &gpos, &mstart_pos);
                                 }
                                 else if &current_tool == "q"{
                                     mstart_pos = gpos;
-                                    filled_circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                    tools::filled_circle(&mut main_window, &gpos, &mstart_pos);
                                 }
                                 else if &current_tool == "p"{
                                     mstart_pos = gpos;
-                                    rectangle_tool(&mut main_window, &gpos, &mstart_pos)
+                                    tools::rectangle(&mut main_window, &gpos, &mstart_pos)
+                                }
+                                else if &current_tool == "e"{
+                                    mstart_pos = gpos;
+                                    tools::ellipse(&mut main_window, &gpos, &mstart_pos);
+                                }
+                                else if &current_tool == "w"{
+                                    mstart_pos = gpos;
+                                    tools::filled_ellipse(&mut main_window, &gpos, &mstart_pos);
                                 }
                                 prev_gpos = gpos;
                             }
@@ -483,29 +111,35 @@ fn main() {
                         if y > main_window.gui_height as i32{
                             let gpos = main_window.get_mouse_gpos(x, y);
                             if &current_tool == "f"{ //gives these functions the needed parameters
-                                free_tool(&mut main_window, &gpos, &prev_gpos);
+                                tools::free(&mut main_window, &gpos, &prev_gpos);
                             }
                             else if &current_tool == "l"{
-                                line_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                tools::line(&mut main_window, &gpos, &mstart_pos, true);
                             }
                             else if &current_tool == "r"{
                                 if &tool_modifier[2] == "a"{
-                                    filled_rectangle_tool(&mut main_window, &gpos, &mstart_pos);
+                                    tools::filled_rectangle(&mut main_window, &gpos, &mstart_pos);
                                 }
                                 else{
-                                    rectangle_tool(&mut main_window, &gpos, &mstart_pos);
+                                    tools::rectangle(&mut main_window, &gpos, &mstart_pos);
                                 }
                             }
                             else if &current_tool == "o"{
                                 if &tool_modifier[2] == "a"{
-                                    filled_circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                    tools::filled_circle(&mut main_window, &gpos, &mstart_pos);
                                 }
                                 else{
-                                    circle_tool(&mut main_window, &gpos, &mstart_pos, true);
+                                    tools::circle(&mut main_window, &gpos, &mstart_pos);
                                 }
                             }
                             else if &current_tool == "p"{
-                                rectangle_tool(&mut main_window, &gpos, &mstart_pos)
+                                tools::rectangle(&mut main_window, &gpos, &mstart_pos)
+                            }
+                            else if &current_tool == "e"{
+                                tools::ellipse(&mut main_window, &gpos, &mstart_pos);
+                            }
+                            else if &current_tool == "w"{
+                                tools::filled_ellipse(&mut main_window, &gpos, &mstart_pos);
                             }
                             if prev_gpos != gpos{
                                 render_change = true;
@@ -538,7 +172,7 @@ fn main() {
                 Event::TextInput {text, ..} => { //keyboard determines keycombo (keybinds)
                     println!("text: {}", text);
                     if &current_tool == "t"{
-                        prev_gpos = text_tool(&mut main_window, &prev_gpos, &text); //text mode case
+                        prev_gpos = tools::text(&mut main_window, &prev_gpos, &text); //text mode case
                         render_change = true;
                     }
                     else if keycombo.len() > 0{
@@ -565,10 +199,10 @@ fn main() {
                         keycombo = String::from("");
                     }
                     else {
-                        if &(text.to_lowercase()) == "i"{
+                        if &(text.to_lowercase()) == "i"{ //will start key select
                             keycombo = String::from("i");
                         }
-                        else if &(text.to_lowercase()) == "c"{
+                        else if &(text.to_lowercase()) == "c"{ //these keys just need to be pressed (no combo)
                             keycombo = String::from("c");
                         }
                         else if &(text.to_lowercase()) == "b"{
@@ -586,10 +220,10 @@ fn main() {
                             render_change = true;
                         }
                         else if &(text.to_lowercase()) == "s"{
-                            path_to_save_file = save_canvas(&main_window, &path_to_save_file);
+                            path_to_save_file = save_load::save_canvas(&main_window, &path_to_save_file);
                         }
                         else if &(text.to_lowercase()) == "l"{
-                            path_to_save_file = load_canvas(&mut main_window);
+                            path_to_save_file = save_load::load_canvas(&mut main_window);
                             render_change = true;
                         }
                     }
