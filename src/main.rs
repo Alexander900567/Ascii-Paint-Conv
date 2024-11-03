@@ -45,7 +45,6 @@ fn main() {
     //holds on to the previous loops' gpos so a render doesn't get called if the mouse hasn't moved grid position
     let mut prev_gpos = [0, 0];
     let mut current_key = 'a'; //default char is 'a'
-    let mut _current_gui_button = 0;
     let mut keycombo = String::new(); //will hold our key commands
     let mut current_tool = String::from("f"); //default "f" because c + f is our paint tool
     let mut tool_modifier = Vec::from([String::from(" "), String::from(" "), String::from(" ")]);
