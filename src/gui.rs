@@ -1,4 +1,5 @@
 use crate::main_window;
+use crate::tools;
 
 pub struct Gui{
     pub gui_grid: Vec<Vec<i32>>,
@@ -114,7 +115,7 @@ impl Gui{
         }
     }
 
-    pub fn handle_gui_click(&mut self, x: i32, y: i32, main_window: &mut main_window::MainWindow<'_>, current_tool: &mut String, tool_modifier: &mut Vec<String>){
+    pub fn handle_gui_click(&mut self, x: i32, y: i32, main_window: &mut main_window::MainWindow<'_>, toolbox: &mut tools::Toolbox){
         let grid_pos = self.get_gui_grid_pos(x, y);
         
         let clicked_id = self.gui_grid[grid_pos.0 as usize][grid_pos.1 as usize];
@@ -126,26 +127,26 @@ impl Gui{
 
         let mut unclick_id = 0;
         if clicked_is_pressed != -1 {
-            unclick_id = self.handle_unclick(toggle_group, clicked_id, tool_modifier);
+            unclick_id = self.handle_unclick(toggle_group, clicked_id, toolbox);
         }
 
         if clicked_id == 0{
-            self.click_free(current_tool);
+            self.click_free(toolbox);
         }
         else if clicked_id == 2{
-            self.click_line(current_tool);
+            self.click_line(toolbox);
         }
         else if clicked_id == 3{
-            self.click_rect(current_tool);
+            self.click_rect(toolbox);
         }
         else if clicked_id == 4{
-            self.click_circle(current_tool);
+            self.click_circle(toolbox);
         }
         else if clicked_id == 5{
-            self.click_text(current_tool);
+            self.click_text(toolbox);
         }
         else if clicked_id == 6{
-            self.click_picture(current_tool);
+            self.click_picture(toolbox);
         }
         else if clicked_id == 7{
             self.click_undo(main_window);
@@ -157,15 +158,15 @@ impl Gui{
             self.click_copy_to_clipboard(main_window);
         }
         else if Vec::from([10, 11, 12, 13]).contains(&clicked_id){
-            self.click_ascii_pallete(tool_modifier, clicked_id);
+            self.click_ascii_pallete(toolbox, clicked_id);
         }
 
         if toggle_group == -1 && clicked_is_pressed == 0{
             if clicked_id == 1{
-                self.click_fill(tool_modifier);
+                self.click_fill(toolbox);
             }
             if clicked_id == 14{
-                self.click_edge(tool_modifier);
+                self.click_edge(toolbox);
             }
         }
 
@@ -182,7 +183,7 @@ impl Gui{
         }
     }
 
-    pub fn handle_unclick(&mut self, toggle_group: i32, clicked_id: i32, tool_modifier: &mut Vec<String>) -> i32{
+    pub fn handle_unclick(&mut self, toggle_group: i32, clicked_id: i32, toolbox: &mut tools::Toolbox) -> i32{
         let unclick_id: i32; 
         let pressed_status: i32;
         if toggle_group == -1{
@@ -206,10 +207,10 @@ impl Gui{
 
         if toggle_group == -1 && pressed_status == 1{
             if unclick_id == 1{
-                self.unclick_fill(tool_modifier);
+                self.unclick_fill(toolbox);
             }
             if unclick_id == 14{
-                self.unclick_edge(tool_modifier);
+                self.unclick_edge(toolbox);
             }
         }
 
@@ -248,70 +249,70 @@ impl Gui{
 
     //------------------button functions
     
-    fn click_free(&self, current_tool: &mut String){
-        *current_tool = String::from('f');
+    fn click_free(&self, toolbox: &mut tools::Toolbox){
+        toolbox.current_tool = String::from("f");
     }
 
-    fn click_line(&self, current_tool: &mut String){
-        *current_tool = String::from('l');
+    fn click_line(&self, toolbox: &mut tools::Toolbox){
+        toolbox.current_tool = String::from("l");
     }
 
-    fn click_rect(&mut self, current_tool: &mut String){
+    fn click_rect(&mut self, toolbox: &mut tools::Toolbox){
         self.show_button(1);
-        *current_tool = String::from('r');
+        toolbox.current_tool = String::from("r");
     }
     fn unclick_rect(&mut self){
         self.hide_button(1);
     }
 
-    fn click_circle(&mut self, current_tool: &mut String){
+    fn click_circle(&mut self, toolbox: &mut tools::Toolbox){
         self.show_button(1);
-        *current_tool = String::from('o');
+        toolbox.current_tool = String::from("o");
     }
     fn unclick_circle(&mut self){
         self.hide_button(1);
     }
 
-    fn click_fill(&self, tool_modifier: &mut Vec<String>){
-        tool_modifier[2] = String::from("a");
+    fn click_fill(&self, toolbox: &mut tools::Toolbox){
+        toolbox.filled = true;
     }
-    fn unclick_fill(&self, tool_modifier: &mut Vec<String>){
-        tool_modifier[2] = String::from(" ");
+    fn unclick_fill(&self, toolbox: &mut tools::Toolbox){
+        toolbox.filled = false;
     }
 
-    fn click_ascii_pallete(&self, tool_modifier: &mut Vec<String>, clicked_id: i32){
+    fn click_ascii_pallete(&self, toolbox: &mut tools::Toolbox, clicked_id: i32){
         if clicked_id == 10{
-            tool_modifier[0] = String::from("1");
+            toolbox.ascii_type = String::from("1");
         }
         else if clicked_id == 11{
-            tool_modifier[0] = String::from("2");
+            toolbox.ascii_type = String::from("2");
         }
         else if clicked_id == 12{
-            tool_modifier[0] = String::from("3");
+            toolbox.ascii_type = String::from("3");
         }
         else if clicked_id == 13{
-            tool_modifier[0] = String::from("4");
+            toolbox.ascii_type = String::from("4");
         }
     }
 
-    fn click_edge(&self, tool_modifier: &mut Vec<String>){
-        tool_modifier[1] = String::from("l");
+    fn click_edge(&self, toolbox: &mut tools::Toolbox){
+        toolbox.ascii_edges = true;
     }
-    fn unclick_edge(&self, tool_modifier: &mut Vec<String>){
-        tool_modifier[1] = String::from(" ");
-    }
-
-    fn click_text(&self, current_tool: &mut String){
-        *current_tool = String::from('t');
+    fn unclick_edge(&self, toolbox: &mut tools::Toolbox){
+        toolbox.ascii_edges = false;
     }
 
-    fn click_picture(&mut self, current_tool: &mut String){
+    fn click_text(&self, toolbox: &mut tools::Toolbox){
+        toolbox.current_tool = String::from("t");
+    }
+
+    fn click_picture(&mut self, toolbox: &mut tools::Toolbox){
         self.show_button(10);
         self.show_button(11);
         self.show_button(12);
         self.show_button(13);
         self.show_button(14);
-        *current_tool = String::from('p');
+        toolbox.current_tool = String::from("p");
     }
     fn unclick_picture(&mut self){
         self.hide_button(10);
