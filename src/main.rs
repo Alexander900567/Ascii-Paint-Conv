@@ -30,6 +30,8 @@ fn main() {
 
 
     let mut gui_bar = gui::Gui::new(main_window.gui_height, main_window.window_width, 8, 20);
+
+    let mut toolbox = tools::Toolbox::new();
         
     video_subsystem.text_input().start();
 
@@ -43,12 +45,7 @@ fn main() {
     //decide whether or not to render a new frame (only render when something has a changed)
     let mut render_change = true;
     //holds on to the previous loops' gpos so a render doesn't get called if the mouse hasn't moved grid position
-    let mut prev_gpos = [0, 0];
-    let mut current_key = 'a'; //default char is 'a'
     let mut keycombo = String::new(); //will hold our key commands
-    let mut current_tool = String::from("f"); //default "f" because c + f is our paint tool
-    let mut tool_modifier = Vec::from([String::from(" "), String::from(" "), String::from(" ")]);
-    let mut mstart_pos = [0, 0];
     while running {
         for event in event_queue.poll_iter() {
             match event {
@@ -60,46 +57,10 @@ fn main() {
                     match mouse_btn {
                         sdl2::mouse::MouseButton::Left => { //Keybinds
                             if y > main_window.gui_height as i32{
-                                let gpos = main_window.get_mouse_gpos(x, y);
-                                if &current_tool == "f"{
-                                    tools::free(&mut main_window, &gpos, &[-1, -1]);
-                                }
-                                else if &current_tool == "l"{
-                                    mstart_pos = gpos;
-                                    tools::line(&mut main_window, &gpos, &mstart_pos, true);
-                                }
-                                else if &current_tool == "r"{
-                                    mstart_pos = gpos;
-                                    tools::rectangle(&mut main_window, &gpos, &mstart_pos)
-                                }
-                                else if &current_tool == "s"{
-                                    mstart_pos = gpos;
-                                    tools::filled_rectangle(&mut main_window, &gpos, &mstart_pos);
-                                }
-                                else if &current_tool == "o"{
-                                    mstart_pos = gpos;
-                                    tools::circle(&mut main_window, &gpos, &mstart_pos);
-                                }
-                                else if &current_tool == "q"{
-                                    mstart_pos = gpos;
-                                    tools::filled_circle(&mut main_window, &gpos, &mstart_pos);
-                                }
-                                else if &current_tool == "p"{
-                                    mstart_pos = gpos;
-                                    tools::rectangle(&mut main_window, &gpos, &mstart_pos)
-                                }
-                                else if &current_tool == "e"{
-                                    mstart_pos = gpos;
-                                    tools::ellipse(&mut main_window, &gpos, &mstart_pos);
-                                }
-                                else if &current_tool == "w"{
-                                    mstart_pos = gpos;
-                                    tools::filled_ellipse(&mut main_window, &gpos, &mstart_pos);
-                                }
-                                prev_gpos = gpos;
+                                let _ = toolbox.draw_tool(&mut main_window, true, x, y);
                             }
                             else{
-                                gui_bar.handle_gui_click(x, y, &mut main_window, &mut current_tool, &mut tool_modifier);
+                                gui_bar.handle_gui_click(x, y, &mut main_window, &mut toolbox);
                             }
                         },
                         _ => {}, //eventually will be replaced with a tool list
@@ -109,42 +70,7 @@ fn main() {
                 Event::MouseMotion {mousestate, x, y, ..} => { //this is for holding down button
                     if mousestate.left(){
                         if y > main_window.gui_height as i32{
-                            let gpos = main_window.get_mouse_gpos(x, y);
-                            if &current_tool == "f"{ //gives these functions the needed parameters
-                                tools::free(&mut main_window, &gpos, &prev_gpos);
-                            }
-                            else if &current_tool == "l"{
-                                tools::line(&mut main_window, &gpos, &mstart_pos, true);
-                            }
-                            else if &current_tool == "r"{
-                                if &tool_modifier[2] == "a"{
-                                    tools::filled_rectangle(&mut main_window, &gpos, &mstart_pos);
-                                }
-                                else{
-                                    tools::rectangle(&mut main_window, &gpos, &mstart_pos);
-                                }
-                            }
-                            else if &current_tool == "o"{
-                                if &tool_modifier[2] == "a"{
-                                    tools::filled_circle(&mut main_window, &gpos, &mstart_pos);
-                                }
-                                else{
-                                    tools::circle(&mut main_window, &gpos, &mstart_pos);
-                                }
-                            }
-                            else if &current_tool == "p"{
-                                tools::rectangle(&mut main_window, &gpos, &mstart_pos)
-                            }
-                            else if &current_tool == "e"{
-                                tools::ellipse(&mut main_window, &gpos, &mstart_pos);
-                            }
-                            else if &current_tool == "w"{
-                                tools::filled_ellipse(&mut main_window, &gpos, &mstart_pos);
-                            }
-                            if prev_gpos != gpos{
-                                render_change = true;
-                            }
-                            prev_gpos = gpos;
+                            render_change = toolbox.draw_tool(&mut main_window, false, x, y);
                         }
                     }
                 },
@@ -152,16 +78,16 @@ fn main() {
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
                             if y > main_window.gui_height as i32{
-                                if &current_tool == "p"{
+                                if &toolbox.current_tool == "p"{
                                     let gpos = main_window.get_mouse_gpos(x, y);
                                     image_conv::convert_image_put_in_window(&mut main_window.window_array, 
-                                                                            &gpos, &mstart_pos, 
-                                                                            &tool_modifier[0], &tool_modifier[1]
+                                                                            &gpos, &toolbox.mstart_gpos, 
+                                                                            &toolbox.ascii_type, toolbox.ascii_edges
                                     ); 
                                     main_window.preview_buffer.clear();
                                 }
                                 else{
-                                    main_window.write_buffer(current_key);
+                                    main_window.write_buffer(toolbox.current_key);
                                 }
                             }
                             render_change = true;
@@ -171,30 +97,17 @@ fn main() {
                 },
                 Event::TextInput {text, ..} => { //keyboard determines keycombo (keybinds)
                     println!("text: {}", text);
-                    if &current_tool == "t"{
-                        prev_gpos = tools::text(&mut main_window, &prev_gpos, &text); //text mode case
+                    if &toolbox.current_tool == "t"{
+                        toolbox.text(&mut main_window, &text, "");
                         render_change = true;
                     }
                     else if keycombo.len() > 0{
                         if &keycombo == "i"{
                             let text_vec: Vec<char> = text.chars().collect();
-                            current_key = text_vec[0];
+                            toolbox.current_key = text_vec[0];
                         }
                         else if &keycombo == "c"{
-                            current_tool = text.to_lowercase();
-                        }
-                        else if &keycombo == "m"{
-                            if &current_tool == "p" && &(text.to_lowercase()) == "l"{ 
-                                if &tool_modifier[1] == " " {tool_modifier[1] = String::from("l");}
-                                else {tool_modifier[1] = String::from(" ");}
-                            }
-                            else if &current_tool == "p"{
-                                tool_modifier[0] = text.to_lowercase();
-                            }
-                            else if &current_tool == "r" || &current_tool == "o"{
-                                if &tool_modifier[2] == " " {tool_modifier[2] = String::from("a");}
-                                else {tool_modifier[2] = String::from(" ");}
-                            }
+                            toolbox.current_tool = text.to_lowercase();
                         }
                         keycombo = String::from("");
                     }
@@ -229,32 +142,26 @@ fn main() {
                     }
                 },   
                 Event::KeyUp {keycode, ..} =>{
-                    if &current_tool == "t"{
+                    if &toolbox.current_tool == "t"{
                         match keycode {
                             Some(sdl2::keyboard::Keycode::ESCAPE) =>{ //leave text mode
-                                current_tool = String::from("f");
+                                toolbox.text(&mut main_window, &String::from(""), "escape");
                             }
-                            Some(sdl2::keyboard::Keycode::BACKSPACE) => { //backspace! finally! what is this? 2024? are we sure it isn't 3024?
-                                let mut end_offset = 0;
-                                if prev_gpos[1] == (main_window.num_of_cols as i32) - 1 && //updates our position
-                                main_window.window_array[prev_gpos[0] as usize][prev_gpos[1] as usize] != ' '{ //moves to that new position
-                                    end_offset = 1;
-                                }
-                                main_window.window_array[prev_gpos[0] as usize][(std::cmp::max(prev_gpos[1]-1+end_offset, 0)) as usize] = ' ';
-                                prev_gpos = [prev_gpos[0], std::cmp::max(prev_gpos[1] - 1 + end_offset, 0)];
+                            Some(sdl2::keyboard::Keycode::BACKSPACE) => {
+                                toolbox.text(&mut main_window, &String::from(""), "backspace");
                                 render_change = true;
                             }
                             Some(sdl2::keyboard::Keycode::UP) => { //directions??? No way, it's 4024
-                                prev_gpos = [std::cmp::max(prev_gpos[0]-1, 0), prev_gpos[1]];
+                                toolbox.text(&mut main_window, &String::from(""), "up");
                             }
                             Some(sdl2::keyboard::Keycode::DOWN) => {
-                                prev_gpos = [std::cmp::min(prev_gpos[0]+1, (main_window.num_of_rows as i32)-1), prev_gpos[1]];
+                                toolbox.text(&mut main_window, &String::from(""), "down");
                             }
                             Some(sdl2::keyboard::Keycode::LEFT) => {
-                                prev_gpos = [prev_gpos[0], std::cmp::max(prev_gpos[1]-1, 0)];
+                                toolbox.text(&mut main_window, &String::from(""), "left");
                             }
                             Some(sdl2::keyboard::Keycode::RIGHT) => {
-                                prev_gpos = [prev_gpos[0], std::cmp::min(prev_gpos[1]+1, (main_window.num_of_cols as i32)-1)];
+                                toolbox.text(&mut main_window, &String::from(""), "right");
                             }
                             _ => {}
                         }   
@@ -277,7 +184,7 @@ fn main() {
         }
         if render_change{ //render if change
             let pre = std::time::SystemTime::now();
-            main_window.render(&gui_bar, current_key);
+            main_window.render(&gui_bar, toolbox.current_key);
             render_change = false;
             let post = std::time::SystemTime::now();
             times.push(post.duration_since(pre).unwrap().as_secs_f64());

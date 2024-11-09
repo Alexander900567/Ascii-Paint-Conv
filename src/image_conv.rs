@@ -9,7 +9,7 @@ pub fn convert_image_put_in_window(window_array: &mut Vec<Vec<char>>,
                                    current_mouse_pos: &[i32; 2], 
                                    start_mouse_pos: &[i32; 2],
                                    map_choice: &str,
-                                   draw_lines: &str,){ 
+                                   draw_lines: bool,){ 
     let begr: i32 = start_mouse_pos[0];
     let begc: i32 = start_mouse_pos[1];
     let finr: i32 = current_mouse_pos[0];
@@ -24,7 +24,7 @@ pub fn convert_image_put_in_window(window_array: &mut Vec<Vec<char>>,
         //ascii_array = Vec::from([' ', '.', ':', 'c', 'o', 'P', '#', '%', '@', '\u{2586}']);
         ascii_array = Vec::from([' ', '.', ':', 'c', 'o', 'P', 'O', '?', '@', '\u{2586}']);
     }
-    else if map_choice == "3" && draw_lines == "l"{
+    else if map_choice == "3" && draw_lines{
         ascii_array = Vec::from([' ']);
     }
     else{
@@ -82,7 +82,7 @@ pub fn convert_image_put_in_window(window_array: &mut Vec<Vec<char>>,
     */
 
     //do the line operations if requested
-    if draw_lines == "l"{
+    if draw_lines{
         ascii_output = add_lines_to_conv(&img, &ascii_output, wcount, hcount);
     }
 
