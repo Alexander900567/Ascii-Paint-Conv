@@ -79,16 +79,14 @@ fn main() {
                         sdl2::mouse::MouseButton::Left => {
                             if y > main_window.gui_height as i32{
                                 if &toolbox.current_tool == "p"{
+                                    main_window.preview_buffer.clear();
                                     let gpos = main_window.get_mouse_gpos(x, y);
                                     image_conv::convert_image_put_in_window(&mut main_window.window_array, 
                                                                             &gpos, &toolbox.mstart_gpos, 
                                                                             &toolbox.ascii_type, toolbox.ascii_edges
                                     ); 
-                                    main_window.preview_buffer.clear();
                                 }
-                                else{
-                                    main_window.write_buffer();
-                                }
+                                main_window.write_buffer();
                             }
                             render_change = true;
                         },
