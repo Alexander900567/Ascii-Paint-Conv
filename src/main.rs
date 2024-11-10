@@ -81,7 +81,7 @@ fn main() {
                                 if &toolbox.current_tool == "p"{
                                     main_window.preview_buffer.clear();
                                     let gpos = main_window.get_mouse_gpos(x, y);
-                                    image_conv::convert_image_put_in_window(&mut main_window.window_array, 
+                                    image_conv::convert_image_put_in_window(&mut main_window, 
                                                                             &gpos, &toolbox.mstart_gpos, 
                                                                             &toolbox.ascii_type, toolbox.ascii_edges
                                     ); 
