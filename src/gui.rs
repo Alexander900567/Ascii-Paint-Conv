@@ -119,6 +119,11 @@ impl Gui{
         let grid_pos = self.get_gui_grid_pos(x, y);
         
         let clicked_id = self.gui_grid[grid_pos.0 as usize][grid_pos.1 as usize];
+
+        self.handle_click(clicked_id, main_window, toolbox);
+    }
+
+    pub fn handle_click(&mut self, clicked_id: i32, main_window: &mut main_window::MainWindow<'_>, toolbox: &mut tools::Toolbox){
         if clicked_id == -1{
             return;
         }
