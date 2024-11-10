@@ -87,7 +87,7 @@ fn main() {
                                     main_window.preview_buffer.clear();
                                 }
                                 else{
-                                    main_window.write_buffer(toolbox.current_key);
+                                    main_window.write_buffer();
                                 }
                             }
                             render_change = true;
@@ -184,7 +184,7 @@ fn main() {
         }
         if render_change{ //render if change
             let pre = std::time::SystemTime::now();
-            main_window.render(&gui_bar, toolbox.current_key);
+            main_window.render(&gui_bar);
             render_change = false;
             let post = std::time::SystemTime::now();
             times.push(post.duration_since(pre).unwrap().as_secs_f64());

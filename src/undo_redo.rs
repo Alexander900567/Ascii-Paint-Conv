@@ -17,10 +17,10 @@ impl UndoRedo{
         }
     }
 
-    pub fn add_to_undo(&mut self, preview_buffer: &Vec<[i32;2]>, window_array: &Vec<Vec<char>>){
+    pub fn add_to_undo(&mut self, preview_buffer: &Vec<(i32, i32, char)>, window_array: &Vec<Vec<char>>){
         let mut change = Vec::new();
         for grid in preview_buffer{
-            change.push((grid[0], grid[1], window_array[grid[0] as usize][grid[1] as usize]));
+            change.push((grid.0, grid.1, window_array[grid.0 as usize][grid.1 as usize]));
         }
 
         self.undo_buffer.push_front(change);

@@ -127,7 +127,7 @@ impl Toolbox{
                 extra -= 1;
             }
             for _ in 0..this_chunk {
-                main_window.add_to_preview_buffer(begin_row, begin_col);    
+                main_window.add_to_preview_buffer(begin_row, begin_col, self.current_key);    
                 if row_length_is_long {
                     begin_row += row_iter;   
                 }
@@ -241,14 +241,14 @@ impl Toolbox{
         let mut p:i32 = 1 - r;
     
         while row_num <= col_num {
-            main_window.add_to_preview_buffer(begin_row + row_num, begin_col + col_num);
-            main_window.add_to_preview_buffer(begin_row + col_num, begin_col + row_num);
-            main_window.add_to_preview_buffer(begin_row - col_num, begin_col + row_num);
-            main_window.add_to_preview_buffer(begin_row - row_num, begin_col + col_num);
-            main_window.add_to_preview_buffer(begin_row - row_num, begin_col - col_num);
-            main_window.add_to_preview_buffer(begin_row - col_num, begin_col - row_num);
-            main_window.add_to_preview_buffer(begin_row + col_num, begin_col - row_num);
-            main_window.add_to_preview_buffer(begin_row + row_num, begin_col - col_num);
+            main_window.add_to_preview_buffer(begin_row + row_num, begin_col + col_num, self.current_key);
+            main_window.add_to_preview_buffer(begin_row + col_num, begin_col + row_num, self.current_key);
+            main_window.add_to_preview_buffer(begin_row - col_num, begin_col + row_num, self.current_key);
+            main_window.add_to_preview_buffer(begin_row - row_num, begin_col + col_num, self.current_key);
+            main_window.add_to_preview_buffer(begin_row - row_num, begin_col - col_num, self.current_key);
+            main_window.add_to_preview_buffer(begin_row - col_num, begin_col - row_num, self.current_key);
+            main_window.add_to_preview_buffer(begin_row + col_num, begin_col - row_num, self.current_key);
+            main_window.add_to_preview_buffer(begin_row + row_num, begin_col - col_num, self.current_key);
     
             row_num += 1; //all 4 regions
             if p < 0 {
@@ -426,10 +426,10 @@ impl Toolbox{
         let draw_quad_pixels = |main_window: &mut MainWindow<'_>, begin_row: i32, begin_col: i32, row_num: i32, col_num: i32| {
             //mentioned in previous credits's source, but I figured I'd be specific https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/
             //draw_quad_pixels in doc.rs
-            main_window.add_to_preview_buffer(begin_row + row_num, begin_col + col_num);
-            main_window.add_to_preview_buffer(begin_row - row_num, begin_col + col_num);
-            main_window.add_to_preview_buffer(begin_row + row_num, begin_col - col_num);
-            main_window.add_to_preview_buffer(begin_row - row_num, begin_col - col_num);
+            main_window.add_to_preview_buffer(begin_row + row_num, begin_col + col_num, self.current_key);
+            main_window.add_to_preview_buffer(begin_row - row_num, begin_col + col_num, self.current_key);
+            main_window.add_to_preview_buffer(begin_row + row_num, begin_col - col_num, self.current_key);
+            main_window.add_to_preview_buffer(begin_row - row_num, begin_col - col_num, self.current_key);
         };
     
         self.draw_ellipse(main_window,
@@ -534,7 +534,7 @@ impl Toolbox{
     
     pub fn free(&self, main_window: &mut MainWindow<'_>, current_mouse_pos: &[i32; 2], prev_gpos: &[i32; 2]){
         if current_mouse_pos != prev_gpos{
-            main_window.add_to_preview_buffer(current_mouse_pos[0], current_mouse_pos[1]);
+            main_window.add_to_preview_buffer(current_mouse_pos[0], current_mouse_pos[1], self.current_key);
         }
     }
 }
