@@ -105,9 +105,13 @@ fn main() {
                             toolbox.current_key = text_vec[0];
                         }
                         else if &keycombo == "c"{
-                            toolbox.current_tool = text.to_lowercase();
+                            toolbox.change_tool(&mut main_window, &mut gui_bar, &text.to_lowercase());
+                        }
+                        else if &keycombo == "m"{
+                            toolbox.modify_tool(&mut main_window, &mut gui_bar, &text.to_lowercase());
                         }
                         keycombo = String::from("");
+                        render_change = true;
                     }
                     else {
                         if &(text.to_lowercase()) == "i"{ //will start key select

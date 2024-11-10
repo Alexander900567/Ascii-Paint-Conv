@@ -1,4 +1,6 @@
 use crate::main_window::MainWindow;
+use crate::gui::Gui;
+use std::collections::HashMap;
 
 pub struct Toolbox {
     
@@ -10,6 +12,8 @@ pub struct Toolbox {
     pub filled: bool,
     pub ascii_type: String,
     pub ascii_edges: bool,
+    tool_letter_to_button_id: HashMap<String, i32>,
+    mod_letter_to_button_id: HashMap<String, i32>,
 }
 
 impl Toolbox{
@@ -22,7 +26,23 @@ impl Toolbox{
             filled: false,
             ascii_type: String::from("4"),
             ascii_edges: false,
+            tool_letter_to_button_id: HashMap::from([(String::from("f"), 0), (String::from("l"), 2), 
+                                                    (String::from("r"), 3), (String::from("t"), 5), 
+                                                    (String::from("p"), 6), (String::from("o"), 4)]),
+            mod_letter_to_button_id: HashMap::from([(String::from("f"), 1), (String::from("e"), 14), 
+                                                   (String::from("1"), 10), (String::from("2"), 11), 
+                                                   (String::from("3"), 12), (String::from("4"), 13)]),
         }
+    }
+
+    pub fn change_tool(&mut self, main_window: &mut MainWindow<'_>, gui_bar: &mut Gui, text: &str){
+        let button_id = *self.tool_letter_to_button_id.get(text).unwrap_or(&-1);
+        gui_bar.handle_click(button_id, main_window, self);
+    }
+
+    pub fn modify_tool(&mut self, main_window: &mut MainWindow<'_>, gui_bar: &mut Gui, text: &str){
+        let button_id = *self.mod_letter_to_button_id.get(text).unwrap_or(&-1);
+        gui_bar.handle_click(button_id, main_window, self);
     }
 
     pub fn draw_tool(&mut self, main_window: &mut MainWindow<'_>, click_down: bool, x: i32, y: i32) -> bool{
