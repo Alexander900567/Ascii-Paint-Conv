@@ -4,8 +4,9 @@ use crate::image::Pixel;
 use crate::rayon::iter::ParallelIterator;
 use crate::image::GenericImage;
 use rayon::prelude::*;
+use crate::main_window::MainWindow;
 
-pub fn convert_image_put_in_window(window_array: &mut Vec<Vec<char>>, 
+pub fn convert_image_put_in_window(main_window: &mut MainWindow<'_>, 
                                    current_mouse_pos: &[i32; 2], 
                                    start_mouse_pos: &[i32; 2],
                                    map_choice: &str,
@@ -102,7 +103,7 @@ pub fn convert_image_put_in_window(window_array: &mut Vec<Vec<char>>,
         //println!("---row {} conv_row {}", row, conv_row);
         for col in tl_col..=br_col{
             //println!("col {} conv_col {}", col, conv_col);
-            window_array[row as usize][col as usize] = ascii_output[conv_row as usize][conv_col as usize];
+            main_window.add_to_preview_buffer(row, col, ascii_output[conv_row as usize][conv_col as usize]);
             conv_col += 1;
         }
         conv_col = 0;

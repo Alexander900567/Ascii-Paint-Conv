@@ -79,16 +79,14 @@ fn main() {
                         sdl2::mouse::MouseButton::Left => {
                             if y > main_window.gui_height as i32{
                                 if &toolbox.current_tool == "p"{
+                                    main_window.preview_buffer.clear();
                                     let gpos = main_window.get_mouse_gpos(x, y);
-                                    image_conv::convert_image_put_in_window(&mut main_window.window_array, 
+                                    image_conv::convert_image_put_in_window(&mut main_window, 
                                                                             &gpos, &toolbox.mstart_gpos, 
                                                                             &toolbox.ascii_type, toolbox.ascii_edges
                                     ); 
-                                    main_window.preview_buffer.clear();
                                 }
-                                else{
-                                    main_window.write_buffer(toolbox.current_key);
-                                }
+                                main_window.write_buffer();
                             }
                             render_change = true;
                         },
@@ -184,7 +182,7 @@ fn main() {
         }
         if render_change{ //render if change
             let pre = std::time::SystemTime::now();
-            main_window.render(&gui_bar, toolbox.current_key);
+            main_window.render(&gui_bar);
             render_change = false;
             let post = std::time::SystemTime::now();
             times.push(post.duration_since(pre).unwrap().as_secs_f64());

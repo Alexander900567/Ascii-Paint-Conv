@@ -18,7 +18,7 @@ pub struct MainWindow<'a> {
     col_length: f32,
     row_length: f32,
     pub gui_height: u32,
-    pub preview_buffer: Vec<[i32;2]>,
+    pub preview_buffer: Vec<(i32, i32, char)>,
     pub window_array: Vec<Vec<char>>, 
     pub undo_redo: undo_redo::UndoRedo, 
 }
@@ -86,11 +86,11 @@ impl MainWindow<'_>{
 
     //render_functions
 
-    pub fn render(&mut self, gui: &gui::Gui, current_key: char){
+    pub fn render(&mut self, gui: &gui::Gui){
         
         self.render_gui(gui);
 
-        self.render_grid(current_key);
+        self.render_grid();
 
         self.canvas.present(); //actually commit changes to screen!
     }
@@ -125,12 +125,12 @@ impl MainWindow<'_>{
         }
     }
 
-    fn render_grid(&mut self, current_key: char){
+    fn render_grid(&mut self){
 
         let mut render_array = self.window_array.clone();
         
         for buffer_item in &self.preview_buffer{ 
-            render_array[buffer_item[0] as usize][buffer_item[1] as usize] = current_key;
+            render_array[buffer_item.0 as usize][buffer_item.1 as usize] = buffer_item.2;
         }
 
         self.canvas.set_draw_color(Color::RGB(0, 0, 0)); //set canvas to black
@@ -224,11 +224,11 @@ impl MainWindow<'_>{
     }
     //grid functions
 
-    pub fn write_buffer(&mut self, current_char: char) {
+    pub fn write_buffer(&mut self) {
         self.undo_redo.add_to_undo(&self.preview_buffer, &self.window_array);
         self.undo_redo.redo_buffer.clear();
         for buffer_item in &(self.preview_buffer){
-            self.window_array[buffer_item[0] as usize][buffer_item[1] as usize] = current_char;
+            self.window_array[buffer_item.0 as usize][buffer_item.1 as usize] = buffer_item.2;
         }
         self.preview_buffer.clear();
     }
@@ -258,14 +258,14 @@ impl MainWindow<'_>{
         return [rgpos, cgpos]; //converts window dimensions to canvas dimensions
     }
 
-    pub fn add_to_preview_buffer(&mut self, rpos: i32, cpos: i32){
+    pub fn add_to_preview_buffer(&mut self, rpos: i32, cpos: i32, character: char){
         //don't add to preview buffer if out of bounds
         let rnumi = self.num_of_rows as i32;
         let cnumi = self.num_of_cols as i32;
         if (rpos < 0) || (rpos >= rnumi) || (cpos < 0) || (cpos >= cnumi){
             return;
         }
-        self.preview_buffer.push([rpos, cpos]);
+        self.preview_buffer.push((rpos, cpos, character));
     }
 
     //gui functions
