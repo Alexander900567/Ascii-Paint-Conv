@@ -147,7 +147,8 @@ fn main() {
                     if &toolbox.current_tool == "t"{
                         match keycode {
                             Some(sdl2::keyboard::Keycode::ESCAPE) =>{ //leave text mode
-                                toolbox.text(&mut main_window, &String::from(""), "escape");
+                                gui_bar.handle_click(0, &mut main_window, &mut toolbox);
+                                render_change = true;
                             }
                             Some(sdl2::keyboard::Keycode::BACKSPACE) => {
                                 toolbox.text(&mut main_window, &String::from(""), "backspace");
