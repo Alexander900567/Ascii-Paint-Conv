@@ -1,6 +1,7 @@
 use crate::main_window::MainWindow;
 use crate::gui::Gui;
 use std::collections::HashMap;
+use crate::rectangle_selector::RectangleSelector;
 
 pub struct Toolbox {
     
@@ -12,6 +13,7 @@ pub struct Toolbox {
     pub filled: bool,
     pub ascii_type: String,
     pub ascii_edges: bool,
+    pub rect_sel_tool: RectangleSelector,
     tool_letter_to_button_id: HashMap<String, i32>,
     mod_letter_to_button_id: HashMap<String, i32>,
 }
@@ -26,9 +28,11 @@ impl Toolbox{
             filled: false,
             ascii_type: String::from("4"),
             ascii_edges: false,
+            rect_sel_tool: RectangleSelector::new(),
             tool_letter_to_button_id: HashMap::from([(String::from("f"), 0), (String::from("l"), 2), 
                                                     (String::from("r"), 3), (String::from("t"), 5), 
-                                                    (String::from("p"), 6), (String::from("o"), 4)]),
+                                                    (String::from("p"), 6), (String::from("o"), 4), 
+                                                    (String::from("a"), 15)]),
             mod_letter_to_button_id: HashMap::from([(String::from("f"), 1), (String::from("e"), 14), 
                                                    (String::from("1"), 10), (String::from("2"), 11), 
                                                    (String::from("3"), 12), (String::from("4"), 13)]),

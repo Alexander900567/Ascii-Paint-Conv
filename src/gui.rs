@@ -102,6 +102,10 @@ impl Gui{
         start_buttons.insert(14, Button::new(&mut start_grid, &mut start_groups, 
                                             14, (5, 12), (7, 13),
                                             "edge", 0, -1, false));
+
+        start_buttons.insert(15, Button::new(&mut start_grid, &mut start_groups,
+                                            15, (0, 0), (0, 0),
+                                            "select", 0, 0, true));
         println!("{:?}", start_groups);
         Gui{
             gui_grid: start_grid,
@@ -164,6 +168,9 @@ impl Gui{
         }
         else if Vec::from([10, 11, 12, 13]).contains(&clicked_id){
             self.click_ascii_pallete(toolbox, clicked_id);
+        }
+        else if clicked_id == 15{
+            self.click_rectangle_selector(toolbox);
         }
 
         if toggle_group == -1 && clicked_is_pressed == 0{
@@ -260,6 +267,10 @@ impl Gui{
 
     fn click_line(&self, toolbox: &mut tools::Toolbox){
         toolbox.current_tool = String::from("l");
+    }
+
+    fn click_rectangle_selector(&self, toolbox: &mut tools::Toolbox){
+        toolbox.current_tool = String::from("a");
     }
 
     fn click_rect(&mut self, toolbox: &mut tools::Toolbox){

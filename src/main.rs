@@ -7,6 +7,7 @@ mod image_conv;
 mod undo_redo;
 mod gui;
 mod save_load;
+mod rectangle_selector;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
 
