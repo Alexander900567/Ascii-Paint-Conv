@@ -1,6 +1,7 @@
 use sdl2::pixels::Color;
 use crate::undo_redo;
 use crate::gui;
+use crate::tools;
 
 pub struct MainWindow<'a> {
         
@@ -86,11 +87,11 @@ impl MainWindow<'_>{
 
     //render_functions
 
-    pub fn render(&mut self, gui: &gui::Gui){
+    pub fn render(&mut self, gui: &gui::Gui, toolbox: &tools::Toolbox){
         
         self.render_gui(gui);
 
-        self.render_grid();
+        self.render_grid(toolbox);
 
         self.canvas.present(); //actually commit changes to screen!
     }
@@ -125,7 +126,7 @@ impl MainWindow<'_>{
         }
     }
 
-    fn render_grid(&mut self){
+    fn render_grid(&mut self, toolbox: &tools::Toolbox){
 
         let mut render_array = self.window_array.clone();
         
@@ -156,6 +157,13 @@ impl MainWindow<'_>{
             sdl2::rect::Rect::new(0, self.gui_height as i32,
                                   self.window_width, self.window_height - self.gui_height) //first two is where, second is how big
         ).expect("failed copying texture to canvas"); //display that texture to the canvas
+
+        if toolbox.current_tool == "t"{
+            self.canvas.set_draw_color(Color::RGB(255, 255, 255));
+            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new((toolbox.prev_gpos[1] as f32 * self.col_length).ceil() as i32, 
+                                                                (toolbox.prev_gpos[0] as f32 * self.row_length).ceil() as i32 + self.gui_height as i32,
+                                                                self.col_length as u32, self.row_length as u32)); 
+        }
     }
 
     pub fn window_size_changed(&mut self, new_width: i32, new_height: i32) {

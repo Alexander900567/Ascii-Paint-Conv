@@ -148,11 +148,9 @@ fn main() {
                         match keycode {
                             Some(sdl2::keyboard::Keycode::ESCAPE) =>{ //leave text mode
                                 gui_bar.handle_click(0, &mut main_window, &mut toolbox);
-                                render_change = true;
                             }
                             Some(sdl2::keyboard::Keycode::BACKSPACE) => {
                                 toolbox.text(&mut main_window, &String::from(""), "backspace");
-                                render_change = true;
                             }
                             Some(sdl2::keyboard::Keycode::UP) => { //directions??? No way, it's 4024
                                 toolbox.text(&mut main_window, &String::from(""), "up");
@@ -168,6 +166,7 @@ fn main() {
                             }
                             _ => {}
                         }   
+                        render_change = true;
                     }
                 },
                 Event::Window {win_event, ..} =>{
@@ -187,7 +186,7 @@ fn main() {
         }
         if render_change{ //render if change
             let pre = std::time::SystemTime::now();
-            main_window.render(&gui_bar);
+            main_window.render(&gui_bar, &toolbox);
             render_change = false;
             let post = std::time::SystemTime::now();
             times.push(post.duration_since(pre).unwrap().as_secs_f64());
