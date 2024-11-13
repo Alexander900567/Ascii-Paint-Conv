@@ -86,6 +86,8 @@ fn main() {
                                                                             &toolbox.ascii_type, toolbox.ascii_edges
                                     ); 
                                 }
+                            }
+                            if main_window.preview_buffer.len() > 0{
                                 main_window.write_buffer();
                             }
                             render_change = true;
