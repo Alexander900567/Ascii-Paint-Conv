@@ -86,6 +86,8 @@ fn main() {
                                                                             &toolbox.ascii_type, toolbox.ascii_edges
                                     ); 
                                 }
+                            }
+                            if main_window.preview_buffer.len() > 0{
                                 main_window.write_buffer();
                             }
                             render_change = true;
@@ -147,11 +149,10 @@ fn main() {
                     if &toolbox.current_tool == "t"{
                         match keycode {
                             Some(sdl2::keyboard::Keycode::ESCAPE) =>{ //leave text mode
-                                toolbox.text(&mut main_window, &String::from(""), "escape");
+                                gui_bar.handle_click(0, &mut main_window, &mut toolbox);
                             }
                             Some(sdl2::keyboard::Keycode::BACKSPACE) => {
                                 toolbox.text(&mut main_window, &String::from(""), "backspace");
-                                render_change = true;
                             }
                             Some(sdl2::keyboard::Keycode::UP) => { //directions??? No way, it's 4024
                                 toolbox.text(&mut main_window, &String::from(""), "up");
@@ -167,6 +168,7 @@ fn main() {
                             }
                             _ => {}
                         }   
+                        render_change = true;
                     }
                 },
                 Event::Window {win_event, ..} =>{
@@ -186,7 +188,7 @@ fn main() {
         }
         if render_change{ //render if change
             let pre = std::time::SystemTime::now();
-            main_window.render(&gui_bar);
+            main_window.render(&gui_bar, &toolbox);
             render_change = false;
             let post = std::time::SystemTime::now();
             times.push(post.duration_since(pre).unwrap().as_secs_f64());
