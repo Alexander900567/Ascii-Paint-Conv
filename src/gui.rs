@@ -104,9 +104,12 @@ impl Gui{
                                             "edge", 0, -1, false));
 
         start_buttons.insert(15, Button::new(&mut start_grid, &mut start_groups,
-                                            15, (1, 10), (3, 11),
+                                            15, (1, 10), (3, 10),
                                             "select", 0, 0, true));
-        println!("{:?}", start_groups);
+
+        start_buttons.insert(16, Button::new(&mut start_grid, &mut start_groups,
+                                            16, (1, 12), (3, 13),
+                                            "clear", -1, 0, false));
         Gui{
             gui_grid: start_grid,
             buttons: start_buttons,
@@ -136,7 +139,7 @@ impl Gui{
 
         let mut unclick_id = 0;
         if clicked_is_pressed != -1 {
-            unclick_id = self.handle_unclick(toggle_group, clicked_id, toolbox);
+            unclick_id = self.handle_unclick(toggle_group, clicked_id, main_window, toolbox);
         }
 
         if clicked_id == 0{
@@ -172,6 +175,9 @@ impl Gui{
         else if clicked_id == 15{
             self.click_rectangle_selector(toolbox);
         }
+        else if clicked_id == 16{
+            self.click_reset_box(main_window, toolbox);
+        }
 
         if toggle_group == -1 && clicked_is_pressed == 0{
             if clicked_id == 1{
@@ -195,7 +201,7 @@ impl Gui{
         }
     }
 
-    pub fn handle_unclick(&mut self, toggle_group: i32, clicked_id: i32, toolbox: &mut tools::Toolbox) -> i32{
+    pub fn handle_unclick(&mut self, toggle_group: i32, clicked_id: i32, main_window: &mut main_window::MainWindow<'_>, toolbox: &mut tools::Toolbox) -> i32{
         let unclick_id: i32; 
         let pressed_status: i32;
         if toggle_group == -1{
@@ -215,6 +221,9 @@ impl Gui{
         }
         else if unclick_id == 6{
             self.unclick_picture();
+        }
+        else if unclick_id == 15{
+            self.unclick_rectangle_selector(main_window, toolbox);
         }
 
         if toggle_group == -1 && pressed_status == 1{
@@ -269,8 +278,17 @@ impl Gui{
         toolbox.current_tool = String::from("l");
     }
 
-    fn click_rectangle_selector(&self, toolbox: &mut tools::Toolbox){
+    fn click_rectangle_selector(&mut self, toolbox: &mut tools::Toolbox){
         toolbox.current_tool = String::from("a");
+        self.show_button(16);
+    }
+    fn unclick_rectangle_selector(&mut self, main_window: &mut main_window::MainWindow<'_>, toolbox: &mut tools::Toolbox){
+        toolbox.rect_sel_tool.reset_box(main_window);
+        self.hide_button(16);
+    }
+
+    fn click_reset_box(&mut self, main_window: &mut main_window::MainWindow<'_>, toolbox: &mut tools::Toolbox){
+        toolbox.rect_sel_tool.reset_box(main_window);
     }
 
     fn click_rect(&mut self, toolbox: &mut tools::Toolbox){
