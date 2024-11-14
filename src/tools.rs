@@ -86,6 +86,14 @@ impl Toolbox{
         else if &self.current_tool == "w"{
             self.filled_ellipse(main_window, &gpos, &self.mstart_gpos);
         }
+        else if &self.current_tool == "a"{
+            if click_down{
+                self.rect_sel_tool.on_mouse_down(&gpos);
+            }
+            else{
+                self.rect_sel_tool.on_mouse_move(main_window, &gpos);
+            }
+        }
 
         let mut render_change = false;
         if click_down{
