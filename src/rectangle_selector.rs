@@ -61,7 +61,6 @@ impl RectangleSelector{
             self.bot_right = (self.bot_right.0 + row_delta, self.bot_right.1 + col_delta);
             self.start_gpos = (gpos[0], gpos[1]);
             if row_delta != 0 || col_delta != 0{
-                println!("{:?}", main_window.preview_buffer);
                 for item in main_window.preview_buffer.iter_mut(){
                     item.0 = item.0 + row_delta;
                     item.1 = item.1 + col_delta;
@@ -79,7 +78,6 @@ impl RectangleSelector{
                     main_window.window_array[row as usize][col as usize] = ' ';
                 }
             }
-            println!("{:?}", main_window.preview_buffer);
         }
     }
 

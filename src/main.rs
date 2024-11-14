@@ -94,7 +94,6 @@ fn main() {
 
                             if (Vec::from(["a"]).iter().any(|x| x != &toolbox.current_tool) && 
                                 main_window.preview_buffer.len() > 0){
-                                println!("in");
                                 main_window.write_buffer();
                             }
                             render_change = true;

@@ -104,7 +104,7 @@ impl Gui{
                                             "edge", 0, -1, false));
 
         start_buttons.insert(15, Button::new(&mut start_grid, &mut start_groups,
-                                            15, (0, 0), (0, 0),
+                                            15, (1, 10), (3, 11),
                                             "select", 0, 0, true));
         println!("{:?}", start_groups);
         Gui{
