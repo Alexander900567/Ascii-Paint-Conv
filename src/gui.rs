@@ -110,6 +110,10 @@ impl Gui{
         start_buttons.insert(16, Button::new(&mut start_grid, &mut start_groups,
                                             16, (1, 12), (3, 13),
                                             "clear", -1, 0, false));
+
+        start_buttons.insert(17, Button::new(&mut start_grid, &mut start_groups,
+                                            17, (5, 12), (7, 13),
+                                            "elipse", 0, -1, false));
         Gui{
             gui_grid: start_grid,
             buttons: start_buttons,
@@ -301,10 +305,12 @@ impl Gui{
 
     fn click_circle(&mut self, toolbox: &mut tools::Toolbox){
         self.show_button(1);
+        self.show_button(17);
         toolbox.current_tool = String::from("o");
     }
     fn unclick_circle(&mut self){
         self.hide_button(1);
+        self.hide_button(17);
     }
 
     fn click_fill(&self, toolbox: &mut tools::Toolbox){
