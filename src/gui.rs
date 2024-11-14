@@ -190,6 +190,9 @@ impl Gui{
             if clicked_id == 14{
                 self.click_edge(toolbox);
             }
+            if clicked_id == 17{
+                self.click_elipse(toolbox);
+            }
         }
 
         if clicked_is_pressed != -1 && toggle_group != -1{
@@ -236,6 +239,9 @@ impl Gui{
             }
             if unclick_id == 14{
                 self.unclick_edge(toolbox);
+            }
+            if unclick_id == 17{
+                self.unclick_elipse(toolbox);
             }
         }
 
@@ -318,6 +324,13 @@ impl Gui{
     }
     fn unclick_fill(&self, toolbox: &mut tools::Toolbox){
         toolbox.filled = false;
+    }
+
+    fn click_elipse(&self, toolbox: &mut tools::Toolbox){
+        toolbox.elipse = true;
+    }
+    fn unclick_elipse(&self, toolbox: &mut tools::Toolbox){
+        toolbox.elipse = false;
     }
 
     fn click_ascii_pallete(&self, toolbox: &mut tools::Toolbox, clicked_id: i32){

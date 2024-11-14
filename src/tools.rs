@@ -11,6 +11,7 @@ pub struct Toolbox {
     pub mstart_gpos: [i32; 2],
     pub prev_gpos: [i32; 2],
     pub filled: bool,
+    pub elipse: bool,
     pub ascii_type: String,
     pub ascii_edges: bool,
     pub rect_sel_tool: RectangleSelector,
@@ -26,6 +27,7 @@ impl Toolbox{
             mstart_gpos: [0, 0],
             prev_gpos: [0, 0],
             filled: false,
+            elipse: false,
             ascii_type: String::from("4"),
             ascii_edges: false,
             rect_sel_tool: RectangleSelector::new(),
@@ -35,7 +37,8 @@ impl Toolbox{
                                                     (String::from("a"), 15)]),
             mod_letter_to_button_id: HashMap::from([(String::from("f"), 1), (String::from("e"), 14), 
                                                    (String::from("1"), 10), (String::from("2"), 11), 
-                                                   (String::from("3"), 12), (String::from("4"), 13)]),
+                                                   (String::from("3"), 12), (String::from("4"), 13),
+                                                   (String::from("o"), 17)])
         }
     }
 
@@ -70,21 +73,25 @@ impl Toolbox{
             }
         }
         else if &self.current_tool == "o"{
-            if !self.filled{
-                self.circle(main_window, &gpos, &self.mstart_gpos);
+            if !self.elipse{
+                if !self.filled{
+                    self.circle(main_window, &gpos, &self.mstart_gpos);
+                }
+                else{
+                    self.filled_circle(main_window, &gpos, &self.mstart_gpos);
+                }
             }
             else{
-                self.filled_circle(main_window, &gpos, &self.mstart_gpos);
+                if !self.filled{
+                    self.ellipse(main_window, &gpos, &self.mstart_gpos);
+                }
+                else{
+                    self.filled_ellipse(main_window, &gpos, &self.mstart_gpos);
+                }
             }
         }
         else if &self.current_tool == "p"{
             self.rectangle(main_window, &gpos, &self.mstart_gpos)
-        }
-        else if &self.current_tool == "e"{
-            self.ellipse(main_window, &gpos, &self.mstart_gpos);
-        }
-        else if &self.current_tool == "w"{
-            self.filled_ellipse(main_window, &gpos, &self.mstart_gpos);
         }
         else if &self.current_tool == "a"{
             if click_down{
