@@ -7,6 +7,7 @@ mod image_conv;
 mod undo_redo;
 mod gui;
 mod save_load;
+mod rectangle_selector;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
 
@@ -86,8 +87,13 @@ fn main() {
                                                                             &toolbox.ascii_type, toolbox.ascii_edges
                                     ); 
                                 }
+                                else if &toolbox.current_tool == "a"{
+                                    toolbox.rect_sel_tool.on_mouse_up(&mut main_window);
+                                }
                             }
-                            if main_window.preview_buffer.len() > 0{
+
+                            if (Vec::from(["a"]).iter().any(|x| x != &toolbox.current_tool) && 
+                                main_window.preview_buffer.len() > 0){
                                 main_window.write_buffer();
                             }
                             render_change = true;
@@ -169,6 +175,15 @@ fn main() {
                             _ => {}
                         }   
                         render_change = true;
+                    }
+                    if &toolbox.current_tool == "a"{
+                        match keycode {
+                            Some(sdl2::keyboard::Keycode::ESCAPE) =>{
+                                toolbox.rect_sel_tool.reset_box(&mut main_window);
+                                render_change = true;
+                            },
+                            _ => {}
+                        }
                     }
                 },
                 Event::Window {win_event, ..} =>{

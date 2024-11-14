@@ -3,6 +3,8 @@ use crate::undo_redo;
 use crate::gui;
 use crate::tools;
 
+use sdl2::rect::Rect;
+
 pub struct MainWindow<'a> {
         
     sdl_context: &'a sdl2::Sdl,
@@ -160,9 +162,20 @@ impl MainWindow<'_>{
 
         if toolbox.current_tool == "t"{
             self.canvas.set_draw_color(Color::RGB(255, 255, 255));
-            let _ = self.canvas.fill_rect(sdl2::rect::Rect::new((toolbox.prev_gpos[1] as f32 * self.col_length).ceil() as i32, 
-                                                                (toolbox.prev_gpos[0] as f32 * self.row_length).ceil() as i32 + self.gui_height as i32,
-                                                                self.col_length as u32, self.row_length as u32)); 
+            let _ = self.canvas.fill_rect(Rect::new(
+                    (toolbox.prev_gpos[1] as f32 * self.col_length).ceil() as i32, 
+                    (toolbox.prev_gpos[0] as f32 * self.row_length).ceil() as i32 + self.gui_height as i32,
+                    self.col_length as u32, self.row_length as u32)); 
+        }
+        if toolbox.current_tool == "a"{
+            if toolbox.rect_sel_tool.top_left.0 != -1{
+                self.canvas.set_draw_color(Color::RGB(255, 255, 255));
+                let _ = self.canvas.draw_rect(Rect::new(
+                        (toolbox.rect_sel_tool.top_left.1 as f32 * self.col_length).ceil() as i32, 
+                        (toolbox.rect_sel_tool.top_left.0 as f32 * self.row_length).ceil() as i32 + self.gui_height as i32,
+                        (toolbox.rect_sel_tool.size.1 as f32 * self.col_length).floor() as u32, 
+                        (toolbox.rect_sel_tool.size.0 as f32 * self.row_length).floor() as u32));
+            }
         }
     }
 

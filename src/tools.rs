@@ -1,6 +1,7 @@
 use crate::main_window::MainWindow;
 use crate::gui::Gui;
 use std::collections::HashMap;
+use crate::rectangle_selector::RectangleSelector;
 
 pub struct Toolbox {
     
@@ -10,8 +11,10 @@ pub struct Toolbox {
     pub mstart_gpos: [i32; 2],
     pub prev_gpos: [i32; 2],
     pub filled: bool,
+    pub elipse: bool,
     pub ascii_type: String,
     pub ascii_edges: bool,
+    pub rect_sel_tool: RectangleSelector,
     tool_letter_to_button_id: HashMap<String, i32>,
     mod_letter_to_button_id: HashMap<String, i32>,
 }
@@ -24,14 +27,18 @@ impl Toolbox{
             mstart_gpos: [0, 0],
             prev_gpos: [0, 0],
             filled: false,
+            elipse: false,
             ascii_type: String::from("4"),
             ascii_edges: false,
+            rect_sel_tool: RectangleSelector::new(),
             tool_letter_to_button_id: HashMap::from([(String::from("f"), 0), (String::from("l"), 2), 
                                                     (String::from("r"), 3), (String::from("t"), 5), 
-                                                    (String::from("p"), 6), (String::from("o"), 4)]),
+                                                    (String::from("p"), 6), (String::from("o"), 4), 
+                                                    (String::from("a"), 15)]),
             mod_letter_to_button_id: HashMap::from([(String::from("f"), 1), (String::from("e"), 14), 
                                                    (String::from("1"), 10), (String::from("2"), 11), 
-                                                   (String::from("3"), 12), (String::from("4"), 13)]),
+                                                   (String::from("3"), 12), (String::from("4"), 13),
+                                                   (String::from("o"), 17)])
         }
     }
 
@@ -66,21 +73,33 @@ impl Toolbox{
             }
         }
         else if &self.current_tool == "o"{
-            if !self.filled{
-                self.circle(main_window, &gpos, &self.mstart_gpos);
+            if !self.elipse{
+                if !self.filled{
+                    self.circle(main_window, &gpos, &self.mstart_gpos);
+                }
+                else{
+                    self.filled_circle(main_window, &gpos, &self.mstart_gpos);
+                }
             }
             else{
-                self.filled_circle(main_window, &gpos, &self.mstart_gpos);
+                if !self.filled{
+                    self.ellipse(main_window, &gpos, &self.mstart_gpos);
+                }
+                else{
+                    self.filled_ellipse(main_window, &gpos, &self.mstart_gpos);
+                }
             }
         }
         else if &self.current_tool == "p"{
             self.rectangle(main_window, &gpos, &self.mstart_gpos)
         }
-        else if &self.current_tool == "e"{
-            self.ellipse(main_window, &gpos, &self.mstart_gpos);
-        }
-        else if &self.current_tool == "w"{
-            self.filled_ellipse(main_window, &gpos, &self.mstart_gpos);
+        else if &self.current_tool == "a"{
+            if click_down{
+                self.rect_sel_tool.on_mouse_down(&gpos);
+            }
+            else{
+                self.rect_sel_tool.on_mouse_move(main_window, &gpos);
+            }
         }
 
         let mut render_change = false;

@@ -102,7 +102,18 @@ impl Gui{
         start_buttons.insert(14, Button::new(&mut start_grid, &mut start_groups, 
                                             14, (5, 12), (7, 13),
                                             "edge", 0, -1, false));
-        println!("{:?}", start_groups);
+
+        start_buttons.insert(15, Button::new(&mut start_grid, &mut start_groups,
+                                            15, (1, 10), (3, 10),
+                                            "select", 0, 0, true));
+
+        start_buttons.insert(16, Button::new(&mut start_grid, &mut start_groups,
+                                            16, (1, 12), (3, 13),
+                                            "clear", -1, 0, false));
+
+        start_buttons.insert(17, Button::new(&mut start_grid, &mut start_groups,
+                                            17, (5, 12), (7, 13),
+                                            "elipse", 0, -1, false));
         Gui{
             gui_grid: start_grid,
             buttons: start_buttons,
@@ -132,7 +143,7 @@ impl Gui{
 
         let mut unclick_id = 0;
         if clicked_is_pressed != -1 {
-            unclick_id = self.handle_unclick(toggle_group, clicked_id, toolbox);
+            unclick_id = self.handle_unclick(toggle_group, clicked_id, main_window, toolbox);
         }
 
         if clicked_id == 0{
@@ -165,6 +176,12 @@ impl Gui{
         else if Vec::from([10, 11, 12, 13]).contains(&clicked_id){
             self.click_ascii_pallete(toolbox, clicked_id);
         }
+        else if clicked_id == 15{
+            self.click_rectangle_selector(toolbox);
+        }
+        else if clicked_id == 16{
+            self.click_reset_box(main_window, toolbox);
+        }
 
         if toggle_group == -1 && clicked_is_pressed == 0{
             if clicked_id == 1{
@@ -172,6 +189,9 @@ impl Gui{
             }
             if clicked_id == 14{
                 self.click_edge(toolbox);
+            }
+            if clicked_id == 17{
+                self.click_elipse(toolbox);
             }
         }
 
@@ -188,7 +208,7 @@ impl Gui{
         }
     }
 
-    pub fn handle_unclick(&mut self, toggle_group: i32, clicked_id: i32, toolbox: &mut tools::Toolbox) -> i32{
+    pub fn handle_unclick(&mut self, toggle_group: i32, clicked_id: i32, main_window: &mut main_window::MainWindow<'_>, toolbox: &mut tools::Toolbox) -> i32{
         let unclick_id: i32; 
         let pressed_status: i32;
         if toggle_group == -1{
@@ -209,6 +229,9 @@ impl Gui{
         else if unclick_id == 6{
             self.unclick_picture();
         }
+        else if unclick_id == 15{
+            self.unclick_rectangle_selector(main_window, toolbox);
+        }
 
         if toggle_group == -1 && pressed_status == 1{
             if unclick_id == 1{
@@ -216,6 +239,9 @@ impl Gui{
             }
             if unclick_id == 14{
                 self.unclick_edge(toolbox);
+            }
+            if unclick_id == 17{
+                self.unclick_elipse(toolbox);
             }
         }
 
@@ -262,6 +288,19 @@ impl Gui{
         toolbox.current_tool = String::from("l");
     }
 
+    fn click_rectangle_selector(&mut self, toolbox: &mut tools::Toolbox){
+        toolbox.current_tool = String::from("a");
+        self.show_button(16);
+    }
+    fn unclick_rectangle_selector(&mut self, main_window: &mut main_window::MainWindow<'_>, toolbox: &mut tools::Toolbox){
+        toolbox.rect_sel_tool.reset_box(main_window);
+        self.hide_button(16);
+    }
+
+    fn click_reset_box(&mut self, main_window: &mut main_window::MainWindow<'_>, toolbox: &mut tools::Toolbox){
+        toolbox.rect_sel_tool.reset_box(main_window);
+    }
+
     fn click_rect(&mut self, toolbox: &mut tools::Toolbox){
         self.show_button(1);
         toolbox.current_tool = String::from("r");
@@ -272,10 +311,12 @@ impl Gui{
 
     fn click_circle(&mut self, toolbox: &mut tools::Toolbox){
         self.show_button(1);
+        self.show_button(17);
         toolbox.current_tool = String::from("o");
     }
     fn unclick_circle(&mut self){
         self.hide_button(1);
+        self.hide_button(17);
     }
 
     fn click_fill(&self, toolbox: &mut tools::Toolbox){
@@ -283,6 +324,13 @@ impl Gui{
     }
     fn unclick_fill(&self, toolbox: &mut tools::Toolbox){
         toolbox.filled = false;
+    }
+
+    fn click_elipse(&self, toolbox: &mut tools::Toolbox){
+        toolbox.elipse = true;
+    }
+    fn unclick_elipse(&self, toolbox: &mut tools::Toolbox){
+        toolbox.elipse = false;
     }
 
     fn click_ascii_pallete(&self, toolbox: &mut tools::Toolbox, clicked_id: i32){
