@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="13.229167mm"
+   height="13.229167mm"
+   viewBox="0 0 13.229167 13.229167"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="picture_button_disabled.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="10.24"
+     inkscape:cx="9.7167969"
+     inkscape:cy="23.583984"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1">
+    <inkscape:grid
+       id="grid2"
+       units="mm"
+       originx="0"
+       originy="0"
+       spacingx="0.99999998"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Layer 5"
+     transform="translate(-0.89400234,6.8553955)"
+     style="display:inline">
+    <path
+       sodipodi:type="star"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.396875;stroke-dasharray:none;stroke-opacity:1"
+       id="path6"
+       inkscape:flatsided="true"
+       sodipodi:sides="3"
+       sodipodi:cx="9.6128578"
+       sodipodi:cy="-0.54550058"
+       sodipodi:r1="1.3649293"
+       sodipodi:r2="0.74914122"
+       sodipodi:arg1="-1.5689753"
+       sodipodi:arg2="-0.52177782"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="M 9.6153434,-1.9104276 10.793677,0.13911552 8.4295535,0.13481038 Z"
+       inkscape:transform-center-x="-0.14198953"
+       inkscape:transform-center-y="-0.005111796"
+       transform="matrix(0,0.55958031,-0.38728142,0,8.0254832,-5.6192827)" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.261439;stroke-dasharray:none;stroke-opacity:1"
+       id="rect6"
+       width="1.7197917"
+       height="0.39687499"
+       x="6.2518148"
+       y="-0.43924975" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer11"
+     inkscape:label="Layer 6"
+     transform="matrix(2.0016687,0,0,2.1561097,-0.36220641,0.38108667)"
+     style="display:inline">
+    <text
+       xml:space="preserve"
+       style="font-style:italic;font-size:0.0640302px;font-family:'Monotype Corsiva';-inkscape-font-specification:'Monotype Corsiva Italic';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;stroke-width:0.144068"
+       x="3.2257745"
+       y="3.229604"
+       id="text1"
+       transform="scale(1.3773869,0.72601242)"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="3.229604"
+         sodipodi:role="line"
+         id="tspan119">..............................</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="3.3133512"
+         sodipodi:role="line"
+         id="tspan159">..............................</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="3.3970981"
+         sodipodi:role="line"
+         id="tspan160">..............................</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="3.4808452"
+         sodipodi:role="line"
+         id="tspan161">.....................:*##-....</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="3.5645921"
+         sodipodi:role="line"
+         id="tspan162">....................:#@@@%:...</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="3.6483393"
+         sodipodi:role="line"
+         id="tspan163">....................-@%%%@=...</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="3.7320862"
+         sodipodi:role="line"
+         id="tspan164">....................:%@@@@-...</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="3.8158333"
+         sodipodi:role="line"
+         id="tspan165">........:............=%@%+....</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="3.8995802"
+         sodipodi:role="line"
+         id="tspan166">.......=%-............:-:.....</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="3.9833274"
+         sodipodi:role="line"
+         id="tspan167">......-%@%-...................</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="4.0670743"
+         sodipodi:role="line"
+         id="tspan168">.....:%@@@#:...........:......</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="4.1508212"
+         sodipodi:role="line"
+         id="tspan169">....:#@@@@@#..........:#=.....</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="4.2345686"
+         sodipodi:role="line"
+         id="tspan170">....*@@@@@%@*.........#@%-....</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="4.3183155"
+         sodipodi:role="line"
+         id="tspan171">...+@@@@@@%%@+.......*@@@%:...</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="4.4020624"
+         sodipodi:role="line"
+         id="tspan172">..=@@%%%%%%%@@=.....+@%%%@#...</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="4.4858098"
+         sodipodi:role="line"
+         id="tspan173">.-%@@@@@@@%%@@%-...=@%%@@@@*..</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="4.5695567"
+         sodipodi:role="line"
+         id="tspan174">:%@@@@@@@@%%@@@%-.-%@%%@@@@@+.</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="4.6533036"
+         sodipodi:role="line"
+         id="tspan175">#@@@@@@@@@%%@@@@#=%@@%%@@@@@%=</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="4.7370505"
+         sodipodi:role="line"
+         id="tspan176">@@@@@@@@@@%%@@@@@@@@@%%@@@@@@%</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';stroke-width:0.144068"
+         x="3.2257745"
+         y="4.8170886"
+         sodipodi:role="line"
+         id="tspan177" /></text>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer12"
+     inkscape:label="Layer 7"
+     transform="translate(-2.1776447,4.2808756)"
+     style="display:inline">
+    <rect
+       style="fill:#0050be;fill-opacity:0;stroke:#ffffff;stroke-width:0.389961;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3"
+       width="5.9600387"
+       height="4.372539"
+       x="2.5762305"
+       y="0.48540205"
+       transform="matrix(0.50000001,0,0,0.50000001,2.5083741,0.99787191)" />
+    <circle
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.522487;stroke-dasharray:none;stroke-opacity:1"
+       id="path3"
+       cx="7.1437502"
+       cy="1.8520833"
+       r="0.52916664"
+       transform="matrix(0.50000001,0,0,0.50000001,2.5083741,0.99787191)" />
+    <path
+       sodipodi:type="star"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.396875;stroke-dasharray:none;stroke-opacity:1"
+       id="path4"
+       inkscape:flatsided="true"
+       sodipodi:sides="3"
+       sodipodi:cx="3.6540756"
+       sodipodi:cy="8.4043741"
+       sodipodi:r1="2.1925213"
+       sodipodi:r2="1.4411901"
+       sodipodi:arg1="-1.5791295"
+       sodipodi:arg2="-0.53193195"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="M 3.6358052,6.2119289 5.5619241,9.4847741 1.7644976,9.5164194 Z"
+       inkscape:transform-center-x="0.17439817"
+       inkscape:transform-center-y="0.089409119"
+       transform="matrix(0.52255785,0,0,0.40033906,2.7769468,-0.36452667)" />
+    <path
+       sodipodi:type="star"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.396875;stroke-dasharray:none;stroke-opacity:1"
+       id="path5"
+       inkscape:flatsided="true"
+       sodipodi:sides="3"
+       sodipodi:cx="7.1254473"
+       sodipodi:cy="8.2399406"
+       sodipodi:r1="2.155982"
+       sodipodi:r2="1.077991"
+       sodipodi:arg1="-1.562322"
+       sodipodi:arg2="-0.5151244"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="M 7.1437176,6.084036 8.9833803,9.3337155 5.249244,9.3020704 Z"
+       inkscape:transform-center-x="0.0077678132"
+       inkscape:transform-center-y="-0.34590716"
+       transform="matrix(0.42513179,0,0,0.32567314,3.0548787,0.47167308)" />
+  </g>
+</svg>

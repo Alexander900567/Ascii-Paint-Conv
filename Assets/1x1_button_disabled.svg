@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="13.229167mm"
+   height="13.229167mm"
+   viewBox="0 0 13.229167 13.229167"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="1x1_button_disabled.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="10.24"
+     inkscape:cx="30.029297"
+     inkscape:cy="26.904297"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1">
+    <inkscape:grid
+       id="grid2"
+       units="mm"
+       originx="0"
+       originy="0"
+       spacingx="0.99999998"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient182"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#002f71;stop-opacity:1;"
+         offset="0"
+         id="stop181" />
+      <stop
+         style="stop-color:#0050be;stop-opacity:1;"
+         offset="1"
+         id="stop182" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient179"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#0050be;stop-opacity:1;"
+         offset="0"
+         id="stop179" />
+      <stop
+         style="stop-color:#0050be;stop-opacity:0;"
+         offset="1"
+         id="stop180" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient177"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#003399;stop-opacity:1;"
+         offset="0"
+         id="stop177" />
+      <stop
+         style="stop-color:#0050be;stop-opacity:1;"
+         offset="1"
+         id="stop178" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient177"
+       id="linearGradient178"
+       x1="6.6686873"
+       y1="13.227754"
+       x2="6.5723648"
+       y2="5.9976392"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient179"
+       id="linearGradient180"
+       x1="10.862517"
+       y1="8.0795727"
+       x2="10.845091"
+       y2="18.819435"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient182"
+       id="linearGradient181"
+       gradientUnits="userSpaceOnUse"
+       x1="10.862517"
+       y1="8.0795727"
+       x2="10.875714"
+       y2="15.572981" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="rect4"
+       style="fill:url(#linearGradient178);stroke-width:0.491334;fill-opacity:1"
+       d="M 0,0 H 13.229166 V 13.229167 H 0 Z"
+       inkscape:label="rect4" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2"
+     transform="matrix(1.0484425,0,0,1.1006598,-4.7200366,-8.1803159)"
+     style="fill-opacity:1;fill:url(#linearGradient180)">
+    <path
+       id="rect4-8-5"
+       style="fill:url(#linearGradient181);stroke-width:0.44516;fill-opacity:1"
+       d="m 5.132847,8.0331581 h 11.35613 V 18.850533 H 5.132847 Z" />
+  </g>
+</svg>

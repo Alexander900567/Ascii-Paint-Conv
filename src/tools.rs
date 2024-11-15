@@ -11,7 +11,7 @@ pub struct Toolbox {
     pub mstart_gpos: [i32; 2],
     pub prev_gpos: [i32; 2],
     pub filled: bool,
-    pub elipse: bool,
+    pub ellipse: bool,
     pub ascii_type: String,
     pub ascii_edges: bool,
     pub rect_sel_tool: RectangleSelector,
@@ -27,7 +27,7 @@ impl Toolbox{
             mstart_gpos: [0, 0],
             prev_gpos: [0, 0],
             filled: false,
-            elipse: false,
+            ellipse: false,
             ascii_type: String::from("4"),
             ascii_edges: false,
             rect_sel_tool: RectangleSelector::new(),
@@ -73,7 +73,7 @@ impl Toolbox{
             }
         }
         else if &self.current_tool == "o"{
-            if !self.elipse{
+            if !self.ellipse{
                 if !self.filled{
                     self.circle(main_window, &gpos, &self.mstart_gpos);
                 }
@@ -430,6 +430,7 @@ impl Toolbox{
     
     pub fn ellipse(&self, main_window: &mut MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) {
         //docs.rs draw_hollow_ellipse_mut
+        //TODO: fix ellipse diagonal (pops a circle)
     
         main_window.preview_buffer.clear();
     

@@ -113,7 +113,7 @@ impl Gui{
 
         start_buttons.insert(17, Button::new(&mut start_grid, &mut start_groups,
                                             17, (5, 12), (7, 13),
-                                            "elipse", 0, -1, false));
+                                            "ellipse", 0, -1, false));
         Gui{
             gui_grid: start_grid,
             buttons: start_buttons,
@@ -191,7 +191,7 @@ impl Gui{
                 self.click_edge(toolbox);
             }
             if clicked_id == 17{
-                self.click_elipse(toolbox);
+                self.click_ellipse(toolbox);
             }
         }
 
@@ -241,7 +241,7 @@ impl Gui{
                 self.unclick_edge(toolbox);
             }
             if unclick_id == 17{
-                self.unclick_elipse(toolbox);
+                self.unclick_ellipse(toolbox);
             }
         }
 
@@ -326,11 +326,11 @@ impl Gui{
         toolbox.filled = false;
     }
 
-    fn click_elipse(&self, toolbox: &mut tools::Toolbox){
-        toolbox.elipse = true;
+    fn click_ellipse(&self, toolbox: &mut tools::Toolbox){
+        toolbox.ellipse = true;
     }
-    fn unclick_elipse(&self, toolbox: &mut tools::Toolbox){
-        toolbox.elipse = false;
+    fn unclick_ellipse(&self, toolbox: &mut tools::Toolbox){
+        toolbox.ellipse = false;
     }
 
     fn click_ascii_pallete(&self, toolbox: &mut tools::Toolbox, clicked_id: i32){
