@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4 (86a8ad7, 2024-10-11)"
-   sodipodi:docname="circle_button_disabled.svg"
+   sodipodi:docname="zoom_out_icon.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,8 +25,8 @@
      inkscape:document-units="mm"
      showgrid="true"
      inkscape:zoom="14.481547"
-     inkscape:cx="18.264623"
-     inkscape:cy="27.103458"
+     inkscape:cx="19.334951"
+     inkscape:cy="24.548482"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -52,13 +52,27 @@
      id="defs1" />
   <g
      inkscape:groupmode="layer"
-     id="layer5"
-     inkscape:label="Layer 5">
+     id="layer3"
+     inkscape:label="Layer 2">
     <circle
-       style="fill:#ffffff;stroke-width:0.396875;stroke-dasharray:none;stroke:#ffffff;stroke-opacity:1;fill-opacity:0"
-       id="path2"
+       style="fill:#ffffff;fill-opacity:0;stroke:#ffffff;stroke-width:0.538839;stroke-dasharray:none;stroke-opacity:1"
+       id="path1"
        cx="6.6145835"
-       cy="6.6145835"
-       r="3.3072917" />
+       cy="6.614583"
+       r="3.0378723" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Layer 5"
+     transform="translate(-0.89400234,6.8553955)"
+     style="display:inline">
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.324275;stroke-dasharray:none;stroke-opacity:1"
+       id="rect6"
+       width="2.6458333"
+       height="0.39687499"
+       x="6.1856689"
+       y="-0.43924975" />
   </g>
 </svg>
