@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4 (86a8ad7, 2024-10-11)"
-   sodipodi:docname="copy_icon.svg"
+   sodipodi:docname="mode_2_icon.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,14 +25,14 @@
      inkscape:document-units="mm"
      showgrid="true"
      inkscape:zoom="10.24"
-     inkscape:cx="14.355469"
-     inkscape:cy="22.412109"
+     inkscape:cx="7.421875"
+     inkscape:cy="22.998047"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg1">
+     inkscape:current-layer="layer5">
     <inkscape:grid
        id="grid2"
        units="mm"
@@ -53,18 +53,17 @@
   <g
      inkscape:groupmode="layer"
      id="layer5"
-     inkscape:label="Layer 5"
-     transform="translate(0.86274347)">
+     inkscape:label="Layer 5">
     <text
        xml:space="preserve"
-       style="font-size:4.23333px;font-family:Cambria;-inkscape-font-specification:Cambria;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;stroke-width:0.264583"
-       x="1.0998863"
-       y="8.0769567"
-       id="text1"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:Cambria;-inkscape-font-specification:Cambria;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="5.479835"
+       y="8.0418921"
+       id="text5"><tspan
          sodipodi:role="line"
-         style="stroke-width:0.264583"
-         x="1.0998863"
-         y="8.0769567"
-         id="tspan2">Copy</tspan></text>
+         id="tspan5"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:Cambria;-inkscape-font-specification:Cambria;fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
+         x="5.479835"
+         y="8.0418921">2</tspan></text>
   </g>
 </svg>

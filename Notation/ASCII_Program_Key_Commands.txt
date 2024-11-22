@@ -3,7 +3,7 @@ Copy to Clipboard: b
 Undo: z
 Redo: y
 
-Regular Mode: cf
+Pencil Tool: cf
 Line Tool: cl
 Rectangle Tool: cr
 Filled Rectangle Tool: cs
@@ -15,10 +15,12 @@ Text Mode: ct (Exit with Escape)
 Picture Mode: cp
 
 Modifiers: m ->
+	Shapes:
+		f = Fills Rectangle, Square, Circle, or Ellipse
 	Picture:
 		l = toggles lines in conversion
-		1 = ascii pattern 1
-		2 = ascii pattern 2
+		1 = ASCII pattern 1
+		2 = ASCII pattern 2
 		3 = if line active, hollow ; else pattern 4
-		4 = ascii pattern 4
+		4 = ASCII pattern 4
 

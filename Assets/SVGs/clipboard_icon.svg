@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4 (86a8ad7, 2024-10-11)"
-   sodipodi:docname="edge_icon.svg"
+   sodipodi:docname="clipboard_icon.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -26,13 +26,13 @@
      showgrid="true"
      inkscape:zoom="10.24"
      inkscape:cx="14.355469"
-     inkscape:cy="22.412109"
+     inkscape:cy="22.314453"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer5">
+     inkscape:current-layer="svg1">
     <inkscape:grid
        id="grid2"
        units="mm"
@@ -58,13 +58,13 @@
     <text
        xml:space="preserve"
        style="font-size:4.23333px;font-family:Cambria;-inkscape-font-specification:Cambria;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;stroke-width:0.264583"
-       x="0.36298865"
+       x="1.0998863"
        y="8.0769567"
        id="text1"><tspan
          sodipodi:role="line"
          style="stroke-width:0.264583"
-         x="0.36298865"
+         x="1.0998863"
          y="8.0769567"
-         id="tspan2">Edges</tspan></text>
+         id="tspan2">Copy</tspan></text>
   </g>
 </svg>
