@@ -3,7 +3,8 @@ use crate::undo_redo;
 use crate::gui;
 use crate::tools;
 
-use sdl2::rect::Rect;
+use sdl2::rect::Rect; //may be obselete
+use image::GenericImageView;
 
 pub struct MainWindow<'a> {
         
@@ -99,27 +100,51 @@ impl MainWindow<'_>{
     }
 
     fn render_gui(&mut self, gui: &gui::Gui){
-        self.canvas.set_draw_color(Color::RGB(125, 125, 125)); //set canvas to grey
-        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0,
-                              self.window_width, self.gui_height)); //first two is where, second is how big
 
-        
-        self.canvas.set_draw_color(Color::RGB(90, 90, 90)); //set canvas to grey
         for button in gui.buttons.values(){
-            if button.visible{
+            if button.visible{ //render button
                 let top_col = (button.top_left.1 as f32 * gui.col_size) as i32;
                 let top_row = (button.top_left.0 as f32 * gui.row_size) as i32;
                 let bot_col = ((button.bottom_right.1 - button.top_left.1 + 1) as f32 * gui.col_size) as u32;
                 let bot_row = ((button.bottom_right.0 - button.top_left.0 + 1) as f32 * gui.row_size) as u32;
 
+                let img = match image::open(&button.asset_path) { //loads the image
+                    Ok(img) => img,
+                    Err(err) => {
+                        eprintln!("Failed to load image from {:?}: {}", button.asset_path, err);
+                        return;
+                    }
+                };
+                let img = img.to_rgba8(); //converts to RGBA8 format
+                let (img_width, img_height) = img.dimensions(); //gets dimensions
+
+                let canvas_texture = self.canvas.texture_creator(); //makes into texture for SDL2
+                let mut texture = match canvas_texture.create_texture_streaming( //texture stored
+                    sdl2::pixels::PixelFormatEnum::RGBA8888,
+                    img_width,
+                    img_height,
+                ) 
+                { //error handling
+                    Ok(texture) => texture,
+                    Err(err) => {
+                        eprintln!("Failed to create texture: {}", err);
+                        return;
+                    }
+                };
+
+                if let Err(err) = texture.update(None, &img, (img_width * 4) as usize) {
+                    eprintln!("Failed to update texture: {}", err);
+                    return;
+                }
+
+                //display button on/off 
                 if button.is_pressed == 1 {self.canvas.set_draw_color(Color::RGB(20, 20, 20));}
                 let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
                 if button.is_pressed == 1 {self.canvas.set_draw_color(Color::RGB(90, 90, 90));}
+
+            // "Assets/PNGs/1x1_button_enabled.png"
+            // "Assets/PNGs/1x1_button_disabled.png"
                 
-                let font_render = self.font.render(&button.button_label); 
-                let font_surface = font_render.blended_wrapped(Color::RGB(255, 255, 255), 0).unwrap();
-                let canvas_texture = self.canvas.texture_creator();  
-                let texture = canvas_texture.create_texture_from_surface(font_surface).unwrap();
                 let _ = self.canvas.copy(
                     &texture,
                     None, //part of texture we want... all of it 

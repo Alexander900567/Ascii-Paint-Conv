@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use crate::main_window;
 use crate::tools;
 
@@ -31,12 +32,12 @@ impl Gui{
         making a button
         (button_id, Button::new(&mut start_grid, &mut start_groups,
                                 button_id, top_left, bottom_right,
-                                button_label, is_pressed, toggle_group, visible)
+                                asset_path, is_pressed, toggle_group, visible)
 
         button_id: i32 = number that represents the button, do not use -1 or the same value for more than one button
         top_left: (i32, i32) = the grid position of the top left of the button
         bottom_right: (i32, i32) = the grid position of the bottom right of the button
-        button_label: &str = the text to be rendered on the button
+        asset_path: &str = the path to the pic
         is_pressed: i32 = does the button start toggled on(1) or off(0), -1 makes the button a oneshot (no toggle state)
         toggle_group: i32 = only one button from a toggle group can be on at once, -1 makes the button independent of all others 
         visible: bool = does the button start visible on the bar
@@ -44,78 +45,79 @@ impl Gui{
         let mut start_buttons = std::collections::HashMap::new();
         let mut start_groups = std::collections::HashMap::new();
         start_buttons.insert(0, Button::new(&mut start_grid, &mut start_groups,
-                                            0, (1, 1), (3, 2),
-                                            "free", 1, 0, true));
+                                            0, (1, 1), (3, 1),
+                                            "Assets/PNGs/free_icon.png", 1, 0, true));
         
         start_buttons.insert(1, Button::new(&mut start_grid, &mut start_groups,
-                                            1, (1, 12), (3, 13),
-                                            "fill", 0, -1, false));
+                                            1, (1, 12), (3, 12),
+                                            "Assets/PNGs/fill_icon.png", 0, -1, false));
 
         start_buttons.insert(2, Button::new(&mut start_grid, &mut start_groups,
-                                            2, (5, 1), (7, 2),
-                                            "line", 0, 0, true));
+                                            2, (5, 1), (7, 1),
+                                            "Assets/PNGs/line_icon.png", 0, 0, true));
 
         start_buttons.insert(3, Button::new(&mut start_grid, &mut start_groups,
-                                            3, (5, 4), (7, 5), 
-                                            "rectangle", 0, 0, true));
+                                            3, (5, 4), (7, 4), 
+                                            "Assets/PNGs/rectangle_icon.png", 0, 0, true));
 
         start_buttons.insert(4, Button::new(&mut start_grid, &mut start_groups,
-                                            4, (1, 4), (3, 5),
-                                            "circle", 0, 0, true));
+                                            4, (1, 4), (3, 4),  //We should never have to use the asset. TODO: Remove button
+                                            "Assets/PNGs/1x1_button_disabled.png", 0, 0, true));
 
         start_buttons.insert(5, Button::new(&mut start_grid, &mut start_groups, 
-                                            5, (1, 7), (3, 8),
-                                            "text", 0, 0, true));
+                                            5, (1, 7), (3, 7),
+                                            "Assets/PNGs/text_icon.png", 0, 0, true));
 
         start_buttons.insert(6, Button::new(&mut start_grid, &mut start_groups, 
-                                            6, (5, 7), (7, 8),
-                                            "picture", 0, 0, true));
+                                            6, (5, 7), (7, 7),
+                                            "Assets/PNGs/picture_icon.png", 0, 0, true));
 
         start_buttons.insert(7, Button::new(&mut start_grid, &mut start_groups, 
                                             7, (1, 17), (3, 17),
-                                            "<-", -1, 0, true));
+                                            "Assets/PNGs/undo_icon.png", -1, 0, true));
 
         start_buttons.insert(8, Button::new(&mut start_grid, &mut start_groups, 
                                             8, (1, 19), (3, 19),
-                                            "->", -1, 0, true));
+                                            "Assets/PNGs/redo_icon.png", -1, 0, true));
 
         start_buttons.insert(9, Button::new(&mut start_grid, &mut start_groups, 
-                                            9, (5, 19), (7, 19),
-                                            "co", -1, 0, true));
+                                            9, (5, 19), (7, 19), //TODO: make into clipboard art
+                                            "Assets/PNGs/clipboard_icon.png", -1, 0, true));
 
         start_buttons.insert(10, Button::new(&mut start_grid, &mut start_groups, 
                                             10, (1, 12), (3, 12),
-                                            "1", 0, 1, false));
+                                            "Assets/PNGs/mode_1_icon.png", 0, 1, false));
 
         start_buttons.insert(11, Button::new(&mut start_grid, &mut start_groups, 
                                             11, (1, 13), (3, 13),
-                                            "2", 0, 1, false));
+                                            "Assets/PNGs/mode_2_icon.png", 0, 1, false));
 
         start_buttons.insert(12, Button::new(&mut start_grid, &mut start_groups, 
                                             12, (1, 14), (3, 14),
-                                            "3", 0, 1, false));
+                                            "Assets/PNGs/mode_3_icon.png", 0, 1, false));
 
         start_buttons.insert(13, Button::new(&mut start_grid, &mut start_groups, 
                                             13, (1, 15), (3, 15),
-                                            "4", 1, 1, false));
+                                            "Assets/PNGs/mode_4_icon.png", 1, 1, false));
 
         start_buttons.insert(14, Button::new(&mut start_grid, &mut start_groups, 
                                             14, (5, 12), (7, 13),
-                                            "edge", 0, -1, false));
+                                            "Assets/PNGs/mode_edge_icon.png", 0, -1, false));
 
         start_buttons.insert(15, Button::new(&mut start_grid, &mut start_groups,
                                             15, (1, 10), (3, 10),
-                                            "select", 0, 0, true));
+                                            "Assets/PNGs/select_icon.png", 0, 0, true));
 
         start_buttons.insert(16, Button::new(&mut start_grid, &mut start_groups,
                                             16, (1, 12), (3, 13),
-                                            "clear", -1, 0, false));
+                                            "Assets/PNGs/clear_icon.png", -1, 0, false));
 
         start_buttons.insert(17, Button::new(&mut start_grid, &mut start_groups,
                                             17, (5, 12), (7, 13),
-                                            "elipse", 0, -1, false));
-        Gui{
-            gui_grid: start_grid,
+                                            "Assets/PNGs/ellipse_icon.png", 0, -1, false));
+
+        Gui {
+        gui_grid: start_grid,
             buttons: start_buttons,
             toggle_groups: start_groups,
             num_rows: num_rows,
@@ -191,7 +193,7 @@ impl Gui{
                 self.click_edge(toolbox);
             }
             if clicked_id == 17{
-                self.click_elipse(toolbox);
+                self.click_ellipse(toolbox);
             }
         }
 
@@ -241,7 +243,7 @@ impl Gui{
                 self.unclick_edge(toolbox);
             }
             if unclick_id == 17{
-                self.unclick_elipse(toolbox);
+                self.unclick_ellipse(toolbox);
             }
         }
 
@@ -326,11 +328,11 @@ impl Gui{
         toolbox.filled = false;
     }
 
-    fn click_elipse(&self, toolbox: &mut tools::Toolbox){
-        toolbox.elipse = true;
+    fn click_ellipse(&self, toolbox: &mut tools::Toolbox){
+        toolbox.ellipse = true;
     }
-    fn unclick_elipse(&self, toolbox: &mut tools::Toolbox){
-        toolbox.elipse = false;
+    fn unclick_ellipse(&self, toolbox: &mut tools::Toolbox){
+        toolbox.ellipse = false;
     }
 
     fn click_ascii_pallete(&self, toolbox: &mut tools::Toolbox, clicked_id: i32){
@@ -393,7 +395,7 @@ pub struct Button{
     pub top_left: (i32, i32),
     pub bottom_right: (i32, i32),
     pub grid_pos: Vec<(i32, i32)>,
-    pub button_label: String,
+    pub asset_path: PathBuf,
     pub is_pressed: i32, //0 unpressed, 1 pressed, -1 one-shot button
     pub toggle_group: i32, //-1 toggle
     pub visible: bool,
@@ -406,7 +408,7 @@ impl Button{
         button_id: i32,
         top_left: (i32, i32),
         bottom_right: (i32, i32),
-        button_label: &str,
+        asset_path: &str,
         is_pressed: i32, //0 unpressed, 1 pressed, -1 one-shot button
         toggle_group: i32,
         visible: bool,
@@ -436,7 +438,7 @@ impl Button{
             top_left: top_left,
             bottom_right: bottom_right,
             grid_pos: start_pos,
-            button_label: String::from(button_label),
+            asset_path: PathBuf::from(asset_path),
             is_pressed: is_pressed,
             toggle_group: toggle_group,
             visible: visible,
