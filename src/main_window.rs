@@ -270,8 +270,10 @@ impl MainWindow<'_>{
     }
     //grid functions
 
-    pub fn write_buffer(&mut self) {
-        self.undo_redo.add_to_undo(&self.preview_buffer, &self.window_array);
+    pub fn write_buffer(&mut self, write_to_undo: bool) {
+        if write_to_undo{
+            self.undo_redo.add_to_undo(&self.preview_buffer, &self.window_array);
+        }
         self.undo_redo.redo_buffer.clear();
         for buffer_item in &(self.preview_buffer){
             self.window_array[buffer_item.0 as usize][buffer_item.1 as usize] = buffer_item.2;
