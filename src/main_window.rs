@@ -101,6 +101,10 @@ impl MainWindow<'_>{
 
     fn render_gui(&mut self, gui: &gui::Gui){
 
+        self.canvas.set_draw_color(Color::RGB(125, 125, 125)); //set canvas to grey
+        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0,
+                              self.window_width, self.gui_height)); //first two is where, second is how big
+
         for button in gui.buttons.values(){
             if button.visible{ //render button
                 let top_col = (button.top_left.1 as f32 * gui.col_size) as i32;

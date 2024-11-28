@@ -1,9 +1,10 @@
 use crate::main_window::MainWindow;
+use crate::gui::Gui;
 use std::cmp::min;
 use std::cmp::max;
 
 pub struct RectangleSelector{
-    active: bool,
+    pub active: bool,
     pub start_gpos: (i32, i32),
     pub top_left: (i32, i32),
     pub bot_right: (i32, i32),
@@ -71,7 +72,7 @@ impl RectangleSelector{
         }
     }
 
-    pub fn on_mouse_up(&mut self, main_window: &mut MainWindow<'_>){
+    pub fn on_mouse_up(&mut self, main_window: &mut MainWindow<'_>, gui_bar: &mut Gui){
         if !self.active{
             self.active = true;
             for row in self.top_left.0..=self.bot_right.0{
@@ -81,10 +82,12 @@ impl RectangleSelector{
                     main_window.window_array[row as usize][col as usize] = ' ';
                 }
             }
+            gui_bar.hide_button(7);
+            gui_bar.hide_button(8);
         }
     }
 
-    pub fn reset_box(&mut self, main_window: &mut MainWindow<'_>){
+    pub fn reset_box(&mut self, main_window: &mut MainWindow<'_>, gui_bar: &mut Gui){
         self.active = false;
         self.top_left = (-1, -1);
         self.bot_right = (-1, -1);
@@ -101,6 +104,9 @@ impl RectangleSelector{
         main_window.undo_redo.undo_buffer.push_front(change);
 
         main_window.write_buffer(false); 
+
+        gui_bar.show_button(7);
+        gui_bar.show_button(8);
     }
 
     fn change_corners(&mut self, new_gpos: &(i32, i32)){

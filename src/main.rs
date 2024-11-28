@@ -94,7 +94,7 @@ fn main() {
                             }
 
                             if &toolbox.current_tool == "a" && !clicked_gui{
-                                toolbox.rect_sel_tool.on_mouse_up(&mut main_window);
+                                toolbox.rect_sel_tool.on_mouse_up(&mut main_window, &mut gui_bar);
                             }
 
                             if Vec::from(["a"]).iter().any(|x| x != &toolbox.current_tool) && 
@@ -140,7 +140,7 @@ fn main() {
                         else if &(text.to_lowercase()) == "m"{
                             keycombo = String::from("m");
                         }
-                        else if &(text.to_lowercase()) == "z" && toolbox.ret != "a"{
+                        else if &(text.to_lowercase()) == "z" && !toolbox.rect_sel_tool.active{
                             main_window.undo_redo.perform_undo(&mut main_window.window_array);
                             render_change = true;
                         }
@@ -185,7 +185,7 @@ fn main() {
                     if &toolbox.current_tool == "a"{
                         match keycode {
                             Some(sdl2::keyboard::Keycode::ESCAPE) =>{
-                                toolbox.rect_sel_tool.reset_box(&mut main_window);
+                                toolbox.rect_sel_tool.reset_box(&mut main_window, &mut gui_bar);
                                 render_change = true;
                             },
                             _ => {}

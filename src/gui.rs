@@ -278,7 +278,8 @@ impl Gui{
         let grid_pos = &self.buttons.get(&button_id).unwrap().grid_pos;
 
         for pos in grid_pos{
-            assert!(self.gui_grid[pos.0 as usize][pos.1 as usize] == -1, 
+            assert!(self.gui_grid[pos.0 as usize][pos.1 as usize] == -1 || 
+                    self.gui_grid[pos.0 as usize][pos.1 as usize] == button_id,
                     "show_button attempted to show a button on top of another button");
             self.gui_grid[pos.0 as usize][pos.1 as usize] = button_id;
         }
@@ -299,12 +300,12 @@ impl Gui{
         self.show_button(16);
     }
     fn unclick_rectangle_selector(&mut self, main_window: &mut main_window::MainWindow<'_>, toolbox: &mut tools::Toolbox){
-        toolbox.rect_sel_tool.reset_box(main_window);
+        toolbox.rect_sel_tool.reset_box(main_window, self);
         self.hide_button(16);
     }
 
     fn click_reset_box(&mut self, main_window: &mut main_window::MainWindow<'_>, toolbox: &mut tools::Toolbox){
-        toolbox.rect_sel_tool.reset_box(main_window);
+        toolbox.rect_sel_tool.reset_box(main_window, self);
     }
 
     fn click_rect(&mut self, toolbox: &mut tools::Toolbox){
