@@ -101,6 +101,10 @@ impl MainWindow<'_>{
 
     fn render_gui(&mut self, gui: &gui::Gui){
 
+        self.canvas.set_draw_color(Color::RGB(125, 125, 125)); //set canvas to grey
+        let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0,
+                              self.window_width, self.gui_height)); //first two is where, second is how big
+
         for button in gui.buttons.values(){
             if button.visible{ //render button
                 let top_col = (button.top_left.1 as f32 * gui.col_size) as i32;
@@ -270,8 +274,10 @@ impl MainWindow<'_>{
     }
     //grid functions
 
-    pub fn write_buffer(&mut self) {
-        self.undo_redo.add_to_undo(&self.preview_buffer, &self.window_array);
+    pub fn write_buffer(&mut self, write_to_undo: bool) {
+        if write_to_undo{
+            self.undo_redo.add_to_undo(&self.preview_buffer, &self.window_array);
+        }
         self.undo_redo.redo_buffer.clear();
         for buffer_item in &(self.preview_buffer){
             self.window_array[buffer_item.0 as usize][buffer_item.1 as usize] = buffer_item.2;
