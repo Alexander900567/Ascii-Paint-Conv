@@ -3,6 +3,7 @@ use crate::undo_redo;
 use crate::gui;
 use crate::tools;
 
+use crate::sdl2::image::LoadTexture;
 use sdl2::rect::Rect; //may be obselete
 use image::GenericImageView;
 
@@ -68,6 +69,7 @@ impl MainWindow<'_>{
             .expect("failed to build canvas");
 
 
+
         MainWindow{
             sdl_context: sdl_context,
             ttf_context: ttf_context,
@@ -106,6 +108,10 @@ impl MainWindow<'_>{
                               self.window_width, self.gui_height)); //first two is where, second is how big
         self.canvas.set_draw_color(Color::RGB(90, 90, 90));
         
+        let texture_creator = self.canvas.texture_creator();
+
+        let pressed_texture = texture_creator.load_texture("./Assets/PNGs/1x1_button_disabled.png").unwrap();
+        let nonpressed_texture = texture_creator.load_texture("./Assets/PNGs/1x1_button_enabled.png").unwrap();
 
         for button in gui.buttons.values(){
             if button.visible{ //render button
@@ -115,49 +121,25 @@ impl MainWindow<'_>{
                 let bot_row = ((button.bottom_right.0 - button.top_left.0 + 1) as f32 * gui.row_size) as u32;
                 
                 //display button on/off 
-                if button.is_pressed == 1 {self.canvas.set_draw_color(Color::RGB(20, 20, 20));}
-                let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
-                if button.is_pressed == 1 {self.canvas.set_draw_color(Color::RGB(90, 90, 90));}
+                if button.is_pressed == 1 {
+                    let _ = self.canvas.copy(
+                        &pressed_texture,
+                        None, //part of texture we want... all of it 
+                        sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
 
-                /*
-                let img = match image::open(&button.asset_path) { //loads the image
-                    Ok(img) => img,
-                    Err(err) => {
-                        eprintln!("Failed to load image from {:?}: {}", button.asset_path, err);
-                        return;
-                    }
-                };
-                let img = img.to_rgba8(); //converts to RGBA8 format
-                let (img_width, img_height) = img.dimensions(); //gets dimensions
-
-                let canvas_texture = self.canvas.texture_creator(); //makes into texture for SDL2
-                let mut texture = match canvas_texture.create_texture_streaming( //texture stored
-                    sdl2::pixels::PixelFormatEnum::RGBA8888,
-                    img_width,
-                    img_height,
-                ) 
-                { //error handling
-                    Ok(texture) => texture,
-                    Err(err) => {
-                        eprintln!("Failed to create texture: {}", err);
-                        return;
-                    }
-                };
-
-                if let Err(err) = texture.update(None, &img, (img_width * 4) as usize) {
-                    eprintln!("Failed to update texture: {}", err);
-                    return;
+                }
+                else{
+                    let _ = self.canvas.copy(
+                        &nonpressed_texture,
+                        None, //part of texture we want... all of it 
+                        sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
                 }
 
-
-            // "Assets/PNGs/1x1_button_enabled.png"
-            // "Assets/PNGs/1x1_button_disabled.png"
-                
+                let icon_texture = texture_creator.load_texture(&button.asset_path).unwrap();
                 let _ = self.canvas.copy(
-                    &texture,
+                    &icon_texture,
                     None, //part of texture we want... all of it 
                     sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
-            */
             }
         }
     }

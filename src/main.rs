@@ -17,6 +17,7 @@ fn main() {
     let video_subsystem = sdl_context.video().expect("failed to init video subsytem");
     let clipboard = video_subsystem.clipboard();
     let ttf_context = sdl2::ttf::init().unwrap(); //Maybe add a error message
+    let image_context = sdl2::image::init(sdl2::image::InitFlag::PNG).unwrap();
 
     let mut main_window = main_window::MainWindow::new(
         &sdl_context,
