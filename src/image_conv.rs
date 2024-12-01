@@ -5,6 +5,8 @@ use crate::rayon::iter::ParallelIterator;
 use crate::image::GenericImage;
 use rayon::prelude::*;
 use crate::main_window::MainWindow;
+use std::fs;
+use crate::save_load;
 
 pub fn convert_image_put_in_window(
     main_window: &mut MainWindow<'_>, 
@@ -441,4 +443,52 @@ fn downscale_sobel(sobel_ascii_output: &Vec<Vec<char>>, wcount: u32, hcount: u32
 
     //write_to_file(&downscaled_output, "output_downscaled.txt");
     return downscaled_output;
+}
+
+
+pub fn create_video_conversion_file(
+    current_mouse_pos: &[i32; 2], 
+    start_mouse_pos: &[i32; 2],
+    map_choice: &str,
+    draw_lines: bool
+){
+
+    let path = native_dialog::FileDialog::new()
+        .set_location("~")
+        .show_open_single_dir()
+        .unwrap().unwrap_or(std::path::PathBuf::new());
+    let path_string = path.as_path().to_str().unwrap(); 
+    
+    if path_string == ""{ //eject if they canceled out of the file picker
+        return;
+    }
+
+    let output: fs::ReadDir = fs::read_dir(&path_string).unwrap();
+    let mut image_list: Vec<String> = Vec::new();
+    for file in output{
+        let f = file.unwrap().path();
+        let path = f.as_path();
+        let ext = path.extension().unwrap();
+        if ext == "png" || ext == "jpeg"{
+            image_list.push(String::from(path.to_str().unwrap()));
+        }
+    }
+    image_list.sort();
+    println!("{:?}", image_list);
+
+    let mut save_string: String = String::new();
+    let wcount: u32 = ((start_mouse_pos[1] - current_mouse_pos[1]).abs() + 1) as u32;  
+    let hcount: u32 = ((start_mouse_pos[0] - current_mouse_pos[0]).abs() + 1) as u32; 
+    save_string.push_str(&("num_of_rows:".to_owned() + &(hcount).to_string() + ":\n"));
+    save_string.push_str(&("num_of_cols:".to_owned() + &(wcount).to_string() + ":\n"));
+    save_string.push_str(&("frame_per_sec:".to_owned() + ":\n"));
+
+    for image_path in &image_list{
+        let source_img = image::open(image_path).unwrap();
+        let ascii_output: Vec<Vec<char>> = convert_image(&source_img, current_mouse_pos, start_mouse_pos, map_choice, draw_lines);
+        save_load::write_array_to_save_string(&ascii_output, &mut save_string);
+        save_string.push_str("---\n");
+    }
+    
+    let _ = std::fs::write(&(String::from(path_string) + "/video_file.txt"), &save_string).unwrap();
 }

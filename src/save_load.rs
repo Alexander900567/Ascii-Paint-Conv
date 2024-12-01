@@ -1,5 +1,28 @@
 use crate::main_window;
 
+pub fn write_array_to_save_string(array_contents: &Vec<Vec<char>>, save_string: &mut String){
+    //the array is saved as: {num_of_times character appears in a row}{character}\t
+    for row in array_contents{
+        let mut current_char = row[0];
+        let mut num_of_char = 0;
+        for character in row{
+            if *character == current_char{
+                num_of_char += 1;
+            }
+            else{
+                save_string.push_str(&(num_of_char.to_string()));
+                save_string.push(current_char);
+                save_string.push('\t');
+                current_char = *character;
+                num_of_char = 1;
+            }
+        } 
+        save_string.push_str(&(num_of_char.to_string()));
+        save_string.push(current_char);
+        save_string.push('\n');
+    }
+}
+
 pub fn save_canvas(main_window: &main_window::MainWindow<'_>, file_path: &String) -> String{
 
     //get the file path to the save file
@@ -24,27 +47,8 @@ pub fn save_canvas(main_window: &main_window::MainWindow<'_>, file_path: &String
     
     //create the conents of the save file
     let mut save_string = String::new();
-
-    //the array is saved as: {num_of_times character appears in a row}{character}\t
-    for row in &main_window.window_array{
-        let mut current_char = row[0];
-        let mut num_of_char = 0;
-        for character in row{
-            if *character == current_char{
-                num_of_char += 1;
-            }
-            else{
-                save_string.push_str(&(num_of_char.to_string()));
-                save_string.push(current_char);
-                save_string.push('\t');
-                current_char = *character;
-                num_of_char = 1;
-            }
-        } 
-        save_string.push_str(&(num_of_char.to_string()));
-        save_string.push(current_char);
-        save_string.push('\n');
-    }
+    
+    write_array_to_save_string(&main_window.window_array, &mut save_string);
 
     save_string.push_str(&("num_of_rows:".to_owned() + &(main_window.num_of_rows).to_string() + ":\n"));
     save_string.push_str(&("num_of_cols:".to_owned() + &(main_window.num_of_cols).to_string() + ":\n"));
