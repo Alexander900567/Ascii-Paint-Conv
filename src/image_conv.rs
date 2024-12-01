@@ -525,10 +525,10 @@ pub fn play_video_from_conversion_file(main_window: &mut MainWindow<'_>, toolbox
 
     temp_line = split_file_string[2];
     temp_split = temp_line.split(":").collect();
-    let fps: f32 = temp_split[1].parse::<f32>().unwrap();
+    let fps: f64 = temp_split[1].parse::<f64>().unwrap();
     println!("{}", fps);
-    let msec_between_frames: u128 = (100.0 / fps) as u128;
-    println!("{}", msec_between_frames);
+    let sec_between_frames: f64 = (1.0 / fps) as f64;
+    println!("{}", sec_between_frames);
 
     let mut last_frame_time = std::time::SystemTime::now();
     let mut index: usize = 3;
@@ -545,7 +545,7 @@ pub fn play_video_from_conversion_file(main_window: &mut MainWindow<'_>, toolbox
         save_load::load_save_chunk_to_window(main_window, save_chunk); 
 
         let mut current_time = std::time::SystemTime::now();
-        while current_time.duration_since(last_frame_time).unwrap().as_millis() < msec_between_frames{
+        while current_time.duration_since(last_frame_time).unwrap().as_secs_f64() < sec_between_frames{
             current_time = std::time::SystemTime::now();
         }
         last_frame_time = current_time;
