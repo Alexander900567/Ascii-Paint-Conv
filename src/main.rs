@@ -10,7 +10,6 @@ mod save_load;
 mod rectangle_selector;
 
 use sdl2::event::Event; // Rust equivalent of C++ using namespace. Last "word" is what you call
-use image::{DynamicImage, GenericImage};
 
 fn main() {
     let sdl_context = sdl2::init().expect("failed to init sdl");
@@ -31,7 +30,7 @@ fn main() {
     );
 
 
-    let mut gui_bar = gui::Gui::new(main_window.gui_height, main_window.window_width, 8, 20);
+    let mut gui_bar = gui::Gui::new(main_window.gui_height, main_window.window_width, 10, 120);
 
     let mut toolbox = tools::Toolbox::new();
         
