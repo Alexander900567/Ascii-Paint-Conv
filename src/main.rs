@@ -164,6 +164,10 @@ fn main() {
                             path_to_save_file = save_load::load_canvas(&mut main_window);
                             render_change = true;
                         }
+                        else if &(text.to_lowercase()) == "p" && &toolbox.current_tool == "v"{
+                            image_conv::play_video_from_conversion_file(&mut main_window, &toolbox);
+                            render_change = true;
+                        }
                     }
                 },   
                 Event::KeyUp {keycode, ..} =>{

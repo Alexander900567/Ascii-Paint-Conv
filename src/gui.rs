@@ -120,11 +120,6 @@ impl Gui{
                                             18, (1, 1), (1, 1),
                                             "video", 0, 0, false));
 
-        start_buttons.insert(19, Button::new(&mut start_grid, &mut start_groups,
-                                            19, (1, 1), (1, 1),
-                                            "play_video", -1, -1, false));
-
-
         Gui {
         gui_grid: start_grid,
             buttons: start_buttons,

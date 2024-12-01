@@ -6,7 +6,9 @@ use crate::image::GenericImage;
 use rayon::prelude::*;
 use crate::main_window::MainWindow;
 use std::fs;
+use std::time::SystemTime;
 use crate::save_load;
+use crate::tools;
 
 pub fn convert_image_put_in_window(
     main_window: &mut MainWindow<'_>, 
@@ -491,4 +493,64 @@ pub fn create_video_conversion_file(
     }
     
     let _ = std::fs::write(&(String::from(path_string) + "/video_file.txt"), &save_string).unwrap();
+}
+
+
+pub fn play_video_from_conversion_file(main_window: &mut MainWindow<'_>, toolbox: &tools::Toolbox){
+
+    let path = native_dialog::FileDialog::new()
+        .set_location("~")
+        .add_filter("Text", &["txt"])
+        .show_open_single_file()
+        .unwrap().unwrap_or(std::path::PathBuf::new());
+    let path_string = path.as_path().to_str().unwrap(); 
+    
+    if path_string == ""{ //eject if they canceled out of the file picker
+        return;
+    }
+    
+    let file_string = std::fs::read_to_string(path_string).unwrap();
+    let mut split_file_string: Vec<&str> = file_string.split("\n").collect();
+
+    //pop the empty line at the end
+    let _ = split_file_string.pop().unwrap();
+
+    let mut temp_line = split_file_string[0];
+    let mut temp_split: Vec<&str> = temp_line.split(":").collect();
+    main_window.row_count_change(temp_split[1].parse::<i32>().unwrap());   
+
+    temp_line = split_file_string[1];
+    temp_split = temp_line.split(":").collect();
+    main_window.col_count_change(temp_split[1].parse::<i32>().unwrap());   
+
+    temp_line = split_file_string[2];
+    temp_split = temp_line.split(":").collect();
+    let fps: f32 = temp_split[1].parse::<f32>().unwrap();
+    println!("{}", fps);
+    let msec_between_frames: u128 = (100.0 / fps) as u128;
+    println!("{}", msec_between_frames);
+
+    let mut last_frame_time = std::time::SystemTime::now();
+    let mut index: usize = 3;
+    while index < split_file_string.len(){        
+        let mut save_chunk: Vec<&str> = Vec::new();
+        let mut current_line: &str = split_file_string[index];
+        while current_line != "---"{
+            save_chunk.push(current_line);
+            index += 1;
+            current_line = split_file_string[index];
+        }
+        index += 1;
+
+        save_load::load_save_chunk_to_window(main_window, save_chunk); 
+
+        let mut current_time = std::time::SystemTime::now();
+        while current_time.duration_since(last_frame_time).unwrap().as_millis() < msec_between_frames{
+            current_time = std::time::SystemTime::now();
+        }
+        last_frame_time = current_time;
+
+        main_window.render_grid(toolbox);
+        main_window.canvas.present();
+    }
 }

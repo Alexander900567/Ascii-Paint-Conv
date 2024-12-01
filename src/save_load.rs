@@ -59,6 +59,25 @@ pub fn save_canvas(main_window: &main_window::MainWindow<'_>, file_path: &String
     return String::from(path_string);
 }
 
+pub fn load_save_chunk_to_window(main_window: &mut main_window::MainWindow<'_>, save_chunk: Vec<&str>){
+    let mut row_count = 0;
+    let mut col_count = 0;
+    for line in save_chunk{
+        let line_split: Vec<&str> = line.split("\t").collect();   
+        for entry in line_split{
+            let (num, character) = entry.split_at(entry.len() - 1);
+            let int_num = num.parse::<i32>().unwrap();
+            let char_character: Vec<char> = character.chars().collect();
+            for _ in 0..int_num{
+                main_window.window_array[row_count as usize][col_count as usize] = char_character[0];
+                col_count += 1;
+            }
+        }
+        col_count = 0;
+        row_count += 1;
+    }
+}
+
 pub fn load_canvas(main_window: &mut main_window::MainWindow<'_>) -> String{
     
     let path = native_dialog::FileDialog::new()
@@ -86,23 +105,7 @@ pub fn load_canvas(main_window: &mut main_window::MainWindow<'_>) -> String{
     temp_split = temp_line.split(":").collect();
     main_window.row_count_change(temp_split[1].parse::<i32>().unwrap());   
     
-    let mut row_count = 0;
-    let mut col_count = 0;
-    for line in split_file_string{
-        let line_split: Vec<&str> = line.split("\t").collect();   
-        for entry in line_split{
-            let (num, character) = entry.split_at(entry.len() - 1);
-            let int_num = num.parse::<i32>().unwrap();
-            let char_character: Vec<char> = character.chars().collect();
-            for _ in 0..int_num{
-                main_window.window_array[row_count as usize][col_count as usize] = char_character[0];
-                col_count += 1;
-            }
-        }
-        col_count = 0;
-        row_count += 1;
-    }
-
+    load_save_chunk_to_window(main_window, split_file_string);
     
     return String::from(path_string);
 }
