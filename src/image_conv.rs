@@ -6,11 +6,74 @@ use crate::image::GenericImage;
 use rayon::prelude::*;
 use crate::main_window::MainWindow;
 
-pub fn convert_image_put_in_window(main_window: &mut MainWindow<'_>, 
-                                   current_mouse_pos: &[i32; 2], 
-                                   start_mouse_pos: &[i32; 2],
-                                   map_choice: &str,
-                                   draw_lines: bool,){ 
+pub fn convert_image_put_in_window(
+    main_window: &mut MainWindow<'_>, 
+    current_mouse_pos: &[i32; 2], 
+    start_mouse_pos: &[i32; 2],
+    map_choice: &str,
+    draw_lines: bool
+){ 
+
+    let path = native_dialog::FileDialog::new()
+        .set_location("~")
+        .add_filter("Image", &["png", "jpeg"])
+        .show_open_single_file()
+        .unwrap().unwrap_or(std::path::PathBuf::new());
+    let path_string = path.as_path().to_str().unwrap(); 
+    
+    if path_string == ""{ //eject if they canceled out of the file picker
+        return;
+    }
+
+    let img = image::open(path_string).unwrap();
+
+    let begr: i32 = start_mouse_pos[0];
+    let begc: i32 = start_mouse_pos[1];
+    let finr: i32 = current_mouse_pos[0];
+    let finc: i32 = current_mouse_pos[1];
+
+    //how many characters is the image being converted to
+    let wcount: u32 = ((begc - finc).abs() + 1) as u32;  
+    let hcount: u32 = ((begr - finr).abs() + 1) as u32; 
+
+    let mut ascii_output = convert_image(&img, current_mouse_pos, start_mouse_pos, map_choice, draw_lines);
+
+    //do the line operations if requested
+    if draw_lines{
+        ascii_output = add_lines_to_conv(&img, &ascii_output, wcount, hcount);
+    }
+
+    //find top left --> bottom right
+    let tl_col = if begc < finc {begc} else {finc};
+    let tl_row = if begr < finr {begr} else {finr};
+    let br_col = if begc > finc {begc} else {finc};
+    let br_row = if begr > finr {begr} else {finr};
+
+    //println!("tl_row {} tl_col {}", tl_row, tl_col);
+    //println!("br_row {} br_col {}", br_row, br_col);
+
+    //draw ascii image to window
+    let mut conv_col = 0;
+    let mut conv_row = 0;
+    for row in tl_row..=br_row{
+        //println!("---row {} conv_row {}", row, conv_row);
+        for col in tl_col..=br_col{
+            //println!("col {} conv_col {}", col, conv_col);
+            main_window.add_to_preview_buffer(row, col, ascii_output[conv_row as usize][conv_col as usize]);
+            conv_col += 1;
+        }
+        conv_col = 0;
+        conv_row += 1;
+    }
+}
+
+fn convert_image(
+    source_img: &image::DynamicImage,
+    current_mouse_pos: &[i32; 2], 
+    start_mouse_pos: &[i32; 2],
+    map_choice: &str,
+    draw_lines: bool
+) -> Vec<Vec<char>>{
     let begr: i32 = start_mouse_pos[0];
     let begc: i32 = start_mouse_pos[1];
     let finr: i32 = current_mouse_pos[0];
@@ -35,20 +98,7 @@ pub fn convert_image_put_in_window(main_window: &mut MainWindow<'_>,
     let map_length = ascii_array.len() as f32;
     let lum_map_num = 255.0 as f32 / map_length; //the span of luminance each character gets
 
-    
-    let path = native_dialog::FileDialog::new()
-        .set_location("~")
-        .add_filter("Image", &["png", "jpeg"])
-        .show_open_single_file()
-        .unwrap().unwrap_or(std::path::PathBuf::new());
-    let path_string = path.as_path().to_str().unwrap(); 
-    
-    if path_string == ""{ //eject if they canceled out of the file picker
-        return;
-    }
-
-    let mut img = image::open(path_string).unwrap();
-    img = img.grayscale();
+    let img = source_img.grayscale();
     
     //how many characters is the image being converted to
     let wcount: u32 = ((begc - finc).abs() + 1) as u32;  
@@ -81,39 +131,13 @@ pub fn convert_image_put_in_window(main_window: &mut MainWindow<'_>,
         print!("\n");
     }
     */
-
-    //do the line operations if requested
-    if draw_lines{
-        ascii_output = add_lines_to_conv(&img, &ascii_output, wcount, hcount);
-    }
-
-    //find top left --> bottom right
-    let tl_col = if begc < finc {begc} else {finc};
-    let tl_row = if begr < finr {begr} else {finr};
-    let br_col = if begc > finc {begc} else {finc};
-    let br_row = if begr > finr {begr} else {finr};
-
-    //println!("tl_row {} tl_col {}", tl_row, tl_col);
-    //println!("br_row {} br_col {}", br_row, br_col);
-
-    //draw ascii image to window
-    let mut conv_col = 0;
-    let mut conv_row = 0;
-    for row in tl_row..=br_row{
-        //println!("---row {} conv_row {}", row, conv_row);
-        for col in tl_col..=br_col{
-            //println!("col {} conv_col {}", col, conv_col);
-            main_window.add_to_preview_buffer(row, col, ascii_output[conv_row as usize][conv_col as usize]);
-            conv_col += 1;
-        }
-        conv_col = 0;
-        conv_row += 1;
-    }
+    return ascii_output;
 }
 
-fn add_lines_to_conv(image: &image::DynamicImage, ascii_output: &Vec<Vec<char>>, wcount: u32, hcount: u32) -> Vec<Vec<char>>{
+fn add_lines_to_conv(source_image: &image::DynamicImage, ascii_output: &Vec<Vec<char>>, wcount: u32, hcount: u32) -> Vec<Vec<char>>{
     //goes through the steps of adding edges
     
+    let image = source_image.grayscale(); 
     let diff = diff_of_gauss(&image);
     
     let mut sobel_ascii_output = sobel_ascii_filter(&diff);
