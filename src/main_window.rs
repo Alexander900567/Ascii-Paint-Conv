@@ -5,7 +5,6 @@ use crate::tools;
 
 use crate::sdl2::image::LoadTexture;
 use sdl2::rect::Rect; //may be obselete
-use image::GenericImageView;
 
 pub struct MainWindow<'a> {
         

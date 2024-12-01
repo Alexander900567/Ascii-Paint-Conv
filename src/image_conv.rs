@@ -6,7 +6,6 @@ use crate::image::GenericImage;
 use rayon::prelude::*;
 use crate::main_window::MainWindow;
 use std::fs;
-use std::time::SystemTime;
 use crate::save_load;
 use crate::tools;
 
