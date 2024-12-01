@@ -475,7 +475,6 @@ pub fn create_video_conversion_file(
         }
     }
     image_list.sort();
-    println!("{:?}", image_list);
 
     let mut save_string: String = String::new();
     let wcount: u32 = ((start_mouse_pos[1] - current_mouse_pos[1]).abs() + 1) as u32;  
@@ -525,9 +524,7 @@ pub fn play_video_from_conversion_file(main_window: &mut MainWindow<'_>, toolbox
     temp_line = split_file_string[2];
     temp_split = temp_line.split(":").collect();
     let fps: f64 = temp_split[1].parse::<f64>().unwrap();
-    println!("{}", fps);
     let sec_between_frames: f64 = (1.0 / fps) as f64;
-    println!("{}", sec_between_frames);
 
     let mut last_frame_time = std::time::SystemTime::now();
     let mut index: usize = 3;
