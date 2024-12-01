@@ -83,19 +83,27 @@ fn main() {
                 Event::MouseButtonUp {mouse_btn, x, y, ..} => { //let go
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
-                            if y > main_window.gui_height as i32{
-                                if &toolbox.current_tool == "p"{
+                            if !clicked_gui{
+                                if &toolbox.current_tool == "a"{
+                                    toolbox.rect_sel_tool.on_mouse_up(&mut main_window, &mut gui_bar);
+                                }
+                                else if &toolbox.current_tool == "p"{
                                     main_window.preview_buffer.clear();
                                     let gpos = main_window.get_mouse_gpos(x, y);
-                                    image_conv::convert_image_put_in_window(&mut main_window, 
-                                                                            &gpos, &toolbox.mstart_gpos, 
-                                                                            &toolbox.ascii_type, toolbox.ascii_edges
+                                    image_conv::convert_image_put_in_window(
+                                        &mut main_window, 
+                                        &gpos, &toolbox.mstart_gpos, 
+                                        &toolbox.ascii_type, toolbox.ascii_edges
                                     ); 
                                 }
-                            }
-
-                            if &toolbox.current_tool == "a" && !clicked_gui{
-                                toolbox.rect_sel_tool.on_mouse_up(&mut main_window, &mut gui_bar);
+                                else if &toolbox.current_tool == "v"{
+                                    main_window.preview_buffer.clear();
+                                    let gpos = main_window.get_mouse_gpos(x, y);
+                                    image_conv::create_video_conversion_file(
+                                        &gpos, &toolbox.mstart_gpos, 
+                                        &toolbox.ascii_type, toolbox.ascii_edges
+                                    ); 
+                                }
                             }
 
                             if Vec::from(["a"]).iter().any(|x| x != &toolbox.current_tool) && 
@@ -154,6 +162,10 @@ fn main() {
                         }
                         else if &(text.to_lowercase()) == "l"{
                             path_to_save_file = save_load::load_canvas(&mut main_window);
+                            render_change = true;
+                        }
+                        else if &(text.to_lowercase()) == "p" && &toolbox.current_tool == "v"{
+                            image_conv::play_video_from_conversion_file(&mut main_window, &toolbox);
                             render_change = true;
                         }
                     }

@@ -5,7 +5,6 @@ use crate::tools;
 
 use crate::sdl2::image::LoadTexture;
 use sdl2::rect::Rect; //may be obselete
-use image::GenericImageView;
 
 pub struct MainWindow<'a> {
         
@@ -13,7 +12,7 @@ pub struct MainWindow<'a> {
     ttf_context: &'a sdl2::ttf::Sdl2TtfContext,
     video_subsystem: &'a sdl2::VideoSubsystem,
     clipboard: &'a sdl2::clipboard::ClipboardUtil,
-    canvas: sdl2::render::WindowCanvas,
+    pub canvas: sdl2::render::WindowCanvas,
     font: sdl2::ttf::Font<'a, 'a>,
 
     pub window_width: u32,
@@ -144,7 +143,7 @@ impl MainWindow<'_>{
         }
     }
 
-    fn render_grid(&mut self, toolbox: &tools::Toolbox){
+    pub fn render_grid(&mut self, toolbox: &tools::Toolbox){
 
         let mut render_array = self.window_array.clone();
         

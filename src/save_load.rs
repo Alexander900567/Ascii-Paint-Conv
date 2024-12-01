@@ -1,5 +1,28 @@
 use crate::main_window;
 
+pub fn write_array_to_save_string(array_contents: &Vec<Vec<char>>, save_string: &mut String){
+    //the array is saved as: {num_of_times character appears in a row}{character}\t
+    for row in array_contents{
+        let mut current_char = row[0];
+        let mut num_of_char = 0;
+        for character in row{
+            if *character == current_char{
+                num_of_char += 1;
+            }
+            else{
+                save_string.push_str(&(num_of_char.to_string()));
+                save_string.push(current_char);
+                save_string.push('\t');
+                current_char = *character;
+                num_of_char = 1;
+            }
+        } 
+        save_string.push_str(&(num_of_char.to_string()));
+        save_string.push(current_char);
+        save_string.push('\n');
+    }
+}
+
 pub fn save_canvas(main_window: &main_window::MainWindow<'_>, file_path: &String) -> String{
 
     //get the file path to the save file
@@ -24,27 +47,8 @@ pub fn save_canvas(main_window: &main_window::MainWindow<'_>, file_path: &String
     
     //create the conents of the save file
     let mut save_string = String::new();
-
-    //the array is saved as: {num_of_times character appears in a row}{character}\t
-    for row in &main_window.window_array{
-        let mut current_char = row[0];
-        let mut num_of_char = 0;
-        for character in row{
-            if *character == current_char{
-                num_of_char += 1;
-            }
-            else{
-                save_string.push_str(&(num_of_char.to_string()));
-                save_string.push(current_char);
-                save_string.push('\t');
-                current_char = *character;
-                num_of_char = 1;
-            }
-        } 
-        save_string.push_str(&(num_of_char.to_string()));
-        save_string.push(current_char);
-        save_string.push('\n');
-    }
+    
+    write_array_to_save_string(&main_window.window_array, &mut save_string);
 
     save_string.push_str(&("num_of_rows:".to_owned() + &(main_window.num_of_rows).to_string() + ":\n"));
     save_string.push_str(&("num_of_cols:".to_owned() + &(main_window.num_of_cols).to_string() + ":\n"));
@@ -53,6 +57,25 @@ pub fn save_canvas(main_window: &main_window::MainWindow<'_>, file_path: &String
     let _ = std::fs::write(&path_string, &save_string).unwrap();
 
     return String::from(path_string);
+}
+
+pub fn load_save_chunk_to_window(main_window: &mut main_window::MainWindow<'_>, save_chunk: Vec<&str>){
+    let mut row_count = 0;
+    let mut col_count = 0;
+    for line in save_chunk{
+        let line_split: Vec<&str> = line.split("\t").collect();   
+        for entry in line_split{
+            let (num, character) = entry.split_at(entry.len() - 1);
+            let int_num = num.parse::<i32>().unwrap();
+            let char_character: Vec<char> = character.chars().collect();
+            for _ in 0..int_num{
+                main_window.window_array[row_count as usize][col_count as usize] = char_character[0];
+                col_count += 1;
+            }
+        }
+        col_count = 0;
+        row_count += 1;
+    }
 }
 
 pub fn load_canvas(main_window: &mut main_window::MainWindow<'_>) -> String{
@@ -82,23 +105,7 @@ pub fn load_canvas(main_window: &mut main_window::MainWindow<'_>) -> String{
     temp_split = temp_line.split(":").collect();
     main_window.row_count_change(temp_split[1].parse::<i32>().unwrap());   
     
-    let mut row_count = 0;
-    let mut col_count = 0;
-    for line in split_file_string{
-        let line_split: Vec<&str> = line.split("\t").collect();   
-        for entry in line_split{
-            let (num, character) = entry.split_at(entry.len() - 1);
-            let int_num = num.parse::<i32>().unwrap();
-            let char_character: Vec<char> = character.chars().collect();
-            for _ in 0..int_num{
-                main_window.window_array[row_count as usize][col_count as usize] = char_character[0];
-                col_count += 1;
-            }
-        }
-        col_count = 0;
-        row_count += 1;
-    }
-
+    load_save_chunk_to_window(main_window, split_file_string);
     
     return String::from(path_string);
 }

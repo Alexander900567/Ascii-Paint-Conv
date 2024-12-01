@@ -116,6 +116,10 @@ impl Gui{
                                             17, (5, 12), (7, 13),
                                             "Assets/PNGs/ellipse_icon.png", 0, -1, false));
 
+        start_buttons.insert(18, Button::new(&mut start_grid, &mut start_groups,
+                                            18, (1, 1), (1, 1),
+                                            "video", 0, 0, false));
+
         Gui {
         gui_grid: start_grid,
             buttons: start_buttons,
@@ -183,6 +187,9 @@ impl Gui{
         }
         else if clicked_id == 16{
             self.click_reset_box(main_window, toolbox);
+        }
+        else if clicked_id == 18{
+            self.click_video(toolbox);
         }
 
         if toggle_group == -1 && clicked_is_pressed == 0{
@@ -392,6 +399,10 @@ impl Gui{
 
     fn click_copy_to_clipboard(&mut self, main_window: &mut main_window::MainWindow<'_>){
         main_window.copy_to_clipboard();
+    }
+
+    fn click_video(&self, toolbox: &mut tools::Toolbox){
+        toolbox.current_tool = String::from("v");
     }
 }
 
