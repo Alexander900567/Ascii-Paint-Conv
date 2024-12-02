@@ -244,7 +244,7 @@ impl Toolbox{
         main_window.preview_buffer.clear();
     // Uses the [Midpoint Ellipse Drawing Algorithm](https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/).
     // (Modified from Bresenham's algorithm) <- These are the credits given by the Rust imageproc conics functions.
-    //This is just a modified draw_hollow_circle
+    //This is just a modified draw_hollow_circle from the Rust imageproc conics function
         let begin_row: i32 = start_mouse_pos[0];
         let fin_row: i32 = current_mouse_pos[0];
         let begin_col: i32 = start_mouse_pos[1];
