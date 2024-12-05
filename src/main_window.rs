@@ -93,9 +93,9 @@ impl MainWindow<'_>{
 
     pub fn render(&mut self, gui: &gui::Gui, toolbox: &tools::Toolbox){
         
-        self.render_gui(gui);
-
         self.render_grid(toolbox);
+
+        self.render_gui(gui);
 
         self.canvas.present(); //actually commit changes to screen!
     }
@@ -134,7 +134,7 @@ impl MainWindow<'_>{
                         sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
                 }
 
-                let icon_texture = texture_creator.load_texture(&button.asset_path).unwrap();
+                let icon_texture = texture_creator.load_texture(&button.label_path).unwrap();
                 let _ = self.canvas.copy(
                     &icon_texture,
                     None, //part of texture we want... all of it 

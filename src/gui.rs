@@ -32,88 +32,88 @@ impl Gui{
         making a button
         (button_id, Button::new(&mut start_grid, &mut start_groups,
                                 button_id, top_left, bottom_right,
-                                asset_path, is_pressed, toggle_group, visible)
+                                label_path, is_pressed, toggle_group, visible)
 
         button_id: i32 = number that represents the button, do not use -1 or the same value for more than one button
-        top_left: (i32, i32) = the grid position of the top left of the button
+        top_left: (i32, i32) = the grid position of the top left of the button (row, column) where size is 10 by 120
         bottom_right: (i32, i32) = the grid position of the bottom right of the button
-        asset_path: &str = the path to the pic
+        label_path: &str = the path to the pic
         is_pressed: i32 = does the button start toggled on(1) or off(0), -1 makes the button a oneshot (no toggle state)
         toggle_group: i32 = only one button from a toggle group can be on at once, -1 makes the button independent of all others 
         visible: bool = does the button start visible on the bar
         */
         let mut start_buttons = std::collections::HashMap::new();
         let mut start_groups = std::collections::HashMap::new();
-        start_buttons.insert(0, Button::new(&mut start_grid, &mut start_groups,
-                                            0, (1, 1), (3, 1),
+        start_buttons.insert(0, Button::new(&mut start_grid, &mut start_groups, //Square example (Top row is (1,n), (4,n), bottom is (6,n), (9,n))
+                                            0, (1, 1), (4, 4), //each button is 3x3 and separated by 2 from next (1 unit of space in between)
                                             "Assets/PNGs/free_icon.png", 1, 0, true));
         
-        start_buttons.insert(1, Button::new(&mut start_grid, &mut start_groups,
-                                            1, (1, 12), (3, 12),
+        start_buttons.insert(1, Button::new(&mut start_grid, &mut start_groups, //todo: align
+                                            1, (1, 21), (4, 24),
                                             "Assets/PNGs/fill_icon.png", 0, -1, false));
 
         start_buttons.insert(2, Button::new(&mut start_grid, &mut start_groups,
-                                            2, (5, 1), (7, 1),
+                                            2, (6, 1), (9, 4),
                                             "Assets/PNGs/line_icon.png", 0, 0, true));
 
         start_buttons.insert(3, Button::new(&mut start_grid, &mut start_groups,
-                                            3, (5, 4), (7, 4), 
+                                            3, (6, 6), (9, 9), 
                                             "Assets/PNGs/rectangle_icon.png", 0, 0, true));
 
         start_buttons.insert(4, Button::new(&mut start_grid, &mut start_groups,
-                                            4, (1, 4), (3, 4),  //We should never have to use the asset. TODO: Remove button
+                                            4, (1, 6), (4, 9),  //We should never have to use the asset. TODO: Remove button
                                             "Assets/PNGs/1x1_button_disabled.png", 0, 0, true));
 
         start_buttons.insert(5, Button::new(&mut start_grid, &mut start_groups, 
-                                            5, (1, 7), (3, 7),
+                                            5, (1, 11), (4, 14),
                                             "Assets/PNGs/text_icon.png", 0, 0, true));
 
         start_buttons.insert(6, Button::new(&mut start_grid, &mut start_groups, 
-                                            6, (5, 7), (7, 7),
+                                            6, (6, 11), (9, 14),
                                             "Assets/PNGs/picture_icon.png", 0, 0, true));
 
         start_buttons.insert(7, Button::new(&mut start_grid, &mut start_groups, 
-                                            7, (1, 17), (3, 17),
+                                            7, (1, 110), (4, 113),
                                             "Assets/PNGs/undo_icon.png", -1, 0, true));
 
         start_buttons.insert(8, Button::new(&mut start_grid, &mut start_groups, 
-                                            8, (1, 19), (3, 19),
+                                            8, (1, 115), (4, 118),
                                             "Assets/PNGs/redo_icon.png", -1, 0, true));
 
         start_buttons.insert(9, Button::new(&mut start_grid, &mut start_groups, 
-                                            9, (5, 19), (7, 19), //TODO: make into clipboard art
+                                            9, (6, 115), (9, 118), //TODO: make into clipboard art
                                             "Assets/PNGs/clipboard_icon.png", -1, 0, true));
 
         start_buttons.insert(10, Button::new(&mut start_grid, &mut start_groups, 
-                                            10, (1, 12), (3, 12),
+                                            10, (1, 21), (4, 24), //come back
                                             "Assets/PNGs/mode_1_icon.png", 0, 1, false));
 
         start_buttons.insert(11, Button::new(&mut start_grid, &mut start_groups, 
-                                            11, (1, 13), (3, 13),
+                                            11, (1, 26), (4, 29),
                                             "Assets/PNGs/mode_2_icon.png", 0, 1, false));
 
         start_buttons.insert(12, Button::new(&mut start_grid, &mut start_groups, 
-                                            12, (1, 14), (3, 14),
+                                            12, (1, 31), (4, 34),
                                             "Assets/PNGs/mode_3_icon.png", 0, 1, false));
 
         start_buttons.insert(13, Button::new(&mut start_grid, &mut start_groups, 
-                                            13, (1, 15), (3, 15),
+                                            13, (1, 36), (4, 39),
                                             "Assets/PNGs/mode_4_icon.png", 1, 1, false));
 
         start_buttons.insert(14, Button::new(&mut start_grid, &mut start_groups, 
-                                            14, (5, 12), (7, 13),
+                                            14, (1, 41), (4, 44),
                                             "Assets/PNGs/mode_edge_icon.png", 0, -1, false));
 
         start_buttons.insert(15, Button::new(&mut start_grid, &mut start_groups,
-                                            15, (1, 10), (3, 10),
+                                            15, (1, 16), (4, 19),
                                             "Assets/PNGs/select_icon.png", 0, 0, true));
 
         start_buttons.insert(16, Button::new(&mut start_grid, &mut start_groups,
-                                            16, (1, 12), (3, 13),
+                                            16, (6, 16), (9, 19),
                                             "Assets/PNGs/clear_icon.png", -1, 0, false));
 
         start_buttons.insert(17, Button::new(&mut start_grid, &mut start_groups,
-                                            17, (5, 12), (7, 13),
+                                            17, (6, 21), (9, 24),
                                             "Assets/PNGs/ellipse_icon.png", 0, -1, false));
 
         start_buttons.insert(18, Button::new(&mut start_grid, &mut start_groups,
@@ -411,7 +411,7 @@ pub struct Button{
     pub top_left: (i32, i32),
     pub bottom_right: (i32, i32),
     pub grid_pos: Vec<(i32, i32)>,
-    pub asset_path: PathBuf,
+    pub label_path: PathBuf,
     pub is_pressed: i32, //0 unpressed, 1 pressed, -1 one-shot button
     pub toggle_group: i32, //-1 toggle
     pub visible: bool,
@@ -424,7 +424,7 @@ impl Button{
         button_id: i32,
         top_left: (i32, i32),
         bottom_right: (i32, i32),
-        asset_path: &str,
+        label_path: &str,
         is_pressed: i32, //0 unpressed, 1 pressed, -1 one-shot button
         toggle_group: i32,
         visible: bool,
@@ -454,7 +454,7 @@ impl Button{
             top_left: top_left,
             bottom_right: bottom_right,
             grid_pos: start_pos,
-            asset_path: PathBuf::from(asset_path),
+            label_path: PathBuf::from(label_path),
             is_pressed: is_pressed,
             toggle_group: toggle_group,
             visible: visible,
