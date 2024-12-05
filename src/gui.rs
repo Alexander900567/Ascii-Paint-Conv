@@ -116,6 +116,10 @@ impl Gui{
                                             17, (6, 21), (9, 24),
                                             "Assets/PNGs/ellipse_icon.png", 0, -1, false));
 
+        start_buttons.insert(18, Button::new(&mut start_grid, &mut start_groups,
+                                            18, (1, 1), (1, 1),
+                                            "video", 0, 0, false));
+
         Gui {
         gui_grid: start_grid,
             buttons: start_buttons,
@@ -183,6 +187,9 @@ impl Gui{
         }
         else if clicked_id == 16{
             self.click_reset_box(main_window, toolbox);
+        }
+        else if clicked_id == 18{
+            self.click_video(toolbox);
         }
 
         if toggle_group == -1 && clicked_is_pressed == 0{
@@ -267,6 +274,8 @@ impl Gui{
         let grid_pos = &self.buttons.get(&button_id).unwrap().grid_pos;
 
         for pos in grid_pos{
+            assert!(self.gui_grid[pos.0 as usize][pos.1 as usize] == button_id, 
+                    "hide_button attempted to hide a button_id value that was not the id of the button targeted");
             self.gui_grid[pos.0 as usize][pos.1 as usize] = -1;
         }
     }
@@ -276,6 +285,9 @@ impl Gui{
         let grid_pos = &self.buttons.get(&button_id).unwrap().grid_pos;
 
         for pos in grid_pos{
+            assert!(self.gui_grid[pos.0 as usize][pos.1 as usize] == -1 || 
+                    self.gui_grid[pos.0 as usize][pos.1 as usize] == button_id,
+                    "show_button attempted to show a button on top of another button");
             self.gui_grid[pos.0 as usize][pos.1 as usize] = button_id;
         }
     }
@@ -295,12 +307,12 @@ impl Gui{
         self.show_button(16);
     }
     fn unclick_rectangle_selector(&mut self, main_window: &mut main_window::MainWindow<'_>, toolbox: &mut tools::Toolbox){
-        toolbox.rect_sel_tool.reset_box(main_window);
+        toolbox.rect_sel_tool.reset_box(main_window, self);
         self.hide_button(16);
     }
 
     fn click_reset_box(&mut self, main_window: &mut main_window::MainWindow<'_>, toolbox: &mut tools::Toolbox){
-        toolbox.rect_sel_tool.reset_box(main_window);
+        toolbox.rect_sel_tool.reset_box(main_window, self);
     }
 
     fn click_rect(&mut self, toolbox: &mut tools::Toolbox){
@@ -387,6 +399,10 @@ impl Gui{
 
     fn click_copy_to_clipboard(&mut self, main_window: &mut main_window::MainWindow<'_>){
         main_window.copy_to_clipboard();
+    }
+
+    fn click_video(&self, toolbox: &mut tools::Toolbox){
+        toolbox.current_tool = String::from("v");
     }
 }
 

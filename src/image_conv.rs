@@ -5,12 +5,78 @@ use crate::rayon::iter::ParallelIterator;
 use crate::image::GenericImage;
 use rayon::prelude::*;
 use crate::main_window::MainWindow;
+use std::fs;
+use crate::save_load;
+use crate::tools;
 
-pub fn convert_image_put_in_window(main_window: &mut MainWindow<'_>, 
-                                   current_mouse_pos: &[i32; 2], 
-                                   start_mouse_pos: &[i32; 2],
-                                   map_choice: &str,
-                                   draw_lines: bool,){ 
+pub fn convert_image_put_in_window(
+    main_window: &mut MainWindow<'_>, 
+    current_mouse_pos: &[i32; 2], 
+    start_mouse_pos: &[i32; 2],
+    map_choice: &str,
+    draw_lines: bool
+){ 
+
+    let path = native_dialog::FileDialog::new()
+        .set_location("~")
+        .add_filter("Image", &["png", "jpeg"])
+        .show_open_single_file()
+        .unwrap().unwrap_or(std::path::PathBuf::new());
+    let path_string = path.as_path().to_str().unwrap(); 
+    
+    if path_string == ""{ //eject if they canceled out of the file picker
+        return;
+    }
+
+    let img = image::open(path_string).unwrap();
+
+    let begr: i32 = start_mouse_pos[0];
+    let begc: i32 = start_mouse_pos[1];
+    let finr: i32 = current_mouse_pos[0];
+    let finc: i32 = current_mouse_pos[1];
+
+    //how many characters is the image being converted to
+    let wcount: u32 = ((begc - finc).abs() + 1) as u32;  
+    let hcount: u32 = ((begr - finr).abs() + 1) as u32; 
+
+    let mut ascii_output = convert_image(&img, current_mouse_pos, start_mouse_pos, map_choice, draw_lines);
+
+    //do the line operations if requested
+    if draw_lines{
+        ascii_output = add_lines_to_conv(&img, &ascii_output, wcount, hcount);
+    }
+
+    //find top left --> bottom right
+    let tl_col = if begc < finc {begc} else {finc};
+    let tl_row = if begr < finr {begr} else {finr};
+    let br_col = if begc > finc {begc} else {finc};
+    let br_row = if begr > finr {begr} else {finr};
+
+    //println!("tl_row {} tl_col {}", tl_row, tl_col);
+    //println!("br_row {} br_col {}", br_row, br_col);
+
+    //draw ascii image to window
+    let mut conv_col = 0;
+    let mut conv_row = 0;
+    for row in tl_row..=br_row{
+        //println!("---row {} conv_row {}", row, conv_row);
+        for col in tl_col..=br_col{
+            //println!("col {} conv_col {}", col, conv_col);
+            main_window.add_to_preview_buffer(row, col, ascii_output[conv_row as usize][conv_col as usize]);
+            conv_col += 1;
+        }
+        conv_col = 0;
+        conv_row += 1;
+    }
+}
+
+fn convert_image(
+    source_img: &image::DynamicImage,
+    current_mouse_pos: &[i32; 2], 
+    start_mouse_pos: &[i32; 2],
+    map_choice: &str,
+    draw_lines: bool
+) -> Vec<Vec<char>>{
     let begr: i32 = start_mouse_pos[0];
     let begc: i32 = start_mouse_pos[1];
     let finr: i32 = current_mouse_pos[0];
@@ -35,20 +101,7 @@ pub fn convert_image_put_in_window(main_window: &mut MainWindow<'_>,
     let map_length = ascii_array.len() as f32;
     let lum_map_num = 255.0 as f32 / map_length; //the span of luminance each character gets
 
-    
-    let path = native_dialog::FileDialog::new()
-        .set_location("~")
-        .add_filter("Image", &["png", "jpeg"])
-        .show_open_single_file()
-        .unwrap().unwrap_or(std::path::PathBuf::new());
-    let path_string = path.as_path().to_str().unwrap(); 
-    
-    if path_string == ""{ //eject if they canceled out of the file picker
-        return;
-    }
-
-    let mut img = image::open(path_string).unwrap();
-    img = img.grayscale();
+    let img = source_img.grayscale();
     
     //how many characters is the image being converted to
     let wcount: u32 = ((begc - finc).abs() + 1) as u32;  
@@ -81,39 +134,13 @@ pub fn convert_image_put_in_window(main_window: &mut MainWindow<'_>,
         print!("\n");
     }
     */
-
-    //do the line operations if requested
-    if draw_lines{
-        ascii_output = add_lines_to_conv(&img, &ascii_output, wcount, hcount);
-    }
-
-    //find top left --> bottom right
-    let tl_col = if begc < finc {begc} else {finc};
-    let tl_row = if begr < finr {begr} else {finr};
-    let br_col = if begc > finc {begc} else {finc};
-    let br_row = if begr > finr {begr} else {finr};
-
-    //println!("tl_row {} tl_col {}", tl_row, tl_col);
-    //println!("br_row {} br_col {}", br_row, br_col);
-
-    //draw ascii image to window
-    let mut conv_col = 0;
-    let mut conv_row = 0;
-    for row in tl_row..=br_row{
-        //println!("---row {} conv_row {}", row, conv_row);
-        for col in tl_col..=br_col{
-            //println!("col {} conv_col {}", col, conv_col);
-            main_window.add_to_preview_buffer(row, col, ascii_output[conv_row as usize][conv_col as usize]);
-            conv_col += 1;
-        }
-        conv_col = 0;
-        conv_row += 1;
-    }
+    return ascii_output;
 }
 
-fn add_lines_to_conv(image: &image::DynamicImage, ascii_output: &Vec<Vec<char>>, wcount: u32, hcount: u32) -> Vec<Vec<char>>{
+fn add_lines_to_conv(source_image: &image::DynamicImage, ascii_output: &Vec<Vec<char>>, wcount: u32, hcount: u32) -> Vec<Vec<char>>{
     //goes through the steps of adding edges
     
+    let image = source_image.grayscale(); 
     let diff = diff_of_gauss(&image);
     
     let mut sobel_ascii_output = sobel_ascii_filter(&diff);
@@ -417,4 +444,109 @@ fn downscale_sobel(sobel_ascii_output: &Vec<Vec<char>>, wcount: u32, hcount: u32
 
     //write_to_file(&downscaled_output, "output_downscaled.txt");
     return downscaled_output;
+}
+
+
+pub fn create_video_conversion_file(
+    current_mouse_pos: &[i32; 2], 
+    start_mouse_pos: &[i32; 2],
+    map_choice: &str,
+    draw_lines: bool
+){
+
+    let path = native_dialog::FileDialog::new()
+        .set_location("~")
+        .show_open_single_dir()
+        .unwrap().unwrap_or(std::path::PathBuf::new());
+    let path_string = path.as_path().to_str().unwrap(); 
+    
+    if path_string == ""{ //eject if they canceled out of the file picker
+        return;
+    }
+
+    let output: fs::ReadDir = fs::read_dir(&path_string).unwrap();
+    let mut image_list: Vec<String> = Vec::new();
+    for file in output{
+        let f = file.unwrap().path();
+        let path = f.as_path();
+        let ext = path.extension().unwrap();
+        if ext == "png" || ext == "jpeg"{
+            image_list.push(String::from(path.to_str().unwrap()));
+        }
+    }
+    image_list.sort();
+
+    let mut save_string: String = String::new();
+    let wcount: u32 = ((start_mouse_pos[1] - current_mouse_pos[1]).abs() + 1) as u32;  
+    let hcount: u32 = ((start_mouse_pos[0] - current_mouse_pos[0]).abs() + 1) as u32; 
+    save_string.push_str(&("num_of_rows:".to_owned() + &(hcount).to_string() + ":\n"));
+    save_string.push_str(&("num_of_cols:".to_owned() + &(wcount).to_string() + ":\n"));
+    save_string.push_str(&("frame_per_sec:".to_owned() + ":\n"));
+
+    for image_path in &image_list{
+        let source_img = image::open(image_path).unwrap();
+        let ascii_output: Vec<Vec<char>> = convert_image(&source_img, current_mouse_pos, start_mouse_pos, map_choice, draw_lines);
+        save_load::write_array_to_save_string(&ascii_output, &mut save_string);
+        save_string.push_str("---\n");
+    }
+    
+    let _ = std::fs::write(&(String::from(path_string) + "/video_file.txt"), &save_string).unwrap();
+}
+
+
+pub fn play_video_from_conversion_file(main_window: &mut MainWindow<'_>, toolbox: &tools::Toolbox){
+
+    let path = native_dialog::FileDialog::new()
+        .set_location("~")
+        .add_filter("Text", &["txt"])
+        .show_open_single_file()
+        .unwrap().unwrap_or(std::path::PathBuf::new());
+    let path_string = path.as_path().to_str().unwrap(); 
+    
+    if path_string == ""{ //eject if they canceled out of the file picker
+        return;
+    }
+    
+    let file_string = std::fs::read_to_string(path_string).unwrap();
+    let mut split_file_string: Vec<&str> = file_string.split("\n").collect();
+
+    //pop the empty line at the end
+    let _ = split_file_string.pop().unwrap();
+
+    let mut temp_line = split_file_string[0];
+    let mut temp_split: Vec<&str> = temp_line.split(":").collect();
+    main_window.row_count_change(temp_split[1].parse::<i32>().unwrap());   
+
+    temp_line = split_file_string[1];
+    temp_split = temp_line.split(":").collect();
+    main_window.col_count_change(temp_split[1].parse::<i32>().unwrap());   
+
+    temp_line = split_file_string[2];
+    temp_split = temp_line.split(":").collect();
+    let fps: f64 = temp_split[1].parse::<f64>().unwrap();
+    let sec_between_frames: f64 = (1.0 / fps) as f64;
+
+    let mut last_frame_time = std::time::SystemTime::now();
+    let mut index: usize = 3;
+    while index < split_file_string.len(){        
+        let mut save_chunk: Vec<&str> = Vec::new();
+        let mut current_line: &str = split_file_string[index];
+        while current_line != "---"{
+            save_chunk.push(current_line);
+            index += 1;
+            current_line = split_file_string[index];
+        }
+        index += 1;
+
+        save_load::load_save_chunk_to_window(main_window, save_chunk); 
+
+        let mut current_time = std::time::SystemTime::now();
+        while current_time.duration_since(last_frame_time).unwrap().as_secs_f64() < sec_between_frames{
+            current_time = std::time::SystemTime::now();
+        }
+        last_frame_time = current_time;
+
+        main_window.render_grid(toolbox);
+        main_window.canvas.present();
+    }
 }

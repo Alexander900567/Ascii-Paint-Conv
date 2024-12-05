@@ -3,8 +3,8 @@ use crate::undo_redo;
 use crate::gui;
 use crate::tools;
 
+use crate::sdl2::image::LoadTexture;
 use sdl2::rect::Rect; //may be obselete
-use image::GenericImageView;
 
 pub struct MainWindow<'a> {
         
@@ -12,7 +12,7 @@ pub struct MainWindow<'a> {
     ttf_context: &'a sdl2::ttf::Sdl2TtfContext,
     video_subsystem: &'a sdl2::VideoSubsystem,
     clipboard: &'a sdl2::clipboard::ClipboardUtil,
-    canvas: sdl2::render::WindowCanvas,
+    pub canvas: sdl2::render::WindowCanvas,
     font: sdl2::ttf::Font<'a, 'a>,
 
     pub window_width: u32,
@@ -68,6 +68,7 @@ impl MainWindow<'_>{
             .expect("failed to build canvas");
 
 
+
         MainWindow{
             sdl_context: sdl_context,
             ttf_context: ttf_context,
@@ -101,11 +102,15 @@ impl MainWindow<'_>{
 
     fn render_gui(&mut self, gui: &gui::Gui){
 
-        self.canvas.set_draw_color(Color::RGB(0, 0, 0)); //set gui canvas to black
+        self.canvas.set_draw_color(Color::RGB(125, 125, 125)); //set canvas to grey
         let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0,
-                self.window_width, self.gui_height)); //first two is where, second is how big
-        self.canvas.set_draw_color(Color::RGB(255, 255, 255)); //draw white line
-        let _ = self.canvas.draw_line((0, self.gui_height as i32 + 2), (self.window_width as i32 - 1, self.gui_height as i32 + 2));
+                              self.window_width, self.gui_height)); //first two is where, second is how big
+        self.canvas.set_draw_color(Color::RGB(90, 90, 90));
+        
+        let texture_creator = self.canvas.texture_creator();
+
+        let pressed_texture = texture_creator.load_texture("./Assets/PNGs/1x1_button_disabled.png").unwrap();
+        let nonpressed_texture = texture_creator.load_texture("./Assets/PNGs/1x1_button_enabled.png").unwrap();
 
         for button in gui.buttons.values(){
             if button.visible{ //render button
@@ -113,62 +118,32 @@ impl MainWindow<'_>{
                 let top_row = (button.top_left.0 as f32 * gui.row_size) as i32;
                 let bot_col = ((button.bottom_right.1 - button.top_left.1 + 1) as f32 * gui.col_size) as u32;
                 let bot_row = ((button.bottom_right.0 - button.top_left.0 + 1) as f32 * gui.row_size) as u32;
-
-                let button_shown_address = match button.is_pressed { //gets addressed for (un)pressed asset
-                    -1 | 0 => "Assets/PNGs/1x1_button_disabled.png", //make a case for -1
-                    1 => "Assets/PNGs/1x1_button_enabled.png",
-                    _ =>  panic!("button.is_pressed is equal to {}", button.is_pressed)
-                };
-
-                let button_shown = match image::open(&button_shown_address) { //loads the button base
-                    Ok(button_shown) => button_shown,
-                    Err(err) => {
-                        eprintln!("Failed to load image from {:?}: {}", &button_shown_address, err);
-                        return;
-                    }
-                };
-                let button_label = match image::open(&button.label_path) { //loads the button's label
-                    Ok(button_label) => button_label,
-                    Err(err) => {
-                        eprintln!("Failed to load image from {:?}: {}", button.label_path, err);
-                        return;
-                    }
-                };                
-                let button_shown = button_shown.to_rgba8(); //converts to RGBA8 format
-                let button_label = button_label.to_rgba8(); 
-
-                let button_as_one = vec![button_shown, button_label];//gonna store both for the for loop
                 
-                for button_parts in button_as_one {
-                    let canvas_texture = self.canvas.texture_creator(); //makes into texture for SDL2
-                    let mut texture = match canvas_texture.create_texture_streaming( //texture stored
-                        sdl2::pixels::PixelFormatEnum::ABGR8888,
-                        button_parts.dimensions().0,
-                        button_parts.dimensions().1
-                    ) 
-                    { //error handling
-                        Ok(texture) => texture,
-                        Err(err) => {
-                            eprintln!("Failed to create texture: {}", err);
-                            return;
-                        }
-                    };
-    
-                    if let Err(err) = texture.update(None, &button_parts, (button_parts.dimensions().0 * 4) as usize) {
-                        eprintln!("Failed to update texture: {}", err);
-                        return;
-                    }
-
+                //display button on/off 
+                if button.is_pressed == 1 {
                     let _ = self.canvas.copy(
-                        &texture,
+                        &pressed_texture,
+                        None, //part of texture we want... all of it 
+                        sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
+
+                }
+                else{
+                    let _ = self.canvas.copy(
+                        &nonpressed_texture,
                         None, //part of texture we want... all of it 
                         sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
                 }
+
+                let icon_texture = texture_creator.load_texture(&button.label_path).unwrap();
+                let _ = self.canvas.copy(
+                    &icon_texture,
+                    None, //part of texture we want... all of it 
+                    sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
             }
         }
     }
 
-    fn render_grid(&mut self, toolbox: &tools::Toolbox){
+    pub fn render_grid(&mut self, toolbox: &tools::Toolbox){
 
         let mut render_array = self.window_array.clone();
         
@@ -285,8 +260,10 @@ impl MainWindow<'_>{
     }
     //grid functions
 
-    pub fn write_buffer(&mut self) {
-        self.undo_redo.add_to_undo(&self.preview_buffer, &self.window_array);
+    pub fn write_buffer(&mut self, write_to_undo: bool) {
+        if write_to_undo{
+            self.undo_redo.add_to_undo(&self.preview_buffer, &self.window_array);
+        }
         self.undo_redo.redo_buffer.clear();
         for buffer_item in &(self.preview_buffer){
             self.window_array[buffer_item.0 as usize][buffer_item.1 as usize] = buffer_item.2;

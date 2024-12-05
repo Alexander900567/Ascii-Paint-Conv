@@ -16,6 +16,7 @@ fn main() {
     let video_subsystem = sdl_context.video().expect("failed to init video subsytem");
     let clipboard = video_subsystem.clipboard();
     let ttf_context = sdl2::ttf::init().unwrap(); //Maybe add a error message
+    let image_context = sdl2::image::init(sdl2::image::InitFlag::PNG).unwrap();
 
     let mut main_window = main_window::MainWindow::new(
         &sdl_context,
@@ -47,6 +48,7 @@ fn main() {
     let mut render_change = true;
     //holds on to the previous loops' gpos so a render doesn't get called if the mouse hasn't moved grid position
     let mut keycombo = String::new(); //will hold our key commands
+    let mut clicked_gui = false;
     while running {
         for event in event_queue.poll_iter() {
             match event {
@@ -59,9 +61,11 @@ fn main() {
                         sdl2::mouse::MouseButton::Left => { //Keybinds
                             if y > main_window.gui_height as i32{
                                 let _ = toolbox.draw_tool(&mut main_window, true, x, y);
+                                clicked_gui = false;
                             }
                             else{
                                 gui_bar.handle_gui_click(x, y, &mut main_window, &mut toolbox);
+                                clicked_gui = true;
                             }
                         },
                         _ => {}, //eventually will be replaced with a tool list
@@ -70,7 +74,7 @@ fn main() {
                 },
                 Event::MouseMotion {mousestate, x, y, ..} => { //this is for holding down button
                     if mousestate.left(){
-                        if y > main_window.gui_height as i32{
+                        if y > main_window.gui_height as i32 && !clicked_gui{
                             render_change = toolbox.draw_tool(&mut main_window, false, x, y);
                         }
                     }
@@ -78,25 +82,35 @@ fn main() {
                 Event::MouseButtonUp {mouse_btn, x, y, ..} => { //let go
                     match mouse_btn{
                         sdl2::mouse::MouseButton::Left => {
-                            if y > main_window.gui_height as i32{
-                                if &toolbox.current_tool == "p"{
+                            if !clicked_gui{
+                                if &toolbox.current_tool == "a"{
+                                    toolbox.rect_sel_tool.on_mouse_up(&mut main_window, &mut gui_bar);
+                                }
+                                else if &toolbox.current_tool == "p"{
                                     main_window.preview_buffer.clear();
                                     let gpos = main_window.get_mouse_gpos(x, y);
-                                    image_conv::convert_image_put_in_window(&mut main_window, 
-                                                                            &gpos, &toolbox.mstart_gpos, 
-                                                                            &toolbox.ascii_type, toolbox.ascii_edges
+                                    image_conv::convert_image_put_in_window(
+                                        &mut main_window, 
+                                        &gpos, &toolbox.mstart_gpos, 
+                                        &toolbox.ascii_type, toolbox.ascii_edges
                                     ); 
                                 }
-                                else if &toolbox.current_tool == "a"{
-                                    toolbox.rect_sel_tool.on_mouse_up(&mut main_window);
+                                else if &toolbox.current_tool == "v"{
+                                    main_window.preview_buffer.clear();
+                                    let gpos = main_window.get_mouse_gpos(x, y);
+                                    image_conv::create_video_conversion_file(
+                                        &gpos, &toolbox.mstart_gpos, 
+                                        &toolbox.ascii_type, toolbox.ascii_edges
+                                    ); 
                                 }
                             }
 
-                            if (Vec::from(["a"]).iter().any(|x| x != &toolbox.current_tool) && 
-                                main_window.preview_buffer.len() > 0){
-                                main_window.write_buffer();
+                            if Vec::from(["a"]).iter().any(|x| x != &toolbox.current_tool) && 
+                                main_window.preview_buffer.len() > 0{
+                                main_window.write_buffer(true);
                             }
                             render_change = true;
+                            clicked_gui = false;
                         },
                         _ => {}
                     }
@@ -134,7 +148,7 @@ fn main() {
                         else if &(text.to_lowercase()) == "m"{
                             keycombo = String::from("m");
                         }
-                        else if &(text.to_lowercase()) == "z"{
+                        else if &(text.to_lowercase()) == "z" && !toolbox.rect_sel_tool.active{
                             main_window.undo_redo.perform_undo(&mut main_window.window_array);
                             render_change = true;
                         }
@@ -147,6 +161,10 @@ fn main() {
                         }
                         else if &(text.to_lowercase()) == "l"{
                             path_to_save_file = save_load::load_canvas(&mut main_window);
+                            render_change = true;
+                        }
+                        else if &(text.to_lowercase()) == "p" && &toolbox.current_tool == "v"{
+                            image_conv::play_video_from_conversion_file(&mut main_window, &toolbox);
                             render_change = true;
                         }
                     }
@@ -179,7 +197,7 @@ fn main() {
                     if &toolbox.current_tool == "a"{
                         match keycode {
                             Some(sdl2::keyboard::Keycode::ESCAPE) =>{
-                                toolbox.rect_sel_tool.reset_box(&mut main_window);
+                                toolbox.rect_sel_tool.reset_box(&mut main_window, &mut gui_bar);
                                 render_change = true;
                             },
                             _ => {}

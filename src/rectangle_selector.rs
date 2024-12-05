@@ -1,13 +1,15 @@
 use crate::main_window::MainWindow;
+use crate::gui::Gui;
 use std::cmp::min;
 use std::cmp::max;
 
 pub struct RectangleSelector{
-    active: bool,
+    pub active: bool,
     pub start_gpos: (i32, i32),
     pub top_left: (i32, i32),
     pub bot_right: (i32, i32),
     pub size: (i32, i32),
+    original_buffer: Vec<(i32, i32, char)>
 }
 
 
@@ -20,6 +22,7 @@ impl RectangleSelector{
             top_left: (-1, -1),
             bot_right: (-1, -1),
             size: (-1, -1),
+            original_buffer: Vec::new(),
         }
     }
     
@@ -69,25 +72,41 @@ impl RectangleSelector{
         }
     }
 
-    pub fn on_mouse_up(&mut self, main_window: &mut MainWindow<'_>){
+    pub fn on_mouse_up(&mut self, main_window: &mut MainWindow<'_>, gui_bar: &mut Gui){
         if !self.active{
             self.active = true;
             for row in self.top_left.0..=self.bot_right.0{
                 for col in self.top_left.1..=self.bot_right.1{
                     main_window.add_to_preview_buffer(row, col, main_window.window_array[row as usize][col as usize]);
+                    self.original_buffer.push((row, col, main_window.window_array[row as usize][col as usize]));
                     main_window.window_array[row as usize][col as usize] = ' ';
                 }
             }
+            gui_bar.hide_button(7);
+            gui_bar.hide_button(8);
         }
     }
 
-    pub fn reset_box(&mut self, main_window: &mut MainWindow<'_>){
+    pub fn reset_box(&mut self, main_window: &mut MainWindow<'_>, gui_bar: &mut Gui){
         self.active = false;
         self.top_left = (-1, -1);
         self.bot_right = (-1, -1);
         self.size = (-1, -1);
         self.start_gpos = (-1, -1);
-        main_window.write_buffer(); 
+
+        let mut change: Vec<(i32, i32, char)> = Vec::new();
+        for grid in &main_window.preview_buffer{
+            change.push((grid.0, grid.1, main_window.window_array[grid.0 as usize][grid.1 as usize]));
+        }
+        for grid in &self.original_buffer{
+            change.push((grid.0, grid.1, grid.2));
+        }
+        main_window.undo_redo.undo_buffer.push_front(change);
+
+        main_window.write_buffer(false); 
+
+        gui_bar.show_button(7);
+        gui_bar.show_button(8);
     }
 
     fn change_corners(&mut self, new_gpos: &(i32, i32)){

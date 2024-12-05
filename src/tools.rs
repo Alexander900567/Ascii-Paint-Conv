@@ -34,7 +34,7 @@ impl Toolbox{
             tool_letter_to_button_id: HashMap::from([(String::from("f"), 0), (String::from("l"), 2), 
                                                     (String::from("r"), 3), (String::from("t"), 5), 
                                                     (String::from("p"), 6), (String::from("o"), 4), 
-                                                    (String::from("a"), 15)]),
+                                                    (String::from("a"), 15), (String::from("v"), 18)]),
             mod_letter_to_button_id: HashMap::from([(String::from("f"), 1), (String::from("e"), 14), 
                                                    (String::from("1"), 10), (String::from("2"), 11), 
                                                    (String::from("3"), 12), (String::from("4"), 13),
@@ -91,6 +91,9 @@ impl Toolbox{
             }
         }
         else if &self.current_tool == "p"{
+            self.rectangle(main_window, &gpos, &self.mstart_gpos)
+        }
+        else if &self.current_tool == "v"{
             self.rectangle(main_window, &gpos, &self.mstart_gpos)
         }
         else if &self.current_tool == "a"{
@@ -241,7 +244,7 @@ impl Toolbox{
         main_window.preview_buffer.clear();
     // Uses the [Midpoint Ellipse Drawing Algorithm](https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/).
     // (Modified from Bresenham's algorithm) <- These are the credits given by the Rust imageproc conics functions.
-    //This is just a modified draw_hollow_circle
+    //This is just a modified draw_hollow_circle from the Rust imageproc conics function
         let begin_row: i32 = start_mouse_pos[0];
         let fin_row: i32 = current_mouse_pos[0];
         let begin_col: i32 = start_mouse_pos[1];

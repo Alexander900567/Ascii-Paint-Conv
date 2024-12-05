@@ -10,4 +10,4 @@ native-dialog = "0.7.0"
 [dependencies.sdl2]
 version = "*"
 default-features = false
-features = ["ttf"]
+features = ["ttf", "image"]
