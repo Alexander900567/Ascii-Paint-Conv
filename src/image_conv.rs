@@ -19,7 +19,7 @@ pub fn convert_image_put_in_window(
 
     let path = native_dialog::FileDialog::new()
         .set_location("~")
-        .add_filter("Image", &["png", "jpeg"])
+        .add_filter("Image", &["png", "jpeg", "jpg"])
         .show_open_single_file()
         .unwrap().unwrap_or(std::path::PathBuf::new());
     let path_string = path.as_path().to_str().unwrap(); 
