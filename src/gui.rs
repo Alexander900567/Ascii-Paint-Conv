@@ -48,8 +48,8 @@ impl Gui{
                                             0, (1, 1), (4, 4), //each button is 3x3 and separated by 2 from next (1 unit of space in between)
                                             "Assets/PNGs/free_icon.png", 1, 0, true));
         
-        start_buttons.insert(1, Button::new(&mut start_grid, &mut start_groups, //todo: align
-                                            1, (1, 21), (4, 24),
+        start_buttons.insert(1, Button::new(&mut start_grid, &mut start_groups,  //(Vertical Position/Row, Horizontal Position/Column)
+                                            1, (6, 6), (9, 9),
                                             "Assets/PNGs/fill_icon.png", 0, -1, false));
 
         start_buttons.insert(2, Button::new(&mut start_grid, &mut start_groups,
@@ -57,51 +57,51 @@ impl Gui{
                                             "Assets/PNGs/line_icon.png", 0, 0, true));
 
         start_buttons.insert(3, Button::new(&mut start_grid, &mut start_groups,
-                                            3, (6, 6), (9, 9), 
+                                            3, (1, 6), (4, 9),
                                             "Assets/PNGs/rectangle_icon.png", 0, 0, true));
 
         start_buttons.insert(4, Button::new(&mut start_grid, &mut start_groups,
-                                            4, (1, 6), (4, 9),  //We should never have to use the asset. TODO: Remove button
-                                            "Assets/PNGs/1x1_button_disabled.png", 0, 0, true));
+                                            4, (1, 11), (4, 14), //TODO: Replace button
+                                            "Assets/PNGs/circle_icon.png", 0, 0, true));
 
         start_buttons.insert(5, Button::new(&mut start_grid, &mut start_groups, 
-                                            5, (1, 11), (4, 14),
+                                            5, (1, 31), (4, 34),
                                             "Assets/PNGs/text_icon.png", 0, 0, true));
 
         start_buttons.insert(6, Button::new(&mut start_grid, &mut start_groups, 
-                                            6, (6, 11), (9, 14),
+                                            6, (1, 21), (9, 29),
                                             "Assets/PNGs/picture_icon.png", 0, 0, true));
 
         start_buttons.insert(7, Button::new(&mut start_grid, &mut start_groups, 
-                                            7, (1, 110), (4, 113),
+                                            7, (1, 115), (4, 118),
                                             "Assets/PNGs/undo_icon.png", -1, 0, true));
 
         start_buttons.insert(8, Button::new(&mut start_grid, &mut start_groups, 
-                                            8, (1, 115), (4, 118),
+                                            8, (6, 115), (9, 118),
                                             "Assets/PNGs/redo_icon.png", -1, 0, true));
 
         start_buttons.insert(9, Button::new(&mut start_grid, &mut start_groups, 
-                                            9, (6, 115), (9, 118), //TODO: make into clipboard art
+                                            9, (1, 110), (4, 113), //TODO: make into clipboard art
                                             "Assets/PNGs/clipboard_icon.png", -1, 0, true));
 
         start_buttons.insert(10, Button::new(&mut start_grid, &mut start_groups, 
-                                            10, (1, 21), (4, 24), //come back
+                                            10, (6, 31), (9, 34),
                                             "Assets/PNGs/mode_1_icon.png", 0, 1, false));
 
         start_buttons.insert(11, Button::new(&mut start_grid, &mut start_groups, 
-                                            11, (1, 26), (4, 29),
+                                            11, (6, 36), (9, 39),
                                             "Assets/PNGs/mode_2_icon.png", 0, 1, false));
 
         start_buttons.insert(12, Button::new(&mut start_grid, &mut start_groups, 
-                                            12, (1, 31), (4, 34),
+                                            12, (6, 41), (9, 44),
                                             "Assets/PNGs/mode_3_icon.png", 0, 1, false));
 
         start_buttons.insert(13, Button::new(&mut start_grid, &mut start_groups, 
-                                            13, (1, 36), (4, 39),
+                                            13, (6, 46), (9, 49),
                                             "Assets/PNGs/mode_4_icon.png", 1, 1, false));
 
         start_buttons.insert(14, Button::new(&mut start_grid, &mut start_groups, 
-                                            14, (1, 41), (4, 44),
+                                            14, (6, 51), (9, 54),
                                             "Assets/PNGs/mode_edge_icon.png", 0, -1, false));
 
         start_buttons.insert(15, Button::new(&mut start_grid, &mut start_groups,
@@ -113,7 +113,7 @@ impl Gui{
                                             "Assets/PNGs/clear_icon.png", -1, 0, false));
 
         start_buttons.insert(17, Button::new(&mut start_grid, &mut start_groups,
-                                            17, (6, 21), (9, 24),
+                                            17,  (6, 11), (9, 14), 
                                             "Assets/PNGs/ellipse_icon.png", 0, -1, false));
 
         start_buttons.insert(18, Button::new(&mut start_grid, &mut start_groups,

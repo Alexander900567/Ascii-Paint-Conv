@@ -102,10 +102,10 @@ impl MainWindow<'_>{
 
     fn render_gui(&mut self, gui: &gui::Gui){
 
-        self.canvas.set_draw_color(Color::RGB(125, 125, 125)); //set canvas to grey
+        self.canvas.set_draw_color(Color::RGB(135, 206, 251)); //set draw color to light blue
         let _ = self.canvas.fill_rect(sdl2::rect::Rect::new(0, 0,
-                              self.window_width, self.gui_height)); //first two is where, second is how big
-        self.canvas.set_draw_color(Color::RGB(90, 90, 90));
+                              self.window_width, self.gui_height)); //first two is where, second is how big, creates rectangle using draw color
+        self.canvas.set_draw_color(Color::RGB(90, 90, 90)); //set draw color to grey
         
         let texture_creator = self.canvas.texture_creator();
 
@@ -120,14 +120,14 @@ impl MainWindow<'_>{
                 let bot_row = ((button.bottom_right.0 - button.top_left.0 + 1) as f32 * gui.row_size) as u32;
                 
                 //display button on/off 
-                if button.is_pressed == 1 {
+                if button.is_pressed == 1 { 
                     let _ = self.canvas.copy(
                         &pressed_texture,
                         None, //part of texture we want... all of it 
                         sdl2::rect::Rect::new(top_col, top_row, bot_col, bot_row));
 
                 }
-                else{
+                else { //TODO: make case for one-shot buttons.
                     let _ = self.canvas.copy(
                         &nonpressed_texture,
                         None, //part of texture we want... all of it 
