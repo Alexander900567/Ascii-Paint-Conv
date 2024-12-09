@@ -242,9 +242,7 @@ impl Toolbox{
         start_mouse_pos: &[i32; 2]) { //this is faster when ellipse is circle
     
         main_window.preview_buffer.clear();
-    // Uses the [Midpoint Ellipse Drawing Algorithm](https://web.archive.org/web/20160128020853/http://tutsheap.com/c/mid-point-ellipse-drawing-algorithm/).
-    // (Modified from Bresenham's algorithm) <- These are the credits given by the Rust imageproc conics functions.
-    //This is just a modified draw_hollow_circle from the Rust imageproc conics function
+        // Modified; credit given under LICENSE.txt from Rust imageproc crate
         let begin_row: i32 = start_mouse_pos[0];
         let fin_row: i32 = current_mouse_pos[0];
         let begin_col: i32 = start_mouse_pos[1];
@@ -303,9 +301,8 @@ impl Toolbox{
         }    
     }
     
-    pub fn filled_circle(&self, main_window: &mut MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) { //basically, just fill in line tools, trig if necessary
-        //same credits as above, just draw_filled_circle modified
-    
+    pub fn filled_circle(&self, main_window: &mut MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) {
+        // Modified; credit given under LICENSE.txt from Rust imageproc crate
         main_window.preview_buffer.clear();
     
         let begin_row: i32 = start_mouse_pos[0];
@@ -375,8 +372,7 @@ impl Toolbox{
     }
     
     fn draw_ellipse<F>(&self, main_window: &mut MainWindow<'_>, mut render_func: F, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) //necessary for ellipse and filled_ellipse
-        //same credits (docs.rs) but draw_ellipse ofc
-        //this func is the meat for drawing the ellipse, ellipse and filled_ellipse tool just call specialized versions of this
+        // Modified; credit given under LICENSE.txt from Rust imageproc crate
         where
         F: FnMut(&mut MainWindow<'_>, i32, i32, i32, i32), {
     
@@ -432,7 +428,7 @@ impl Toolbox{
     }
     
     pub fn ellipse(&self, main_window: &mut MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) {
-        //docs.rs draw_hollow_ellipse_mut
+        // Modified; credit given under LICENSE.txt from Rust imageproc crate
         //TODO: fix ellipse diagonal (pops a circle)
     
         main_window.preview_buffer.clear();
@@ -482,7 +478,7 @@ impl Toolbox{
     }
     
     pub fn filled_ellipse(&self, main_window: &mut MainWindow<'_>, current_mouse_pos: &[i32; 2], start_mouse_pos: &[i32; 2]) {
-        //docs.rs draw_filled_ellipse_mut, same source as above
+        // Modified; credit given under LICENSE.txt from Rust imageproc crate
     
         main_window.preview_buffer.clear();
     
